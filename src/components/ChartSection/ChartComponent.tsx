@@ -5,117 +5,167 @@ import { emaChartData } from "@/global/chartConstants"; // adjust the import pat
 import { poppins } from "@/fonts/fonts";
 
 const ChartComponent = () => {
-  const data = emaChartData["ema-chart-data"].result.reverse(); // Oldest to newest
+const data = emaChartData["ema-chart-data"].result.reverse(); // Oldest to newest
 
-  const dates = data.map((item) => item.date);
-  const candlestickData = data.map((item) => [
-    +item.open,
-    +item.close,
-    +item.low,
-    +item.high,
-  ]);
- const dottedLineData = [];
+const dates = data.map((item) => item.date);
 
- 
+const candlestickData: [number, number, number, number][] = data.map((item) => [
+  +item.open,
+  +item.close,
+  +item.low,
+  +item.high,
+]);
+
+const emaData = data.map((item) => +item.ema);
+
+let dottedLineData: number[] = [];
+
 const avgBase = data.reduce((sum, d) => sum + (+d.low + +d.high) / 2, 0) / data.length;
-let prev = avgBase + (Math.random() - 0.5); // small random start offset
+let prev = avgBase + (Math.random() - 0.5);
 
 for (let i = 0; i < data.length; i++) {
-  const step = (Math.random() - 0.5) * 0.4; // max ±0.2 change
+  const step = (Math.random() - 0.5) * 0.4;
   prev += step;
   dottedLineData.push(+prev.toFixed(2));
 }
 
-  const emaData = data.map((item) => +item.ema);
+// ✅ Custom series render function to draw the area
+const renderGreenArea = (params: any, api: any) => {
+  const xValue = api.value(0);
+  const y1Value = api.value(1); // intrinsic
+  const y2Value = api.value(2); // mid price
 
-  const option = {
-    legend: {
-      data: ["Price", "Intrinsic Value"],
-      inactiveColor: "#777",
+  const x = api.coord([xValue, y1Value])[0];
+  const y1 = api.coord([xValue, y1Value])[1];
+  const y2 = api.coord([xValue, y2Value])[1];
+
+  return {
+    type: "polygon",
+    shape: {
+      points: [
+        [x - 2, y1],
+        [x + 2, y1],
+        [x + 2, y2],
+        [x - 2, y2],
+      ],
     },
-    tooltip: {
-      trigger: "axis",
-      axisPointer: {
-        type: "cross",
-        animation: false,
-        lineStyle: {
-          color: "#376df4",
-          width: 2,
-          opacity: 1,
-        },
+    style: {
+   fill: y2 < y1 ? "rgba(93, 249, 150, 0.1)" : "rgba(255, 171, 171, 0.1)",
+ stroke: "transparent",
+    },
+  };
+};
+
+// ✅ Final chart option
+const option = {
+  legend: {
+    data: ["Price", "Intrinsic Value"],
+    inactiveColor: "#777",
+  },
+  tooltip: {
+    trigger: "axis",
+    axisPointer: {
+      type: "cross",
+      animation: false,
+      lineStyle: {
+        color: "#376df4",
+        width: 2,
+        opacity: 1,
       },
     },
-    xAxis: {
-      type: "category",
-      data: dates,
-      scale: true,
-      boundaryGap: false,
-      axisLine: { lineStyle: { color: "#8392A5" } },
-    },
-    yAxis: {
-      scale: true,
-      axisLine: { lineStyle: { color: "#8392A5" } },
-      splitLine: { show: false },
-    },
-    dataZoom: [
-      {
-        type: "slider",
-        start: 0,
-        end: 100,
-        height: 30,
-        bottom: 20,
-        handleSize: "100%",
-        handleStyle: {
-          color: "#376df4",
-        },
-        textStyle: {
-          color: "#8392A5",
-        },
+  },
+  xAxis: {
+    type: "category",
+    data: dates,
+    scale: true,
+    boundaryGap: false,
+    axisLine: { lineStyle: { color: "#8392A5" } },
+  },
+  yAxis: {
+    scale: true,
+    axisLine: { lineStyle: { color: "#8392A5" } },
+    splitLine: { show: false },
+  },
+  dataZoom: [
+    {
+      type: "slider",
+      start: 0,
+      end: 100,
+      height: 30,
+      bottom: 20,
+      handleSize: "100%",
+      handleStyle: {
+        color: "#376df4",
       },
-      {
-        type: "inside",
+      textStyle: {
+        color: "#8392A5",
       },
-    ],
-    grid: {
-      left: "3%",
-      right: "4%",
-      top: 40,
-      bottom: 80,
-      containLabel: true,
     },
-    series: [
+    {
+      type: "inside",
+    },
+  ],
+  grid: {
+    left: "3%",
+    right: "4%",
+    top: 40,
+    bottom: 80,
+    containLabel: true,
+  },
+  series: [
+    // ✅ Custom fill area
+    {
+      type: "custom",
+      name: "Intrinsic Fill",
+      renderItem: renderGreenArea,
+      encode: {
+        x: 0,
+        y: [1, 2],
+      },
+      data: data.map((item, i) => {
+        const intrinsic = dottedLineData[i];
+        const midPrice = (candlestickData[i][0] + candlestickData[i][1]) / 2;
+        return [item.date, intrinsic, midPrice];
+      }),
+      z: 0,
+    },
+
+    // ✅ Candlestick chart
     {
       name: "Price",
       type: "candlestick",
       data: candlestickData,
       itemStyle: {
-        color: "#f87171",
-        color0: "#4ade80",
+        color: "#f87171",      // red for up
+        color0: "#4ade80",     // green for down
         borderColor: "#f87171",
         borderColor0: "#4ade80",
       },
+      z: 2,
     },
+
+    // ✅ Dotted line for intrinsic value
     {
-      name: "Intrinsic Value", // Updated from "Random Line"
- 
+      name: "Intrinsic Value",
       type: "line",
       data: dottedLineData,
       smooth: true,
       showSymbol: false,
       lineStyle: {
         width: 2,
-        color: "#ffffff", // white
+        color: "#ffffff",
         type: "dotted",
         opacity: 0.7,
       },
       emphasis: {
         focus: "series",
       },
-      z: 10, // ensure it's drawn on top
+      z: 3,
     },
   ],
-    backgroundColor: "#13131f",
-  };
+  backgroundColor: "#13131f",
+};
+
 
   return (
     <div className="w-full mx-auto flex flex-col items-center">

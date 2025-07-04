@@ -31,6 +31,7 @@ import SubChart2 from "./SubChart2";
 import SubChart3 from "./SubChart3";
 import SubChart4 from "./SubChart4";
 import SubChart5 from "./SubChart5";
+import HeatMap1 from "./HeatMap1";
 
 const timeFrames = ["1min", "5min", "15min", "30min", "1hour", "4hour", "1day"];
 export const technicalIndicators = [
@@ -231,11 +232,10 @@ const ChartSection = () => {
                   >
                     {technicalIndicators.map((tI, index) => (
                       <DropdownMenuRadioItem
-                        className={`${
-                          technicalIndicator == tI.name
+                        className={`${technicalIndicator == tI.name
                             ? "bg-[var(--variant-4)] text-white"
                             : " text-gray-600   hover:border-[var(--variant-4)]"
-                        } cursor-pointer p-2 ring-0 hover:ring-0 rounded-lg transition-colors duration-500`}
+                          } cursor-pointer p-2 ring-0 hover:ring-0 rounded-lg transition-colors duration-500`}
                         key={index}
                         value={tI.value}
                       >
@@ -269,11 +269,10 @@ const ChartSection = () => {
                   >
                     {timeFrames.map((tF, index) => (
                       <DropdownMenuRadioItem
-                        className={`list-none ${
-                          timeFrame == tF
+                        className={`list-none ${timeFrame == tF
                             ? "bg-[var(--variant-4)] text-white"
                             : "  text-gray-600  hover:border-[var(--variant-4)]"
-                        } cursor-pointer p-2 ring-0 hover:ring-0 rounded-lg transition-colors duration-500`}
+                          } cursor-pointer p-2 ring-0 hover:ring-0 rounded-lg transition-colors duration-500`}
                         key={index}
                         value={tF}
                       >
@@ -400,17 +399,19 @@ const ChartSection = () => {
           </div>
           <ChartComponent />
           <div className="w-full grid grid-cols-1 gap-4  my-12">
-            <SubChart1/>
-            <SubChart2/>
-            <SubChart3/>
-            <SubChart4/>
-            <SubChart5/>
+            <SubChart1 />
+            <SubChart2 />
+            <SubChart3 />
+            <SubChart4 />
+            <SubChart5 />
+                  <HeatMap1/>
           </div>
-          <SingleStockRadarChart/>
-          <FinancialRatiosChart/>
+          <SingleStockRadarChart />
+          <FinancialRatiosChart />
         </div>
       </div>
-      <div className="w-3/12 flex flex-col items-center p-4 text-white">
+      <div className="w-3/12 flex flex-col items-center p-4 text-white">   
+      <div className="w-full flex flex-col items-center p-4 text-white">
         <div className=" pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Previous close</p>
           <p>{appleData1d.chart.result[0].meta.previousClose}</p>
@@ -476,6 +477,8 @@ const ChartSection = () => {
           <p>1y Target Est</p>
           <p>null</p>
         </div>
+      </div>
+
       </div>
     </div>
   );
