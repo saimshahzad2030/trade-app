@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { searchStock } from "@/services/search.services";
 
 const mockData = [
   {
@@ -22,10 +23,12 @@ const mockData = [
 
 const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [filteredData, setFilteredData] = useState<typeof mockData>([]);
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
+    const searchedStock = await searchStock(query)
     setSearchQuery(query);
 
     if (!query.trim()) {
