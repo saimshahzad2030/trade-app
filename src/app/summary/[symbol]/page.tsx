@@ -4,6 +4,7 @@ import Chart1 from "@/components/Chart/Chart1";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import Link from "next/link";
 import NavSecond from "@/components/Navbar/NavSecond";
+
 export default function Home() {
   return (
     <div className="flex flex-col items-center  w-full">

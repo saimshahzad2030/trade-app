@@ -7,7 +7,7 @@ const axiosInstance = axios.create({
   baseURL: config.BASE_URL, // Your backend base URL
   headers: {
     "Content-Type": "multipart/form-data",
-     'ngrok-skip-browser-warning': 'true'
+    //  'ngrok-skip-browser-warning': 'true'
 
   },
 });
@@ -15,7 +15,7 @@ export const axiosInstanceJson = axios.create({
   baseURL: config.BASE_URL, // Your backend base URL
   headers: {
     "Content-Type": "application/json",
-     'ngrok-skip-browser-warning': 'true'
+    //  'ngrok-skip-browser-warning': 'true'
     // Authorization: `Bearer ${token}`,
   },
 });
@@ -24,6 +24,9 @@ const attachTokenInterceptor = (instance: AxiosInstance): void => {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       const token = Cookies.get("token");
+
+      // Retain existing headers
+      // config.headers.set("ngrok-skip-browser-warning", "true");
 
       if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
@@ -38,25 +41,25 @@ const attachTokenInterceptor = (instance: AxiosInstance): void => {
 };
 
 
+
 // Attach interceptor to both instances
 attachTokenInterceptor(axiosInstance);
 attachTokenInterceptor(axiosInstanceJson);
-export const setAuthToken = () => { 
+// export const setAuthToken = () => { 
 
-  if (token) {
-    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    axiosInstanceJson.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${token}`;
-    axiosInstanceJson.defaults.headers.common[
-      "ngrok-skip-browser-warning"
-    ] = `true`; 
-  } else {
-    delete axiosInstance.defaults.headers.common["Authorization"];
-    delete axiosInstanceJson.defaults.headers.common["Authorization"];
-  }
-};
-
-// Call this function on app load or after login
-setAuthToken();
+//   if (token) {
+//     axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+//     axiosInstanceJson.defaults.headers.common[
+//       "Authorization"
+//     ] = `Bearer ${token}`;
+//     axiosInstanceJson.defaults.headers.common[
+//       "ngrok-skip-browser-warning"
+//     ] = `true`; 
+//   } else {
+//     delete axiosInstance.defaults.headers.common["Authorization"];
+//     delete axiosInstanceJson.defaults.headers.common["Authorization"];
+//   }
+// };
+ 
+// setAuthToken();
 export default axiosInstance;

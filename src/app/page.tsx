@@ -14,8 +14,8 @@ export default function Home() {
       <Navbar />
       <Landing />
       <InvestmentIdeas />
-      <HomeCharts />
-      <ThingsWeAnalyze />
+      {/* <HomeCharts />
+      <ThingsWeAnalyze /> */}
     </div>
   );
 }

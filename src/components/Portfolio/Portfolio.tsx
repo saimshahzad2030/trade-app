@@ -74,6 +74,11 @@ const Portfolio = () => {
   };
   return (
     <div className="flex flex-col text-white items-start w-full p-8">
+      <h1 className="text-4xl font-extrabold text-white w-full text-center">Portfolio</h1>
+  <p className="mt-2 text-sm text-gray-600   mx-auto mb-12 w-full text-center">
+    A portfolio is a personalized collection of your financial holdings—like stocks, ETFs, and cryptocurrencies—that you can track over time. Our portfolio tool lets you monitor your positions, view historical performance, and analyze gains or losses 
+    in one organized place. 
+  </p>
       {!tabSelected && (
         <div className="grid grid-cols-2 w-full gap-8">
           <div className="flex flex-col items-center w-full col-span-1 border border-gray-400 p-4 rounded-md">
@@ -148,7 +153,7 @@ const Portfolio = () => {
         </div>
       )}
 
-      <div className=" text-white py-10 px-4 sm:px-6 lg:px-8 mt-8">
+      <div className=" text-white py-10 px-4 sm:px-6 lg:px-8 mt-8 w-full ">
         <h2 className="text-2xl font-semibold text-center mb-8">
           Why Keep a Portfolio on Our Platform?
         </h2>

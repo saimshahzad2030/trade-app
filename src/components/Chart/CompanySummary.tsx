@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
 interface CompanySummaryType {
   name: string;
   description: string;
@@ -31,7 +32,7 @@ const CompanySummary: React.FC<{ companySummary: CompanySummaryType }> = ({
                 <p className="line-clamp-4 text-[12px]">
                   {companySummary.description}
                 </p>
-                <p className="mt-4 text-xs">{companySummary.website}</p>
+                {companySummary.website && <Link target="_blank" rel="noopener noreferrer" href={companySummary.website} className="mt-4 text-xs">{companySummary.website}</Link>}
               </div>
               <div className="w-[38%] flex flex-col items-center">
                 <div className="w-full flex flex-row items-start justify-between">

@@ -32,19 +32,20 @@ import SubChart3 from "./SubChart3";
 import SubChart4 from "./SubChart4";
 import SubChart5 from "./SubChart5";
 import HeatMap1 from "./HeatMap1";
+import { getSpecificStockChart } from "@/services/stock.services";
+import { EmaChartPoint } from "@/types/types";
+import RoundLoader from "../Loader/RoundLoader";
+import { useParams } from "next/navigation";
 
 const timeFrames = ["1min", "5min", "15min", "30min", "1hour", "4hour", "1day"];
 export const technicalIndicators = [
   { name: "Simple Moving Average (SMA)", value: "sma" },
-  { name: "Exponential Moving Average (EMA)", value: "ema" },
-  { name: "Average", value: "average" },
+  { name: "Exponential Moving Average (EMA)", value: "ema" }, 
   { name: "Weighted Moving Average (WMA)", value: "wma" },
-  { name: "Double Exponential", value: "double_exponential" },
-  { name: "Moving Average", value: "moving_average" },
-  { name: "Triple Exponential Moving", value: "triple_exponential_moving" },
-  { name: "Average", value: "average_2" },
+  { name: "Double Exponential Moving Average", value: "dema" },
+  { name: "Triple Exponential Moving", value: "tema" }, 
   { name: "Relative Strength Index", value: "rsi" },
-  { name: "Standard Deviation", value: "standard_deviation" },
+  { name: "Standard Deviation", value: "standarddeviation" },
   { name: "Williams", value: "williams" },
   { name: "Average Directional Index", value: "adx" },
 ];
@@ -56,11 +57,16 @@ const stocks = [
   { name: "Tesla Inc.", symbol: "TSLA" },
   { name: "Meta Platforms Inc.", symbol: "META" },
 ];
+ 
 const ChartSection = () => {
+  const params = useParams<{ symbol: string}>()
+  let symbol = params.symbol
   const [technicalIndicator, setTechnicalIndicator] = React.useState(
-    technicalIndicators[0].name
+    technicalIndicators[0].value
   );
-  const [timeFrame, setTimeFrame] = React.useState(timeFrames[0]);
+  const [chartData,setChartData] = React.useState<EmaChartPoint[]>([])
+  const [timeFrame, setTimeFrame] = React.useState(timeFrames[timeFrames.length-1]);
+
   const [selectedStocks, setSelectedStocks] = React.useState([
     stocks[0], // Apple selected by default
   ]);
@@ -80,21 +86,23 @@ const ChartSection = () => {
   const filteredStocks = stocks.filter((stock) =>
     `${stock.name} ${stock.symbol}`.toLowerCase().includes(search.toLowerCase())
   );
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+const [toDate, setToDate] = React.useState<Date | undefined>(subDays(new Date(), 1));
 
-  const [fromDate, setFromDate] = React.useState<Date | undefined>(new Date());
-  const [toDate, setToDate] = React.useState<Date | undefined>(new Date());
-
+// Set fromDate as one month before today
+const [fromDate, setFromDate] = React.useState<Date | undefined>(
+  subMonths(new Date(), 1)
+);
   const predefinedRanges = [
-    { label: "1d", value: 1, type: "day" },
-    { label: "5d", value: 5, type: "day" },
-    { label: "3m", value: 3, type: "month" },
-    { label: "6m", value: 6, type: "month" },
-    { label: "YTD", value: "ytd", type: "custom" },
-    { label: "1y", value: 12, type: "month" },
-    { label: "5y", value: 60, type: "month" },
-    { label: "All", value: "all", type: "custom" },
+    { label: "1 year", value: 1, type: "day" },
+    { label: "6 months", value: 5, type: "day" },
+    { label: "3 months", value: 3, type: "month" },
+    { label: "1 month", value: 6, type: "month" },
+    { label: "14 days", value: "ytd", type: "custom" },
+    { label: "7 days", value: 12, type: "month" },
+    { label: "1 day", value: 60, type: "month" },
   ];
-  const handleQuickRange = (
+  const handleQuickRange = async(
     label: string,
     value: number | string,
     type: string
@@ -102,16 +110,38 @@ const ChartSection = () => {
     const now = new Date();
     let startDate: Date;
 
-    if (type === "day") {
-      startDate = subDays(now, Number(value));
-    } else if (type === "month") {
-      startDate = subMonths(now, Number(value));
-    } else if (label === "YTD") {
-      startDate = new Date(now.getFullYear(), 0, 1);
-    } else {
-      startDate = new Date(2000, 0, 1); // "All" or fallback
-    }
-
+  switch (label) {
+    case "1 year":
+      startDate = subDays(now, 365);
+      break;
+    case "6 months":
+      startDate = subMonths(now, 6);
+      break;
+    case "3 months":
+      startDate = subMonths(now, 3);
+      break;
+    case "1 month":
+      startDate = subMonths(now, 1);
+      break;
+    case "14 days":
+      startDate = subDays(now, 14);
+      break;
+    case "7 days":
+      startDate = subDays(now, 7);
+      break;
+    case "1 day":
+      startDate = subDays(now, 1);
+      break;
+    default:
+      startDate = new Date(2000, 0, 1); // fallback
+      break;
+  }
+                      
+                        setChartDataLoading(true)
+                        let response = await getSpecificStockChart('AAPL',timeFrame,technicalIndicator || 'sma',startDate,now);
+                        setChartDataLoading(false)
+                        setChartData(response.data['chart-data'].result)
+           
     setFromDate(startDate);
     setToDate(now);
   };
@@ -120,6 +150,18 @@ const ChartSection = () => {
     fromDate && toDate
       ? `${format(fromDate, "MMM-dd-yyyy")} to ${format(toDate, "MMM-dd-yyyy")}`
       : "Select Range";
+     
+      React.useEffect(()=>{
+        const fetchChartData = async()=>{
+          setChartDataLoading(true)
+          let response = await getSpecificStockChart('AAPL','1day',technicalIndicator,fromDate,toDate);
+          setChartDataLoading(false)
+          setChartData(response.data['chart-data'].result)
+          
+        }
+        fetchChartData()
+
+      },[fromDate,toDate])
   return (
     <div
       className={`w-full flex flex-row items-start justify-between  px-8 ${poppins.className}`}
@@ -174,7 +216,7 @@ const ChartSection = () => {
                     </div>
                   </div>
                 )}
-
+              
                 <div className="space-y-1 max-h-48 ">
                   {filteredStocks.length === 0 ? (
                     <p className="text-sm text-gray-500 px-2">
@@ -203,6 +245,7 @@ const ChartSection = () => {
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
+        
             <div className="ml-2">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -221,13 +264,20 @@ const ChartSection = () => {
                     value={
                       technicalIndicators.find(
                         (ti) => ti.value === technicalIndicator
-                      )?.name ?? ""
+                      )?.value ?? ""
                     }
-                    onValueChange={(val) => {
+                    onValueChange={async(val) => {
                       const selected = technicalIndicators.find(
                         (ti) => ti.value === val
                       );
-                      if (selected) setTechnicalIndicator(selected.name);
+                      if (selected) {
+                        setTechnicalIndicator(selected.value)};
+                        console.log(selected,"selected")
+                        setChartDataLoading(true)
+                        let response = await getSpecificStockChart('AAPL','1day',selected?.value || 'sma',fromDate,toDate);
+                        setChartDataLoading(false)
+                        setChartData(response.data['chart-data'].result)
+           
                     }}
                   >
                     {technicalIndicators.map((tI, index) => (
@@ -246,6 +296,7 @@ const ChartSection = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            
             <div className="ml-2">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -262,9 +313,16 @@ const ChartSection = () => {
                   <DropdownMenuRadioGroup
                     className=" "
                     value={timeFrames.find((tf) => tf === timeFrame) ?? ""}
-                    onValueChange={(val) => {
+                    onValueChange={async(val) => {
                       const selected = timeFrames.find((tf) => tf === val);
                       if (selected) setTimeFrame(selected);
+                      
+                        console.log(selected,"selected")
+                        setChartDataLoading(true)
+                        let response = await getSpecificStockChart('AAPL',selected || "1day",technicalIndicator || 'sma',fromDate,toDate);
+                        setChartDataLoading(false)
+                        setChartData(response.data['chart-data'].result)
+           
                     }}
                   >
                     {timeFrames.map((tF, index) => (
@@ -298,12 +356,13 @@ const ChartSection = () => {
                   <DropdownMenuLabel className="mb-2">
                     Quick Ranges
                   </DropdownMenuLabel>
-                  <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="grid grid-cols-3 gap-2 mb-4">
                     {predefinedRanges.map((r) => (
                       <Button
                         key={r.label}
                         variant="outline"
                         size="sm"
+                        className="cursor-pointer"
                         onClick={() =>
                           handleQuickRange(r.label, r.value, r.type)
                         }
@@ -397,17 +456,17 @@ const ChartSection = () => {
               />
             </div>
           </div>
-          <ChartComponent />
-          <div className="w-full grid grid-cols-1 gap-4  my-12">
-            <SubChart1 />
-            <SubChart2 />
-            <SubChart3 />
-            <SubChart4 />
-            <SubChart5 />
-                  <HeatMap1/>
-          </div>
-          <SingleStockRadarChart />
-          <FinancialRatiosChart />
+            {chartDataLoading?
+            <div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]">
+              <RoundLoader/>
+              </div>:
+              <>
+              {chartData.length>0 ? <ChartComponent technicalIndicator={technicalIndicator} data={chartData}/> :<div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]"><p className="text-red-400">Error Showing Chart Data</p></div>}
+              </>
+              }
+        
+          <SingleStockRadarChart symbol={symbol}/>
+         <FinancialRatiosChart symbol={symbol}/> 
         </div>
       </div>
       <div className="w-3/12 flex flex-col items-center p-4 text-white">   

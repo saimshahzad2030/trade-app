@@ -15,8 +15,8 @@ export default function StockScreeningPage() {
   return (
     <div className="flex flex-col items-center  w-full">
       <Navbar />
-      <NavSecond />
-      <div className="flex flex-col items-center w-full pt-28">
+      {/* <NavSecond /> */}
+      <div className="flex flex-col items-center w-full pt-20">
         <StockScreeningInput
           setParams={setParams}
           setQuerySubmit={setQuerySubmit}

@@ -3,18 +3,26 @@ import React from "react";
 import ReactECharts from "echarts-for-react";
 import { dailyIndustryPerformance } from "@/global/constants";
 import { poppins } from "@/fonts/fonts";
+import { dailyIndustoryPerformanceResponse } from "@/types/types";
+import { getDailyIndustryPerformance } from "@/services/stocks.services";
+import RoundLoader from "../Loader/RoundLoader";
 
 // Group industries
-const industries = Array.from(
+
+ 
+const DailyIndustryPerformanceChart = () => {
+  const [dailyData,setDailyData] = React.useState<dailyIndustoryPerformanceResponse|null>(null)
+       const [loading,setLoading] = React.useState(false)
+       const industries = Array.from(
   new Set(
-    dailyIndustryPerformance.daily_industry_performance.result.map(
+    dailyData?.daily_industry_performance.result.map(
       (item) => item.industry
     )
   )
 );
 const exchanges = Array.from(
   new Set(
-    dailyIndustryPerformance.daily_industry_performance.result.map(
+    dailyData?.daily_industry_performance.result.map(
       (item) => item.exchange
     )
   )
@@ -24,7 +32,7 @@ const exchanges = Array.from(
 const series = exchanges.map((exchange) => {
   const data = industries.map((ind) => {
     const match =
-      dailyIndustryPerformance.daily_industry_performance.result.find(
+      dailyData?.daily_industry_performance.result.find(
         (item) => item.industry === ind && item.exchange === exchange
       );
     return match ? parseFloat(match.averageChange.replace("%", "")) : 0;
@@ -43,6 +51,7 @@ const series = exchanges.map((exchange) => {
 });
 
 const option = {
+  
   tooltip: {
     trigger: "axis",
     axisPointer: { type: "shadow" },
@@ -83,23 +92,43 @@ const option = {
   series,
   backgroundColor: "#0d0d14",
 };
-
-const DailyIndustryPerformanceChart = () => {
+        React.useEffect(()=>{
+          const fetchChartData = async()=>{
+            setLoading(true)
+            let response:{data:dailyIndustoryPerformanceResponse}  = await getDailyIndustryPerformance();
+setLoading(false)
+          setDailyData(response.data)
+          }
+          fetchChartData()
+  
+        },[])
   return (
     <div className="w-[48%]    flex flex-col items-center">
-      <div className="bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
-        <ReactECharts
+    <div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
+         {loading?
+     <div className="flex flex-col items-center my-4">
+      <RoundLoader/>
+      </div>
+        :<ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
+         }
       </div>
-      <h2
+      {loading?
+     <div className="flex flex-col items-center my-4">
+      <RoundLoader/>
+      </div>:
+      <>
+      {dailyData &&
+       <h2
         className={`text-2xl font-bold text-center  mt-4 text-white ${poppins.className}`}
       >
-        {`Industry Performance As of ${dailyIndustryPerformance.daily_industry_performance.result[0].date}`}
-      </h2>
+        {`Industry Performance As of ${dailyData.daily_industry_performance.result[0].date}`}
+      </h2>}</>}
+     
     </div>
   );
 };

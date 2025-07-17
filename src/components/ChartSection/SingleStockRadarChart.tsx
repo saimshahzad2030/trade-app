@@ -2,10 +2,22 @@
 import React, { useState } from "react";
 import ReactECharts from "echarts-for-react";
 import Select, { MultiValue } from "react-select";
-
+import { getSpecificStockRadarChart } from "@/services/stock.services";
+import RoundLoader from "../Loader/RoundLoader";
+type ChartSectionProps = {
+    symbol: string;
+};
 type OptionType = {
   label: string;
   value: string;
+};
+type FinancialIndicatorsData = {
+  display: {
+    [key: string]: string | number;
+  };
+  normalized: {
+    [key: string]: number;
+  };
 };
 
 const customStyles = {
@@ -55,29 +67,46 @@ const customStyles = {
   }),
 };
 
-const SingleStockRadarChart = () => {
+const SingleStockRadarChart = ({symbol}:ChartSectionProps) => {
+  console.log(symbol,"symbol")
   const appleColor = ["#ff7c7c", "#ffbcbc"];
+const allIndicators = [
+  { name: "roc", label: "ROC", max: 30 },
+  { name: "peRatio", label: "PE", max: 100 },
+  { name: "grossProfitMargin", label: "Gross Margin", max: 80 },
+  { name: "wacc", label: "WACC", max: 15 },
+  { name: "debtToEquityRatio", label: "D/E Ratio", max: 3 },
+  { name: "eps", label: "EPS", max: 5 },
+  { name: "dcf", label: "DCF", max: 300 },
+  { name: "fcff", label: "FCFF", max: 100 },
+];
+ const [chartData, setChartData] = React.useState<FinancialIndicatorsData | null>(null);
 
-  const allIndicators = [
-    { name: "ROC", max: 30 },
-    { name: "PE", max: 100 },
-    { name: "Gross Margin", max: 80 },
-    { name: "WACC", max: 15 },
-    { name: "D/E Ratio", max: 3 },
-    { name: "BetaEPS", max: 5 },
-    { name: "DCF", max: 300 },
-    { name: "FCFF", max: 100 },
-  ];
-
-  const appleRawData = [25, 35, 60, 9, 1.2, 1.3, 250, 70];
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+ 
 
   const optionsList = allIndicators.map((item) => ({
     label: item.name,
     value: item.name,
   }));
-
   const defaultSelected = optionsList.slice(0, 5);
+ 
   const [selectedIndicators, setSelectedIndicators] = useState<OptionType[]>(defaultSelected);
+
+const normalizedValues = chartData
+  ? selectedIndicators.map((indicator) => {
+      const normValue = chartData.normalized[indicator.value] ?? 0;
+      const scaled = normValue * 100;
+      return scaled < 1 && scaled > 0 ? 1 : scaled; // ✅ show 1 if very small but > 0
+    })
+  : [];
+
+
+
+const displayValues = selectedIndicators.map((indicator) => {
+  return chartData?.display[indicator.value] ?? "N/A";
+});
+
 
   const selectedNames = selectedIndicators.map((item) => item.value);
   const selectedIndexes = selectedNames.map(
@@ -88,11 +117,7 @@ const SingleStockRadarChart = () => {
     .filter((ind) => selectedNames.includes(ind.name))
     .map((ind) => ({ name: ind.name, max: 100 }));
 
-  const normalizedValues = selectedIndexes.map((i) => {
-    const value = appleRawData[i];
-    const max = allIndicators[i].max;
-    return (value / max) * 100;
-  });
+ 
 
   const handleChange = (selected: MultiValue<OptionType>) => {
     if (selected.length >= 5) {
@@ -103,7 +128,7 @@ const SingleStockRadarChart = () => {
   const option = {
     color: [appleColor[0]],
     title: {
-      text: "Apple Financial Indicators",
+      text: chartData?.display.name,
       left: "center",
       bottom: 0,
       textStyle: {
@@ -111,9 +136,27 @@ const SingleStockRadarChart = () => {
         color: "#fff",
       },
     },
-    tooltip: {},
+  tooltip: {
+  formatter: (params: any) => {
+    if (!params || !params.value) return "";
+
+    const items = params.value.map((val: number, idx: number) => {
+      const label = selectedIndicators[idx]?.label ?? "";
+      const display = displayValues[idx];
+      return `<strong>${label}</strong>: ${display}`;
+    });
+
+    return items.join("<br/>");
+  },
+  backgroundColor: "#1a1a1a",
+  borderColor: "#0A7075",
+  textStyle: {
+    color: "#fff",
+  },
+},
+
     legend: {
-      data: ["AAPL"],
+      data: [symbol],
       textStyle: {
         color: "#fff",
       },
@@ -138,17 +181,19 @@ const SingleStockRadarChart = () => {
     },
     series: [
       {
-        name: "AAPL",
+        name: chartData?.display.name,
         type: "radar",
         data: [
           {
             value: normalizedValues,
             name: "AAPL",
             label: {
-              show: true,
-              color: appleColor[0],
-              fontWeight: "bold",
-            },
+  show: true,
+  formatter: (_: any, idx: number) => `${displayValues[idx]}`,
+  color: appleColor[0],
+  fontWeight: "bold",
+},
+
             areaStyle: {
               color: {
                 type: "radial",
@@ -172,9 +217,21 @@ const SingleStockRadarChart = () => {
       },
     ],
   };
+  React.useEffect(()=>{
+        const fetchChartData = async()=>{
+          setChartDataLoading(true)
+          let response = await getSpecificStockRadarChart(symbol);
+          setChartDataLoading(false)
+          setChartData(response.data['financial_indicators_data'].result)
+          
+        }
+        fetchChartData()
 
+      },[])
   return (
     <div className="col-span-2 bg-[#0d0d14] p-4 rounded-xl mt-8">
+      {chartDataLoading? <RoundLoader/>:
+      <> 
       <div className="mb-4">
         <Select
           options={optionsList}
@@ -189,7 +246,7 @@ const SingleStockRadarChart = () => {
           <p className="text-red-500 mt-1">Please select at least 5 indicators</p>
         )}
       </div>
-      <ReactECharts option={option} style={{ height: "500px" }} />
+      <ReactECharts option={option} style={{ height: "500px" }} /></>}
     </div>
   );
 };

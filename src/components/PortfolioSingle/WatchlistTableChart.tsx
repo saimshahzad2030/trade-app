@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
 import { companyData } from "@/types/types";
-import { appleData1y, appleData5d, appleData6m } from "@/global/constants";
+import {appleData1d, CompanyData1 } from "@/global/constants";
 import ReactECharts from "echarts-for-react";
 import { color } from "echarts";
 const WatchlistTableChart = () => {
-  const companies = [appleData1y, appleData5d, appleData6m];
-  const getChartOptions = (company: companyData, index: number) => {
+  const companies = [appleData1d,appleData1d,appleData1d];
+  const getChartOptions = (company: CompanyData1, index: number) => {
     const chartData = company.chart.result[0];
     const timestamps = chartData.timestamp.map((ts) =>
       new Date(ts * 1000).toLocaleTimeString()
@@ -55,7 +55,7 @@ const WatchlistTableChart = () => {
     <div className="flex flex-col items-center h-auto mr-4">
       <div className="w-full h-[40px] ">
         <ReactECharts
-          option={getChartOptions(appleData1y, 1)}
+          option={getChartOptions(appleData1d, 1)}
           style={{
             height: "100%",
             width: "100%",

@@ -85,6 +85,7 @@ export type companyData = {
                 indicators: {
                     quote: [
                         {
+                            adjclose: number[];
                         intrinsic?:number[];
 
                             close: number[]; // e.g., [202.51, 202.515, ...]
@@ -94,11 +95,11 @@ export type companyData = {
                             volume: number[]; // e.g., [1522139, 606588, ...]
                         }
                     ];
-                    adjclose: [
-                        {
-                            adjclose: number[]; // e.g., [202.51, 202.515, ...]
-                        }
-                    ];
+                    // adjclose: [
+                    //     {
+                    //         adjclose: number[]; // e.g., [202.51, 202.515, ...]
+                    //     }
+                    // ];
                 };
             }
         ];
@@ -470,17 +471,17 @@ export type TopStocksResponse = {
     };
     error: string | null;
 };
-
 export type EmaChartPoint = {
-    date: string;
-    open: string;
-    high: string;
-    low: string;
-    close: string;
-    volume: number;
-    ema: string;
+  date: string;
+  open: string;
+  high: string;
+  low: string;
+  close: string;
+  volume: number;
+  ema: string;
+  intrinsicValue: string;
 };
-
+ 
 export type EmaChartData = {
     "ema-chart-data": {
         result: EmaChartPoint[];
@@ -611,3 +612,55 @@ export type PortfolioData = {
     realizedGainLoss: string; // e.g., "+$500"
     currency: string; // e.g., "USD"
 };
+
+export interface DebtCoverageEntry {
+  symbol: string;
+  annual: {
+    fiscalYear: string;
+    totalDebt: string;
+    cashAndCashEquivalents: string;
+  };
+  quarterly: {
+    fiscalYear: string;
+    totalDebt: string;
+    cashAndCashEquivalents: string;
+  };
+}
+
+export interface FinancialPositionData {
+  symbol: string;
+  annual: {
+    shortTerm: {
+      totalCurrentAssets: string;
+      totalCurrentLiabilities: string;
+    };
+    longTerm: {
+      totalNonCurrentAssets: string;
+      totalCurrentLiabilities: string;
+    };
+  };
+  quarterly: {
+    shortTerm: {
+      totalCurrentAssets: string;
+      totalCurrentLiabilities: string;
+    };
+    longTerm: {
+      totalNonCurrentAssets: string;
+      totalCurrentLiabilities: string;
+    };
+  };
+}
+
+export interface GrowthProfitabilityAndDebtAnalysisResult {
+  debtCoverage: DebtCoverageEntry[];
+  financialPosition: FinancialPositionData;
+}
+
+export interface GrowthProfitabilityAndDebtAnalysisChartData {
+  result: GrowthProfitabilityAndDebtAnalysisResult;
+  error: any; // Can change to more specific type if needed
+}
+
+export interface GrowthProfitabilityAndDebtAnalysisChartRootData {
+  growth_profitability_and_debt_analysis_chart_data: GrowthProfitabilityAndDebtAnalysisChartData;
+}

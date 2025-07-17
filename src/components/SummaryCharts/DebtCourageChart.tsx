@@ -1,11 +1,69 @@
 "use client";
 import React from "react";
 import ReactECharts from "echarts-for-react";
-import { depthLevelCourage } from "@/global/chartConstants";
 import { poppins } from "@/fonts/fonts";
+import { FinancialPositionData } from "@/types/types";
+import RoundLoader from "../Loader/RoundLoader";
 
-const DebtCourageChart = () => {
-  const result = depthLevelCourage.growth_profitability_chart_data.result;
+interface DebtAnalysisProps {
+  loading: boolean;
+  error?:string;
+  data?: FinancialPositionData;
+}
+
+// Detect whether a value has a B, M, or is raw
+type UnitType = "B" | "M" | "RAW";
+
+const detectUnit = (value: string): UnitType => {
+  if (value.endsWith("B")) return "B";
+  if (value.endsWith("M")) return "M";
+  return "RAW";
+};
+
+const parseAmount = (value: string): number => {
+  if (value.endsWith("B")) return parseFloat(value.replace("B", "")) * 1_000_000_000;
+  if (value.endsWith("M")) return parseFloat(value.replace("M", "")) * 1_000_000;
+  return parseFloat(value);
+};
+
+const DebtCourageChart: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
+  const result = data;
+
+  // Detect unit based on the first defined value in dataset
+  const sampleValue =
+    result?.annual?.shortTerm?.totalCurrentAssets ||
+    result?.annual?.shortTerm?.totalCurrentLiabilities ||
+    result?.annual?.longTerm?.totalNonCurrentAssets ||
+    result?.annual?.longTerm?.totalCurrentLiabilities ||
+    "0";
+
+  const unitType: UnitType = detectUnit(sampleValue);
+
+  const yAxisFormatter = (value: number) => {
+    switch (unitType) {
+      case "B":
+        return `${(value / 1_000_000_000).toFixed(1)}B`;
+      case "M":
+        return `${(value / 1_000_000).toFixed(0)}M`;
+      case "RAW":
+      default:
+        return value.toString();
+    }
+  };
+
+  const chartData = [
+    ["Type", "Total Assets", "Total Liabilities"],
+    [
+      "Annual - Short Term",
+      parseAmount(result?.annual?.shortTerm?.totalCurrentAssets ?? "0"),
+      parseAmount(result?.annual?.shortTerm?.totalCurrentLiabilities ?? "0"),
+    ],
+    [
+      "Annual - Long Term",
+      parseAmount(result?.annual?.longTerm?.totalNonCurrentAssets ?? "0"),
+      parseAmount(result?.annual?.longTerm?.totalCurrentLiabilities ?? "0"),
+    ],
+  ];
 
   const option = {
     color: ["#0c969C", "#0A7075"],
@@ -18,80 +76,49 @@ const DebtCourageChart = () => {
       axisPointer: { type: "shadow" },
     },
     dataset: {
-      source: [
-        ["Type", "Total Assets", "Total Liabilities"],
-        [
-          "Annual - Short Term",
-          parseFloat(
-            result.annual.shortTerm.totalCurrentAssets.replace("B", "")
-          ),
-          parseFloat(
-            result.annual.shortTerm.totalCurrentLiabilities.replace("B", "")
-          ),
-        ],
-        [
-          "Annual - Long Term",
-          parseFloat(
-            result.annual.longTerm.totalNonCurrentAssets.replace("B", "")
-          ),
-          parseFloat(
-            result.annual.longTerm.totalCurrentLiabilities.replace("B", "")
-          ),
-        ],
-        // [
-        //   "Quarterly - Short Term",
-        //   parseFloat(
-        //     result.quarterly.shortTerm.totalCurrentAssets.replace("B", "")
-        //   ),
-        //   parseFloat(
-        //     result.quarterly.shortTerm.totalCurrentLiabilities.replace("B", "")
-        //   ),
-        // ],
-        // [
-        //   "Quarterly - Long Term",
-        //   parseFloat(
-        //     result.quarterly.longTerm.totalNonCurrentAssets.replace("B", "")
-        //   ),
-        //   parseFloat(
-        //     result.quarterly.longTerm.totalCurrentLiabilities.replace("B", "")
-        //   ),
-        // ],
-      ],
+      source: chartData,
     },
     xAxis: {
       type: "category",
-      axisLabel: { color: "#ffffff" }, // 👈 white x-axis labels
-    axisLine: {
-      lineStyle: { color: "#ffffff" }, // optional: white axis line
-    }, 
+      axisLabel: { color: "#ffffff" },
+      axisLine: {
+        lineStyle: { color: "#ffffff" },
+      },
     },
     yAxis: {
       type: "value",
+      axisLabel: {
+        formatter: yAxisFormatter,
+        color: "#ffffff",
+      },
       axisLine: {
-      lineStyle: { color: "#ffffff" }, // optional: white axis line
-    },
-      axisLabel: { formatter: "{value} B", color: "#ffffff" },
-    },
-    series: [
-      {
-        type: "bar",
+        lineStyle: { color: "#ffffff" },
       },
-      {
-        type: "bar",
+      splitLine: {
+        lineStyle: {
+          color: "#2c3e50",
+          type: "dashed",
+        },
       },
-    ],
+    },
+    series: [{ type: "bar" }, { type: "bar" }],
     backgroundColor: "#13131f",
   };
 
   return (
     <div className="w-full col-span-2 flex flex-col items-center">
       <div className="bg-[#13131f] w-full rounded-2xl p-4 flex flex-col items-center">
-        <ReactECharts
+       {loading?
+       <RoundLoader/>:
+        error?
+             <p className="text-gray-600">{error}</p>:
+            <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
+        }
       </div>
       <h2
         className={`text-2xl font-bold text-center mt-4 text-white ${poppins.className}`}
@@ -99,7 +126,7 @@ const DebtCourageChart = () => {
         Growth & Profitability
       </h2>
       <h2 className={`text-lg text-center text-white ${poppins.className}`}>
-        ({result.symbol})
+        ({result?.symbol ?? "N/A"})
       </h2>
     </div>
   );

@@ -3,13 +3,18 @@ import React from "react";
 import ReactECharts from "echarts-for-react";
 import { dailyMarketSectorPerformance } from "../../global/constants";
 import { poppins } from "@/fonts/fonts";
+import { getDailyMarketSectorPerformance } from "@/services/stocks.services";
+import { dailyMarketSectorPerformanceResponse } from "@/types/types";
+import RoundLoader from "../Loader/RoundLoader";
 
 const DailyMarketSectorPerformance = () => {
+     const [dailyData,setDailyData] = React.useState<dailyMarketSectorPerformanceResponse|null>(null)
+     const [loading,setLoading] = React.useState(false)
   const data =
-    dailyMarketSectorPerformance.daily_market_sector_performance.result;
+    dailyData?.daily_market_sector_performance.result;
 
-  const sectors = data.map((item) => item.sector);
-  const changes = data.map((item) =>
+  const sectors = data?.map((item) => item.sector);
+  const changes = data?.map((item) =>
     parseFloat(item.averageChange.replace("%", ""))
   );
 
@@ -53,23 +58,43 @@ const DailyMarketSectorPerformance = () => {
     ],
     backgroundColor: "#0d0d14",
   };
-
+       React.useEffect(()=>{
+          const fetchChartData = async()=>{
+            setLoading(true)
+            let response:{data:dailyMarketSectorPerformanceResponse}  = await getDailyMarketSectorPerformance();
+setLoading(false)
+          setDailyData(response.data)
+          }
+          fetchChartData()
+  
+        },[])
   return (
     <div className="   w-[48%]    flex flex-col items-center">
-      <div className="bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
-        <ReactECharts
+      <div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
+         {loading?
+     <div className="flex flex-col items-center my-4">
+      <RoundLoader/>
+      </div>
+        :<ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
+         }
       </div>
 
+     {loading?
+     <div className="flex flex-col items-center my-4">
+      <RoundLoader/>
+      </div>:
+      <>
+      {dailyData &&
       <h2
         className={`text-2xl font-bold text-center  mt-4 text-white ${poppins.className}`}
       >
-        {`Sector Performance As of ${dailyMarketSectorPerformance.daily_market_sector_performance.result[0].date}`}
-      </h2>
+        {`Sector Performance As of ${dailyData?.daily_market_sector_performance.result[0]?.date}`}
+      </h2>}</>}
     </div>
   );
 };

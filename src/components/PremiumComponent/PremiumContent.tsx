@@ -44,10 +44,11 @@ const plans = [
 const PremiumContent = () => {
   return (
     <div className="py-12 px-4  w-full  ">
-      <h2 className="text-3xl font-bold text-center mb-10 text-white">
+      <h2 className="text-3xl font-bold text-center text-white">
         Choose Your Plan
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <p className="text-gray-600 text-center text-sm">Plans are based on needs you have</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
         {plans.map((plan) => (
           <div
             key={plan.title}

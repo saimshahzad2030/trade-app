@@ -3,12 +3,18 @@ import React from "react";
 import ReactECharts from "echarts-for-react";
 import { eps } from "@/global/chartConstants";
 import { poppins } from "@/fonts/fonts";
-
-const EPSProjectionChart = () => {
-  // Sort ascending by year
-  const sortedData = [...eps.eps_projection.result].sort(
-    (a, b) => +a.year - +b.year
-  );
+import { EPSProjectionData } from "@/types/types";
+import { getEPSProjectionChart } from "@/services/stock.services";
+import RoundLoader from "../Loader/RoundLoader";
+type ChartSectionProps = {
+    symbol: string;
+};
+const EPSProjectionChart =({symbol}:ChartSectionProps) => {
+    const [chartData,setChartData] = React.useState<EPSProjectionData | null>(null)
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+  const sortedData =chartData?.eps_projection?.result
+  ? [...chartData.eps_projection.result].sort((a, b) => +a.year - +b.year)
+  : [];
 
   const years = sortedData.map((item) => item.year);
   const historicalData = sortedData.map((item) =>
@@ -153,15 +159,28 @@ const option = {
   backgroundColor: "#13131f",
 };
 
+  React.useEffect(()=>{
+        const fetchChartData = async()=>{
+          setChartDataLoading(true)
+          let response = await getEPSProjectionChart(symbol);
+          setChartDataLoading(false)
+          setChartData(response.data)
+          
+        }
+        fetchChartData()
+
+      },[])
   return (
     <div className="w-full col-span-2 flex flex-col items-center">
       <div className=" w-full rounded-2xl ">
-        <ReactECharts
+       {chartDataLoading?
+       <RoundLoader/>:
+       <ReactECharts
           option={option}
-          style={{ height: "60vh", width: "100%" }}
+          style={{ height: "80vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
-        />
+        />}
       </div>
     </div>
   );

@@ -94,22 +94,23 @@ export default function StockScreeningInput({
         }}
       >
         {({ values, handleChange, setFieldValue }) => (
-          <Form className="grid gap-4 grid-cols-1 sm:grid-cols-4">
+          <Form className="grid gap-x-4 gap-y-2 grid-cols-1 sm:grid-cols-8">
             {/* Market Cap */}
             <div>
-              <label className="text-xs" htmlFor="marketCapMoreThan">
+              <label className="text-[10px]" htmlFor="marketCapMoreThan">
                 Market Cap More Than
               </label>
               <Input
                 name="marketCapMoreThan"
                 id="marketCapMoreThan"
+                className=""
                 placeholder="e.g., 1000000"
                 value={values.marketCapMoreThan}
                 onChange={handleChange}
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="marketCapLowerThan">
+              <label className="text-[10px]" htmlFor="marketCapLowerThan">
                 Market Cap Lower Than
               </label>
               <Input
@@ -123,7 +124,7 @@ export default function StockScreeningInput({
 
             {/* Sector and Industry */}
             <div>
-              <label className="text-xs" htmlFor="sector">
+              <label className="text-[10px]" htmlFor="sector">
                 Sector
               </label>
               <Input
@@ -135,7 +136,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="industry">
+              <label className="text-[10px]" htmlFor="industry">
                 Industry
               </label>
               <Input
@@ -148,8 +149,8 @@ export default function StockScreeningInput({
             </div>
 
             {/* Beta */}
-            <div>
-              <label className="text-xs" htmlFor="betaMoreThan">
+            <div >
+              <label className="text-[10px]" htmlFor="betaMoreThan">
                 Beta More Than
               </label>
               <Input
@@ -161,7 +162,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="betaLowerThan">
+              <label className="text-[10px]" htmlFor="betaLowerThan">
                 Beta Lower Than
               </label>
               <Input
@@ -175,7 +176,7 @@ export default function StockScreeningInput({
 
             {/* Price */}
             <div>
-              <label className="text-xs" htmlFor="priceMoreThan">
+              <label className="text-[10px]" htmlFor="priceMoreThan">
                 Price More Than
               </label>
               <Input
@@ -187,7 +188,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="priceLowerThan">
+              <label className="text-[10px]" htmlFor="priceLowerThan">
                 Price Lower Than
               </label>
               <Input
@@ -201,7 +202,7 @@ export default function StockScreeningInput({
 
             {/* Dividend */}
             <div>
-              <label className="text-xs" htmlFor="dividendMoreThan">
+              <label className="text-[10px]" htmlFor="dividendMoreThan">
                 Dividend More Than
               </label>
               <Input
@@ -213,7 +214,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="dividendLowerThan">
+              <label className="text-[10px]" htmlFor="dividendLowerThan">
                 Dividend Lower Than
               </label>
               <Input
@@ -227,7 +228,7 @@ export default function StockScreeningInput({
 
             {/* Volume */}
             <div>
-              <label className="text-xs" htmlFor="volumeMoreThan">
+              <label className="text-[10px]" htmlFor="volumeMoreThan">
                 Volume More Than
               </label>
               <Input
@@ -239,7 +240,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="volumeLowerThan">
+              <label className="text-[10px]" htmlFor="volumeLowerThan">
                 Volume Lower Than
               </label>
               <Input
@@ -253,7 +254,7 @@ export default function StockScreeningInput({
 
             {/* Exchange */}
             <div className="flex flex-col items-start mt-2">
-              <label className="text-xs" htmlFor="exchange">
+              <label className="text-[10px]" htmlFor="exchange">
                 Exchange
               </label>
               <DropdownMenu modal={false}>
@@ -292,7 +293,7 @@ export default function StockScreeningInput({
 
             {/* Country */}
             <div>
-              <label className="text-xs" htmlFor="country">
+              <label className="text-[10px]" htmlFor="country">
                 Country
               </label>
               <Input
@@ -304,7 +305,7 @@ export default function StockScreeningInput({
               />
             </div>
             <div>
-              <label className="text-xs" htmlFor="limit">
+              <label className="text-[10px]" htmlFor="limit">
                 Limit
               </label>
               <Input
@@ -323,7 +324,7 @@ export default function StockScreeningInput({
                 onCheckedChange={(checked) => setFieldValue("isEtf", checked)}
                 id="isEtf"
               />
-              <label className="text-xs" htmlFor="isEtf">
+              <label className="text-[10px]" htmlFor="isEtf">
                 Is ETF
               </label>
             </div>
@@ -333,7 +334,7 @@ export default function StockScreeningInput({
                 onCheckedChange={(checked) => setFieldValue("isFund", checked)}
                 id="isFund"
               />
-              <label className="text-xs" htmlFor="isFund">
+              <label className="text-[10px]" htmlFor="isFund">
                 Is Fund
               </label>
             </div>
@@ -345,7 +346,7 @@ export default function StockScreeningInput({
                 }
                 id="isActivelyTrading"
               />
-              <label className="text-xs" htmlFor="isActivelyTrading">
+              <label className="text-[10px]" htmlFor="isActivelyTrading">
                 Actively Trading
               </label>
             </div>
@@ -357,7 +358,7 @@ export default function StockScreeningInput({
                 }
                 id="includeAllShareClasses"
               />
-              <label className="text-xs" htmlFor="includeAllShareClasses">
+              <label className="text-[10px]" htmlFor="includeAllShareClasses">
                 Include All Share Classes
               </label>
             </div>

@@ -18,10 +18,29 @@ const Navbar = () => {
       >
         {/* <img className="h-8 w-auto" src="/assets/logo.png" /> */}
         <Link href={"/"} className="text-3xl font-bold text-[var(--variant-3)]">
-          LOGO
+          LOGO 
         </Link>
+        
         {pathName !== "/" && <SearchBar />}
-        <div className="flex flex-row items-center justify-end  w-4/12  ">
+ 
+        <div className="flex flex-row items-center justify-end  w-5/12  ">
+           <div className="flex flex-row items-center mr-4">
+          <Link href={"/chart"} className={ `font-bold ml-4 text-sm ${pathName=='/chart'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          Chart
+        </Link>
+        <Link href={"/news"} className={ `font-bold ml-4 text-sm ${pathName=='/news'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          News
+        </Link>
+        <Link href={"/stock-screening"} className={ `font-bold ml-4 text-sm ${pathName=='/stock-screening'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          Screener
+        </Link>
+        <Link href={"/pricing"} className={ `font-bold ml-4 text-sm ${pathName=='/pricing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          Pricing
+        </Link>
+         <Link href={"/portfolio"} className={ `font-bold ml-4 text-sm ${pathName=='/portfolio'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          Portfolio
+        </Link>
+        </div>
           <Link href="/login">
             <Button
               size="lg"

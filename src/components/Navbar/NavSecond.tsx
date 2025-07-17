@@ -5,10 +5,12 @@ import React from "react";
 import { Crown } from "lucide-react";
 const NavSecond = () => {
   const pathName = usePathname();
+  let parts = pathName.split("/")[2];  
   return (
     <div className="z-40 fixed top-[56px] mb-8 px-8 flex flex-row items-center justify-start text-white space-x-6 py-3 bg-[#13131f] duration-300 transition-all w-full   border border-amber-200 border-t-0 border-l-0 border-r-0 border-b-[var(--variant-4)] shadow-[0_2px_10px_var(--variant-2)]">
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/summary">
+         
+        <Link href={`/summary/${pathName.split("/")[2]}`}>
           <h1
             className={`text-sm ${
               pathName == "/summary"
@@ -21,7 +23,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/chart">
+        <Link href={`/chart/${pathName.split("/")[2]}`}>
           <h1
             className={`text-sm ${
               pathName == "/chart"
@@ -34,7 +36,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/history">
+        <Link href={`/history/${pathName.split("/")[2]}`}>
           <h1
             className={`text-sm ${
               pathName == "/history"
@@ -47,7 +49,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/statistics">
+        <Link  href={`/statistics/${pathName.split("/")[2]}`} >
           <h1
             className={`text-sm ${
               pathName == "/statistics"
@@ -60,7 +62,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/financials" className="flex flex-row items-center">
+        <Link href={`/financials/${pathName.split("/")[2]}`}   className="flex flex-row items-center">
           <h1
             className={`text-sm ${
               pathName == "/financials"
@@ -73,7 +75,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/stock-screening" className="flex flex-row items-center">
+        <Link href={`/stock-screening/${pathName.split("/")[2]}`} className="flex flex-row items-center">
           <h1
             className={`text-sm ${
               pathName == "/stock-screening"
@@ -86,7 +88,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/housing" className="flex flex-row items-center">
+        <Link href={`/housing/`}  className="flex flex-row items-center">
           <h1
             className={`text-sm ${
               pathName == "/housing"
@@ -100,7 +102,7 @@ const NavSecond = () => {
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link href="/portfolio">
+        <Link href={`/portfolio`}>
           <h1
             className={`text-sm ${
               pathName == "/portfolio"

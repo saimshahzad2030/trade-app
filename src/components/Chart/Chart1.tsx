@@ -2,7 +2,7 @@
 import React, { useRef } from "react";
 import ReactECharts from "echarts-for-react";
 import { Button } from "@/components/ui/button";
-import { appleData1d, appleData5d } from "@/global/constants";
+// import { appleData1d, chartData } from "@/global/constants";
 import { ZoomIn, RefreshCcw, Undo2, Download } from "lucide-react";
 import CompanySummary from "./CompanySummary";
 import CompanyDetails from "./CompanyDetailsSection";
@@ -10,9 +10,17 @@ import OwnershipStructure from "../SummaryCharts/OwnershipStructure";
 import DebtCourageChart from "../SummaryCharts/DebtCourageChart";
 import DebtAnalysis from "../SummaryCharts/DebtAnalysisChart";
 import EPSProjectionChart from "../SummaryCharts/EpsProjectionChart";
+import { companyData } from "@/types/types";
+import { getSpecificStockSummaryChart } from "@/services/stock.services";
+import RoundLoader from "../Loader/RoundLoader";
+import DebtAnalysisAndDebtCourageChart from "../SummaryCharts/DebtAnalysis&DebtCourageChart";
+import { useParams } from "next/navigation";
+ 
 const Chart1 = () => {
-  const [activeRange, setActiveRange] = React.useState("1m");
-  const ranges = ["5d", "1m", "6m", "ytd", "1y", "5y", "all"];
+    const params = useParams<{ symbol: string}>()
+    let {symbol} = params;
+  const [activeRange, setActiveRange] = React.useState("1d");
+  const ranges = ["1d","1m", "6m","1y", "5y",  "ytd",  "all"];
   const chartRef = useRef<ReactECharts | null>(null);
   const handleZoomIn = () => {
     if (chartRef.current) {
@@ -59,17 +67,18 @@ const Chart1 = () => {
       link.click();
     }
   };
-
+  const [chartData,setChartData] = React.useState<companyData | null>(null)
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
   // Prepare data for the chart
-  const timestamps = appleData5d.chart.result[0].timestamp;
-  const intrinsicValues  = appleData5d.chart.result[0].indicators.quote[0].intrinsic || [];
-  const adjClosePrices =
-    appleData5d.chart.result[0].indicators.adjclose[0].adjclose;
- const data = timestamps.map((timestamp, index) => [
+  const timestamps = chartData?.chart?.result[0]?.timestamp;
+  const intrinsicValues  = chartData?.chart.result[0]?.indicators?.quote[0]?.intrinsic || [];
+
+  const adjClosePrices:number[] = chartData?.chart?.result[0]?.indicators?.quote[0]?.adjclose ?? [];
+ const data = timestamps?.map((timestamp, index:number) => [
   timestamp * 1000,
   adjClosePrices[index],
 ]);
-const intrinsicData = timestamps.map((timestamp, index) => [
+const intrinsicData = timestamps?.map((timestamp, index) => [
   timestamp * 1000,
   intrinsicValues[index],
 ]);
@@ -78,19 +87,18 @@ const intrinsicData = timestamps.map((timestamp, index) => [
   // Filter data based on activeRange
   const getFilteredData = () => {
     const now = new Date();
-    let startDate;
+    let startDate = new Date(now);
     switch (activeRange) {
-      // case "1d":
-      //   startDate = new Date(now.setDate(now.getDate() - 1));
-      //   break;
+       case "1d":
+        startDate.setDate(startDate.getDate() - 1);
       case "5d":
-        startDate = new Date(now.setDate(now.getDate() - 5));
-        break;
-      case "1mo":
+        startDate.setDate(startDate.getDate() - 5);
+    break;
+      case "1m":
         startDate = new Date(now.setMonth(now.getMonth() - 1));
         break;
 
-      case "6mo":
+      case "6m":
         startDate = new Date(now.setMonth(now.getMonth() - 6));
         break;
       case "1y":
@@ -109,24 +117,33 @@ const intrinsicData = timestamps.map((timestamp, index) => [
       default:
         startDate = new Date(now.setFullYear(now.getFullYear() - 1));
     }
-    return data.filter(([timestamp]) => new Date(timestamp) >= startDate);
+    return data?.filter(([timestamp]) => new Date(timestamp) >= startDate);
   };
-  const filteredData = getFilteredData();
+  const filteredData = getFilteredData() || [];
   const filteredMaxPrice = Math.max(...filteredData.map(([, price]) => price));
  
- const option = {
+const option = {
   tooltip: {
     trigger: "axis",
-    position: function (pt: [number, number]): [number, string] {
-      return [pt[0], "10%"];
+    axisPointer: {
+      type: "cross", // 👈 helps hover accuracy
+      label: {
+        backgroundColor: "#6a7985"
+      }
     },
-    formatter: function (params: { value: [string, number], seriesName: string }[]): string {
+    formatter: function (params: { value: [number, number], seriesName: string }[]): string {
+      if (!params || !params.length) return "";
       const date = new Date(params[0].value[0]);
       let content = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}<br/>`;
       params.forEach(param => {
-        content += `${param.seriesName}: $${param.value[1].toFixed(2)}<br/>`;
+        content += `<strong>${param.seriesName}:</strong> $${param.value[1]?.toFixed(2) ?? "N/A"}<br/>`;
       });
       return content;
+    },
+    backgroundColor: "#1a1a1a",
+    borderColor: "#0A7075",
+    textStyle: {
+      color: "#fff",
     },
   },
   xAxis: {
@@ -136,54 +153,77 @@ const intrinsicData = timestamps.map((timestamp, index) => [
     splitNumber: 5,
     axisLabel: {
       align: "bottom",
-      formatter: (value: Date) => {
+      formatter: (value: number) => {
         const date = new Date(value);
-        return `${date.getMonth() + 2}/${date.getDate()}/${date.getFullYear()}`;
+        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
       },
     },
-  },
-  yAxis: {
-    type: "value",
-    boundaryGap: [0, "100%"],
-    position: "right",
-    min: (value: { min: number }) => Math.floor(value.min - 10),
-    max: (value: { max: number }) => Math.ceil(value.max + 10),
-    splitLine: {
-      show: true,
+    axisLine: {
       lineStyle: {
-        color: "rgba(255, 255, 255, 0.1)",
-        width: 0.5,
-        type: "solid",
-      },
+        color: "#888"
+      }
     },
-    axisLabel: {
-      formatter: (value: Date) => `${value}`,
+     axisPointer: {
+    snap: false, // avoid snapping across gaps
+  }
+  },
+ yAxis: {
+  type: "value",
+  boundaryGap: false, // ✅ eliminates padding
+  position: "right",
+  min: (value: { min: number }) => Math.floor(value.min), // use actual min
+  max: (value: { max: number }) => Math.ceil(value.max),  // use actual max
+  axisLabel: {
+    formatter: (val: number) => `$${val}`,
+  },
+  splitLine: {
+    show: true,
+    lineStyle: {
+      color: "rgba(255, 255, 255, 0.1)",
+      width: 0.5,
+      type: "solid",
     },
   },
+  axisLine: {
+    lineStyle: {
+      color: "#888",
+    },
+  },
+},
+
   series: [
     {
+       connectNulls: true,
       name: "Apple Stock Price",
       type: "line",
       smooth: true,
-      symbol: "none",
+      symbol: "circle", // ✅ show hoverable points
+      symbolSize: 2,
+      lineStyle: {
+        color: "#4cc9f0",
+        width: 2,
+      },
+      itemStyle: {
+        color: "#4cc9f0"
+      },
       areaStyle: {
         color: {
           type: "linear",
           x: 0, y: 0, x2: 0, y2: 1,
           colorStops: [
-            { offset: 0, color: "rgba(255, 255, 255, 0.2)" },
-            { offset: 1, color: "rgba(255, 255, 255, 0)" },
+            { offset: 0, color: "rgba(76, 201, 240, 0.2)" },
+            { offset: 1, color: "rgba(76, 201, 240, 0)" },
           ],
         },
       },
-      data: getFilteredData(),  // stock price data
+      data: filteredData,
       markLine: {
         silent: true,
         symbol: "none",
         label: {
           show: true,
           position: "end",
-          formatter: `$${appleData5d.chart.result[0].meta.previousClose}`,
+          formatter: `$${chartData?.chart?.result[0]?.meta?.previousClose}`,
           color: "#ffffff",
         },
         lineStyle: {
@@ -191,23 +231,23 @@ const intrinsicData = timestamps.map((timestamp, index) => [
           color: "#ffffff99",
           width: 1,
         },
-        data: [{ yAxis: appleData5d.chart.result[0].meta.previousClose }],
+        data: [{ yAxis: chartData?.chart?.result[0]?.meta?.previousClose }],
       },
-    },
-    {
-      name: "Intrinsic Value",
-      type: "line",
-      smooth: true,
-      symbol: "none",
-      lineStyle: {
-        color: "#FFD700", // gold/yellow color for intrinsic value
-        width: 2,
-      },
-      data: intrinsicData, // intrinsic value data
-    },
+    } 
   ],
 };
 
+  React.useEffect(()=>{
+        const fetchChartData = async()=>{
+          setChartDataLoading(true)
+          let response = await getSpecificStockSummaryChart(activeRange,symbol);
+          setChartDataLoading(false)
+            setChartData(response.data)
+          
+        }
+        fetchChartData()
+
+      },[])
   return (
     <div className="w-full flex flex-row items-start justify-between px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
@@ -220,7 +260,15 @@ const intrinsicData = timestamps.map((timestamp, index) => [
                   key={range}
                   variant="graphTab2"
                   size="mini"
-                  onClick={() => setActiveRange(range)}
+                  onClick={async() => {
+                 setActiveRange(range)
+          setChartDataLoading(true)
+          let response = await getSpecificStockSummaryChart(range,symbol );
+          setChartDataLoading(false)
+          setChartData(response.data)
+          
+        
+                    }}
                   className={`mr-1  text-[var(--variant-4)] border hover:border-[var(--variant-3)] ${
                     activeRange === range
                       ? "  bg-[var(--variant-2)]/50   border-[var(--variant-3)]    "
@@ -268,6 +316,16 @@ const intrinsicData = timestamps.map((timestamp, index) => [
           </div>
         </div>
 
+        {chartDataLoading ?<div className="w-full h-[60vh] flex flex-col items-center justify-center">
+          <RoundLoader/>
+        </div>:
+       <> 
+      {chartData?.chart &&  <>
+         {chartData?.chart?.error?
+       <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-[#13131f]">
+          <p className="text-gray-700">{chartData?.chart?.error}</p>
+        </div>:
+        <>
         <ReactECharts
           ref={chartRef}
           option={option}
@@ -277,29 +335,28 @@ const intrinsicData = timestamps.map((timestamp, index) => [
         />
         <CompanySummary
           companySummary={{
-            name: `${appleData1d.chart.result[0].meta.longName} ${appleData1d.chart.result[0].meta.industry}`,
-            description: appleData1d.chart.result[0].meta.description,
-            fiscalYearEnds: appleData1d.chart.result[0].meta.fiscalYearEnds,
-            currency: appleData1d.chart.result[0].meta.currency,
-            exchangeName: appleData1d.chart.result[0].meta.exchangeName,
-            sector: appleData1d.chart.result[0].meta.sector,
-            industry: appleData1d.chart.result[0].meta.industry,
-            website: appleData1d.chart.result[0].meta.website,
-            employees: appleData1d.chart.result[0].meta.fullTimeEmployees,
+            name: `${chartData?.chart?.result[0]?.meta?.longName} ${chartData?.chart?.result[0]?.meta?.industry}`,
+            description: chartData?.chart?.result[0]?.meta?.description || 'null',
+            fiscalYearEnds: chartData?.chart?.result[0]?.meta?.fiscalYearEnds || 'null',
+            currency: chartData?.chart?.result[0]?.meta?.currency,
+            exchangeName: chartData?.chart?.result[0]?.meta?.exchangeName,
+            sector: chartData?.chart?.result[0]?.meta?.sector || 'null',
+            industry: chartData?.chart?.result[0]?.meta?.industry || 'null',
+            website: chartData?.chart?.result[0]?.meta?.website || 'null',
+            employees: chartData?.chart?.result[0]?.meta?.fullTimeEmployees || 'null',
           }}
-        />
-        <div className="grid grid-cols-4 w-full gap-4 mt-8">
+        /> 
+        </>} </>}
+    
+       </>
+        }
+       { !chartDataLoading && !chartData?.chart?.error &&  <div className="grid grid-cols-4 w-full gap-4 mt-8">
           <div className="w-full col-span-4">
-            <EPSProjectionChart />
+            <EPSProjectionChart symbol={symbol}/>
           </div>
-          <div className="col-span-2 w-full">
-            <DebtAnalysis />
-          </div>
-          <div className="col-span-2 w-full">
-            <DebtCourageChart />
-          </div>
-          <OwnershipStructure />
-        </div>
+          <DebtAnalysisAndDebtCourageChart symbol={symbol}/>
+          <OwnershipStructure  symbol={symbol}/>
+        </div>}
       </div>
 
       <div className="w-3/12 flex flex-col items-center pl-4 py-4 text-white">
@@ -310,7 +367,7 @@ const intrinsicData = timestamps.map((timestamp, index) => [
 
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Open</p>
-          <p>{appleData5d.chart.result[0].meta.open}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.open || 'null'}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Bid</p>
@@ -322,23 +379,23 @@ const intrinsicData = timestamps.map((timestamp, index) => [
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Day's Range</p>
-          <p>{appleData5d.chart.result[0].meta.dayRange}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.dayRange}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>52 Week Range</p>
-          <p>{appleData5d.chart.result[0].meta.week52Range}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.week52Range}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Volume</p>
-          <p>{appleData5d.chart.result[0].meta.volume}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.volume}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Avg. Volume</p>
-          <p>{appleData5d.chart.result[0].meta.avgVolume}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.avgVolume}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Market Cap (intraday)</p>
-          <p>{appleData5d.chart.result[0].meta.marketCap}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.marketCap}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Beta (5Y Monthly)</p>
@@ -346,15 +403,15 @@ const intrinsicData = timestamps.map((timestamp, index) => [
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>PE Ratio (TTM)</p>
-          <p>{appleData5d.chart.result[0].meta.peRatio}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.peRatio}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>EPS (TTM)</p>
-          <p>{appleData5d.chart.result[0].meta.eps}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.eps}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Earnings Date</p>
-          <p>{appleData5d.chart.result[0].meta.earningsDate}</p>
+          <p>{chartData?.chart?.result[0]?.meta?.earningsDate}</p>
         </div>
         <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
           <p>Forward Dividend & Yield</p>

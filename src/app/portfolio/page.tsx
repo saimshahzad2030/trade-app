@@ -8,8 +8,8 @@ export default function Porfolio() {
     <div className="flex flex-col items-center   w-full">
       <Navbar />
 
-      <div className="relative flex flex-col    w-full overflow-x-hidden  pt-40 bg-[#13131f]">
-        <NavSecond />
+      <div className="relative flex flex-col    w-full overflow-x-hidden  pt-20 bg-[#13131f]">
+        {/* <NavSecond /> */}
         <Portfolio />
       </div>
     </div>

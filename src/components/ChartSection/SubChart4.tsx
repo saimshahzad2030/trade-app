@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import ReactECharts from "echarts-for-react";
 
@@ -115,7 +116,7 @@ const SubChart4 = () => {
   };
 
   return (
-    <div style={{ padding: 20, backgroundColor: "#1f1f2e" }}>
+    <div style={{ padding: 20, backgroundColor: "#1f1f2e" }} className="rounded-md">
       <ReactECharts option={option} style={{ height: "450px", width: "100%" }} />
     </div>
   );

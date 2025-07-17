@@ -32,14 +32,14 @@ const CompanyDetails = () => {
               {appleData1d.chart.result[0].meta.priceChangePercent})
             </p>
           </div>
-          <div>
+          {/* <div>
             <p className="w-full text-gray-500 text-xs">
               As of{" "}
               {new Date(
                 appleData1d.chart.result[0].meta.timestamp
               ).toLocaleString()}
             </p>
-          </div>
+          </div> */}
         </div>
         <div className="w-5/12 flex flex-col items-start ml-4">
           <div className="w-full flex flex-row items-center">
