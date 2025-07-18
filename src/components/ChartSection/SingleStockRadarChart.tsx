@@ -95,7 +95,7 @@ const allIndicators = [
 
 const normalizedValues = chartData
   ? selectedIndicators.map((indicator) => {
-      const normValue = chartData.normalized[indicator.value] ?? 0;
+      const normValue = chartData?.normalized[indicator?.value ] ?? 0;
       const scaled = normValue * 100;
       return scaled < 1 && scaled > 0 ? 1 : scaled; // ✅ show 1 if very small but > 0
     })
@@ -246,7 +246,7 @@ const displayValues = selectedIndicators.map((indicator) => {
           <p className="text-red-500 mt-1">Please select at least 5 indicators</p>
         )}
       </div>
-      <ReactECharts option={option} style={{ height: "500px" }} /></>}
+       <ReactECharts option={option} style={{ height: "500px" }} /> </>}
     </div>
   );
 };

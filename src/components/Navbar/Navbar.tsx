@@ -28,8 +28,8 @@ const Navbar = () => {
           <Link href={"/chart"} className={ `font-bold ml-4 text-sm ${pathName=='/chart'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Chart
         </Link>
-        <Link href={"/news"} className={ `font-bold ml-4 text-sm ${pathName=='/news'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
-          News
+        <Link href={"/housing"} className={ `font-bold ml-4 text-sm ${pathName=='/housing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          Housing
         </Link>
         <Link href={"/stock-screening"} className={ `font-bold ml-4 text-sm ${pathName=='/stock-screening'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Screener

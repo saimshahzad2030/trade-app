@@ -74,7 +74,7 @@ const NavSecond = () => {
           </h1>
         </Link>
       </div>
-      <div className="flex flex-col items-start cursor-pointer group">
+      {/* <div className="flex flex-col items-start cursor-pointer group">
         <Link href={`/stock-screening/${pathName.split("/")[2]}`} className="flex flex-row items-center">
           <h1
             className={`text-sm ${
@@ -86,8 +86,8 @@ const NavSecond = () => {
             Stock Screening
           </h1>
         </Link>
-      </div>
-      <div className="flex flex-col items-start cursor-pointer group">
+      </div> */}
+      {/* <div className="flex flex-col items-start cursor-pointer group">
         <Link href={`/housing/`}  className="flex flex-row items-center">
           <h1
             className={`text-sm ${
@@ -100,7 +100,7 @@ const NavSecond = () => {
           </h1>
           <Crown className="h-4 w-4 ml-1 text-amber-500 group-hover:text-[var(--variant-4)] duration-300 transition-all" />
         </Link>
-      </div>
+      </div> */}
       <div className="flex flex-col items-start cursor-pointer group">
         <Link href={`/portfolio`}>
           <h1

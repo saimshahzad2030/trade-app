@@ -16,12 +16,17 @@ import LineChartEPSGrowth from "./LineChartEpsGrowth";
 import LineChartRevenueGrowth from "./LineChartRevenueGrowth";
 import LineChartWACC from "./LineChartWACC";
 import LineChartGrossProfit from "./LineChartGrossProfit";
+type StockScreeningTableProps = {
+  data: StockScreeningResponse | null;
+};
 
-const StockScreeningTable = () => {
-  const stocks: Stock[] = stockScreening.filtered_data.result;
+const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
+  const stocks: Stock[] | undefined = data?.filtered_data.result
 
   return (
-    <div className="overflow-x-auto w-full px-8 text-white">
+    <>{stocks &&  <>
+    {stocks?.length>0?
+      <div className="overflow-x-auto w-full px-4 text-white">
       <Table>
         <TableHeader>
           <TableRow>
@@ -45,7 +50,7 @@ const StockScreeningTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {stocks.slice(0,10).map((stock) => (
+          {stocks?.slice(0,10).map((stock) => (
             <TableRow key={stock.symbol}>
               <TableCell>
                 <Link className="underline" href={"/"}>
@@ -85,7 +90,9 @@ const StockScreeningTable = () => {
       <LineChartWACC/>
       <LineChartGrossProfit/>
       </div>
-    </div>
+    </div>:
+    <p className="text-gray-600">No Data to show</p>
+    }</>}</>
   );
 };
 

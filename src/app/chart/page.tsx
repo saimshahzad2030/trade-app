@@ -15,7 +15,7 @@ const ChartPage = () => {
 
       <div className="relative flex flex-col    w-full overflow-x-hidden  pt-20 bg-[#13131f]">
       
-         <div className="w-full grid grid-cols-1 gap-4  my-12 px-12">
+         <div className="w-full grid grid-cols-2 gap-4  my-12 px-12">
             <SubChart1 />
             <SubChart2 />
             <SubChart3 />

@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
-import { ChevronDown } from "lucide-react";
-
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { getStockScreenerData } from "@/services/stockScreening.services";
+ 
 const validationSchema = Yup.object({
   marketCapMoreThan: Yup.number().min(0),
   marketCapLowerThan: Yup.number().moreThan(Yup.ref("marketCapMoreThan")),
@@ -26,12 +28,12 @@ const validationSchema = Yup.object({
   betaLowerThan: Yup.number().moreThan(Yup.ref("betaMoreThan")),
   priceMoreThan: Yup.number().min(0),
   priceLowerThan: Yup.number().moreThan(Yup.ref("priceMoreThan")),
-  dividendMoreThan: Yup.number().min(0),
-  dividendLowerThan: Yup.number().moreThan(Yup.ref("dividendMoreThan")),
+  // dividendMoreThan: Yup.number().min(0).nullable(),
+  // dividendLowerThan: Yup.number().moreThan(Yup.ref("dividendMoreThan")),
   volumeMoreThan: Yup.number().min(0),
   volumeLowerThan: Yup.number().moreThan(Yup.ref("volumeMoreThan")),
-  exchange: Yup.string().required(),
-  country: Yup.string().required(),
+  // exchange: Yup.string().required(),
+  // country: Yup.string().required(),
   isEtf: Yup.boolean(),
   isFund: Yup.boolean(),
   isActivelyTrading: Yup.boolean(),
@@ -39,42 +41,58 @@ const validationSchema = Yup.object({
   includeAllShareClasses: Yup.boolean(),
 });
 type Props = {
+  setLoading: React.Dispatch<React.SetStateAction<any>>; 
+  setData: React.Dispatch<React.SetStateAction<any>>; 
   setParams: React.Dispatch<React.SetStateAction<any>>; // You can replace `any` with a proper params type
   setQuerySubmit: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function StockScreeningInput({
   setParams,
+  setData,
+  setLoading,
   setQuerySubmit,
 }: Props) {
+   const [open, setOpen] = React.useState(true);
   return (
-    <div className="w-full p-4 space-y-4 text-white ">
-      <h1 className="font-extrabold text-3xl text-center">Stock Screening</h1>
-
+    <div className="w-full p-4 space-y-4 text-white flex flex-col items-center bg-[#0a0a13]">
+      <div className="flex items-center justify-between">
+        <h1 className="font-extrabold text-3xl text-center">Stock Screening</h1>
+        
+      </div>
+  <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
       <Formik
         initialValues={{
-          marketCapMoreThan: 1000000,
-          marketCapLowerThan: 1000000000,
+          marketCapMoreThan: 0,
+          marketCapLowerThan: 10000,
           sector: "Technology",
           industry: "Consumer Electronics",
           betaMoreThan: 0.5,
           betaLowerThan: 1.5,
           priceMoreThan: 10,
           priceLowerThan: 200,
-          dividendMoreThan: 0.5,
-          dividendLowerThan: 2,
-          volumeMoreThan: 1000,
+          // dividendMoreThan: 0.5,
+          // dividendLowerThan: 2,
+          volumeMoreThan: 100,
           volumeLowerThan: 1000000,
-          exchange: "NASDAQ",
-          country: "US",
+          // exchange: "NASDAQ",
+          // country: "US",
           isEtf: false,
           isFund: false,
           isActivelyTrading: true,
-          limit: 1000,
+          limit: 100,
           includeAllShareClasses: false,
         }}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
+        onSubmit={async(values) => {
           const query = Object.entries(values)
             .filter(
               ([, value]) =>
@@ -83,18 +101,23 @@ export default function StockScreeningInput({
             .map(
               ([key, value]) =>
                 `${encodeURIComponent(key)}=${encodeURIComponent(
-                  typeof value === "boolean" ? Number(value) : value
+                  typeof value === "boolean" ? value : value
                 )}`
             )
             .join("&");
-
-          setParams(query); // or you can navigate to a new route with this query string
+            console.log(query,"query")
+          setParams(query); 
+          setLoading(true)
+          let  screenerResponse= await getStockScreenerData(query);
+          
+          setData(screenerResponse.data)
+          setLoading(false)
           setQuerySubmit(true);
           console.log(query);
         }}
       >
         {({ values, handleChange, setFieldValue }) => (
-          <Form className="grid gap-x-4 gap-y-2 grid-cols-1 sm:grid-cols-8">
+          <Form className="grid gap-x-4 gap-y-2 grid-cols-1 sm:grid-cols-6">
             {/* Market Cap */}
             <div>
               <label className="text-[10px]" htmlFor="marketCapMoreThan">
@@ -201,7 +224,7 @@ export default function StockScreeningInput({
             </div>
 
             {/* Dividend */}
-            <div>
+            {/* <div>
               <label className="text-[10px]" htmlFor="dividendMoreThan">
                 Dividend More Than
               </label>
@@ -224,7 +247,7 @@ export default function StockScreeningInput({
                 value={values.dividendLowerThan}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
 
             {/* Volume */}
             <div>
@@ -252,8 +275,7 @@ export default function StockScreeningInput({
               />
             </div>
 
-            {/* Exchange */}
-            <div className="flex flex-col items-start mt-2">
+             {/* <div className="flex flex-col items-start mt-2">
               <label className="text-[10px]" htmlFor="exchange">
                 Exchange
               </label>
@@ -290,8 +312,7 @@ export default function StockScreeningInput({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            {/* Country */}
+ 
             <div>
               <label className="text-[10px]" htmlFor="country">
                 Country
@@ -303,7 +324,7 @@ export default function StockScreeningInput({
                 value={values.country}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
             <div>
               <label className="text-[10px]" htmlFor="limit">
                 Limit
@@ -316,7 +337,7 @@ export default function StockScreeningInput({
                 onChange={handleChange}
               />
             </div>
-            <div></div>
+            <div></div> 
             {/* Booleans */}
             <div className="flex items-center space-x-2 mt-2">
               <Checkbox
@@ -373,6 +394,12 @@ export default function StockScreeningInput({
           </Form>
         )}
       </Formik>
+       </motion.div>
+        )}
+      </AnimatePresence>
+      <button onClick={() => setOpen((prev) => !prev)} className="bg-[#13131f] rounded-full p-2 cursor-pointer">
+          {open ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+        </button>
     </div>
   );
 }

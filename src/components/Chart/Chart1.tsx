@@ -15,6 +15,8 @@ import { getSpecificStockSummaryChart } from "@/services/stock.services";
 import RoundLoader from "../Loader/RoundLoader";
 import DebtAnalysisAndDebtCourageChart from "../SummaryCharts/DebtAnalysis&DebtCourageChart";
 import { useParams } from "next/navigation";
+import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
+import SearchBar from "../Searchbar/Searchbar";
  
 const Chart1 = () => {
     const params = useParams<{ symbol: string}>()
@@ -68,7 +70,7 @@ const Chart1 = () => {
     }
   };
   const [chartData,setChartData] = React.useState<companyData | null>(null)
-  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
   // Prepare data for the chart
   const timestamps = chartData?.chart?.result[0]?.timestamp;
   const intrinsicValues  = chartData?.chart.result[0]?.indicators?.quote[0]?.intrinsic || [];
@@ -248,11 +250,11 @@ const option = {
         fetchChartData()
 
       },[])
-  return (
-    <div className="w-full flex flex-row items-start justify-between px-8">
+  return (<>
+  {!chartData?.chart.error &&  <><div className="w-full flex flex-row items-start justify-between px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails />
+          <CompanyDetails symbol={symbol}/>
           <div className="w-full flex flex-row items-center mt-4 px-8">
             <div className="w-9/12">
               {ranges.map((range) => (
@@ -359,74 +361,13 @@ const option = {
         </div>}
       </div>
 
-      <div className="w-3/12 flex flex-col items-center pl-4 py-4 text-white">
-        <div className=" pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Previous close</p>
-          <p>119.42</p>
-        </div>
-
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Open</p>
-          <p>{chartData?.chart?.result[0]?.meta?.open || 'null'}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Bid</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ask</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Day's Range</p>
-          <p>{chartData?.chart?.result[0]?.meta?.dayRange}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>52 Week Range</p>
-          <p>{chartData?.chart?.result[0]?.meta?.week52Range}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Volume</p>
-          <p>{chartData?.chart?.result[0]?.meta?.volume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Avg. Volume</p>
-          <p>{chartData?.chart?.result[0]?.meta?.avgVolume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Market Cap (intraday)</p>
-          <p>{chartData?.chart?.result[0]?.meta?.marketCap}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Beta (5Y Monthly)</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>PE Ratio (TTM)</p>
-          <p>{chartData?.chart?.result[0]?.meta?.peRatio}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>EPS (TTM)</p>
-          <p>{chartData?.chart?.result[0]?.meta?.eps}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Earnings Date</p>
-          <p>{chartData?.chart?.result[0]?.meta?.earningsDate}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Forward Dividend & Yield</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ex-Dividend Date</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>1y Target Est</p>
-          <p>null</p>
-        </div>
-      </div>
-    </div>
+       <CompanySummarySection loading={chartDataLoading} chartData={chartData}/> 
+    </div></>}
+  {chartData?.chart.error &&<div className="z-50 w-full flex flex-col items-center justify-between px-8 text-gray-400"><p className="mb-2">{`${chartData?.chart.error }. Try Seaching some other thing other than ${symbol}`}</p>
+  {/* <SearchBar className="w-9/12"/>
+   */}
+ </div>} </>
+     
   );
 };
 

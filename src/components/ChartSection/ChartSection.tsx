@@ -168,7 +168,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
     >
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails />
+          <CompanyDetails symbol={symbol}/>
           <div className="flex flex-row items-center w-full my-2">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>

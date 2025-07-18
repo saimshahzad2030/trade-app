@@ -22,8 +22,10 @@ const mockData = [
     exchange: "NASDAQ",
   },
 ];
- 
-const SearchBar = () => {
+ type prop ={
+  className?:string
+ }
+const SearchBar = ({className}:prop) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredData, setFilteredData] = useState<typeof mockData>([]);
@@ -44,7 +46,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center w-3/12 bg-white p-1 rounded-md">
+    <div className={`relative flex flex-col items-center w-3/12 bg-white p-1 rounded-md ${className}`}>
       <div className="relative w-full   ">
         <Input
           placeholder="Search stock name or symbol..."

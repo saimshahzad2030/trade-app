@@ -133,3 +133,21 @@ export const getOwnershipStructureChart = async (symbol:string) => {
     };
   }
 };
+export const getSpecificStockSummaryData = async (symbol:string) => {
+  try {
+   
+    const response = await axiosInstanceJson.get(`meta-data/${symbol}`);
+     
+    console.log(response.data)
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};

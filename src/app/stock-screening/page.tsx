@@ -1,28 +1,15 @@
 "use client";
-import Navbar from "@/components/Navbar/Navbar";
-import NavSecond from "@/components/Navbar/NavSecond";
-import CompareSection from "@/components/Compare/CompareSection";
-import ChartSection from "@/components/ChartSection/ChartSection";
-import StockScreeningInput from "@/components/StockScreeningInput/StockScreeningInput";
-import StockScreeningTable from "@/components/StockScreeningInput/StockScreeningTable";
+import Navbar from "@/components/Navbar/Navbar"; 
 import React from "react";
-import { Stock, StockScreeningResponse } from "@/types/types";
+import StockScreening from "@/components/StockScreeningInput/StockScreening";
 export default function StockScreeningPage() {
-  const [stockScreeningData, setStockScreeningData] =
-    React.useState<Stock | null>(null);
-  const [querySubmit, setQuerySubmit] = React.useState(false);
-  const [params, setParams] = React.useState(null);
+  
+  
   return (
     <div className="flex flex-col items-center  w-full">
       <Navbar />
-      {/* <NavSecond /> */}
-      <div className="flex flex-col items-center w-full pt-20">
-        <StockScreeningInput
-          setParams={setParams}
-          setQuerySubmit={setQuerySubmit}
-        />
-        {querySubmit && <StockScreeningTable />}
-      </div>
+      <StockScreening/>
+      
     </div>
   );
 }
