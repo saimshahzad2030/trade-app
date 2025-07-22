@@ -20,11 +20,9 @@ const styles = StyleSheet.create({
 });
 
 const HistoricalPDF: React.FC<HistoricalPDFProps> = ({ historicalData }) => {
-  const { dates } = historicalData.results[0];
-  const quote = historicalData.results[0].indicators.quote[0];
-  const adjclose = historicalData.results[0].indicators.adjclose[0].adjclose;
-
+  
   return (
+     
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.header}>Historical Stock Data</Text>
@@ -41,15 +39,15 @@ const HistoricalPDF: React.FC<HistoricalPDFProps> = ({ historicalData }) => {
           </View>
 
           {/* Data Rows */}
-          {dates.map((date, i) => (
+          {historicalData.results.map((entry, i) => (
             <View style={styles.tableRow} key={i}>
-              <Text style={styles.tableCell}>{date}</Text>
-              <Text style={styles.tableCell}>{quote.open[i] ?? '-'}</Text>
-              <Text style={styles.tableCell}>{quote.high[i] ?? '-'}</Text>
-              <Text style={styles.tableCell}>{quote.low[i] ?? '-'}</Text>
-              <Text style={styles.tableCell}>{quote.close[i] ?? '-'}</Text>
-              <Text style={styles.tableCell}>{adjclose[i] ?? '-'}</Text>
-              <Text style={styles.tableCell}>{quote.volume[i] ?? '-'}</Text>
+              <Text style={styles.tableCell}>{entry.date}</Text>
+              <Text style={styles.tableCell}>{entry.open}</Text>
+              <Text style={styles.tableCell}>{entry.high}</Text>
+              <Text style={styles.tableCell}>{entry.low}</Text>
+              <Text style={styles.tableCell}>{entry.close}</Text>
+              <Text style={styles.tableCell}>{entry.adjClose}</Text>
+              <Text style={styles.tableCell}>{entry.volume}</Text>
             </View>
           ))}
         </View>

@@ -10,8 +10,8 @@ import OwnershipStructure from "../SummaryCharts/OwnershipStructure";
 import DebtCourageChart from "../SummaryCharts/DebtCourageChart";
 import DebtAnalysis from "../SummaryCharts/DebtAnalysisChart";
 import EPSProjectionChart from "../SummaryCharts/EpsProjectionChart";
-import { companyData } from "@/types/types";
-import { getSpecificStockSummaryChart } from "@/services/stock.services";
+import { companyData, MetaDataType } from "@/types/types";
+import { getSpecificStockSummaryChart, getSpecificStockSummaryData } from "@/services/stock.services";
 import RoundLoader from "../Loader/RoundLoader";
 import DebtAnalysisAndDebtCourageChart from "../SummaryCharts/DebtAnalysis&DebtCourageChart";
 import { useParams } from "next/navigation";
@@ -238,11 +238,14 @@ const option = {
     } 
   ],
 };
+  const [metaData,setMetaData] = React.useState<MetaDataType | null>(null)
 
   React.useEffect(()=>{
         const fetchChartData = async()=>{
           setChartDataLoading(true)
           let response = await getSpecificStockSummaryChart(activeRange,symbol);
+          let response2 = await getSpecificStockSummaryData(symbol);
+          setMetaData(response2.data)
           setChartDataLoading(false)
             setChartData(response.data)
           
@@ -254,8 +257,9 @@ const option = {
   {!chartData?.chart.error &&  <><div className="w-full flex flex-row items-start justify-between px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails symbol={symbol}/>
-          <div className="w-full flex flex-row items-center mt-4 px-8">
+          <CompanyDetails loading={chartDataLoading} metaData={metaData}/>
+         {!chartDataLoading && 
+         <> <div className="w-full flex flex-row items-center mt-4 px-8">
             <div className="w-9/12">
               {ranges.map((range) => (
                 <Button
@@ -315,7 +319,7 @@ const option = {
                 <Download className="w-5 h-5" />
               </Button>
             </div>
-          </div>
+          </div></>}
         </div>
 
         {chartDataLoading ?<div className="w-full h-[60vh] flex flex-col items-center justify-center">
@@ -361,7 +365,7 @@ const option = {
         </div>}
       </div>
 
-       <CompanySummarySection loading={chartDataLoading} chartData={chartData}/> 
+       <CompanySummarySection loading={chartDataLoading} metaData={metaData}/> 
     </div></>}
   {chartData?.chart.error &&<div className="z-50 w-full flex flex-col items-center justify-between px-8 text-gray-400"><p className="mb-2">{`${chartData?.chart.error }. Try Seaching some other thing other than ${symbol}`}</p>
   {/* <SearchBar className="w-9/12"/>

@@ -229,7 +229,7 @@ const FinancialPDF: React.FC<FinancialPDFProps> = ({ activeRange, financialState
           <View style={styles.tableRow}>
             <Text style={styles.nameCell}>Name</Text>
             {data.map((s, i) => {
-              const date = new Date('date' in s ? s.date : s.period);
+              const date = new Date('date' in s ? s.date :(s as any).period);
               const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
               return <Text key={i} style={styles.tableHeaderCell}>{formattedDate}</Text>;
             })}

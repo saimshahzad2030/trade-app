@@ -1,7 +1,7 @@
 import React from "react";
 import { appleData1d } from "@/global/constants";
 import Link from "next/link";
-import { companyData } from "@/types/types";
+import { companyData, MetaDataType } from "@/types/types";
 import { getSpecificStockSummaryData } from "@/services/stock.services";
 import RoundLoader from "../Loader/RoundLoader";
 import { useParams } from "next/navigation";
@@ -58,31 +58,20 @@ export type StockMetaResponse = {
 
 type CompanyDetailsProps = {
   // chartData: CompanyMeta;
-  symbol?:string
+  metaData?:MetaDataType | null;
+  loading:boolean
 };
 
-const CompanyDetails = ({  }: CompanyDetailsProps) => {
+const CompanyDetails = ({loading,metaData  }: CompanyDetailsProps) => {
   const params = useParams<{ symbol: string}>()
       let {symbol} = params;
-   const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false) 
-   const [chartData,setChartData] = React.useState<StockMetaResponse | null>(null)
-   React.useEffect(()=>{
-          const fetchChartData = async()=>{
-            setChartDataLoading(true)
-            let response = await getSpecificStockSummaryData(symbol);
-            setChartDataLoading(false)
-            setChartData(response.data)
-            console.log(response.data)
-          }
-          fetchChartData()
-  
-        },[])
+   
   return (
-    <>{chartDataLoading?<RoundLoader/>:
+    <>{loading?<div className="flex flex-col items-center w-full py-12"><RoundLoader/></div>:
      <>
-      <p>{`${chartData?.meta.exchangeName} - ${chartData?.meta.currency}`}</p>
+      <p>{`${metaData?.meta.exchangeName} - ${metaData?.meta.currency}`}</p>
       <div className="w-full flex flex-row items-center mt-2">
-        <h1 className="text-3xl font-bold">{chartData?.meta.companyName}</h1>
+        <h1 className="text-3xl font-bold">{metaData?.meta.companyName}</h1>
         <Link href={"/compare"}>
           <button className="ml-4 cursor-pointer p-1 px-2 text-xs rounded-full bg-[#13131f] border text-white border-white hover:border-[var(--variant-4)] hover:text-[var(--variant-4)]">
             Compare
@@ -94,18 +83,18 @@ const CompanyDetails = ({  }: CompanyDetailsProps) => {
         <div className="w-5/12 flex flex-col items-start">
           <div className="w-full flex flex-row items-center">
             <h1 className="text-4xl font-bold">
-              {chartData?.meta.open}
+              {metaData?.meta.open}
                 </h1>
             <p
               className={`ml-4 text-lg ${
-              chartData?.meta.priceChange !== undefined && chartData?.meta.priceChange >= 0
+              metaData?.meta.pricechange !== undefined && metaData?.meta.pricechange >= 0
                   ? "text-green-500"
                   : "text-red-500"
               }`}
             >
-              { chartData?.meta.priceChange !== undefined &&  chartData?.meta.priceChange >= 0 ? "+" : ""}
-              { chartData?.meta.priceChange} (
-              { chartData?.meta.changePercent}%)
+              { metaData?.meta.pricechange !== undefined &&  metaData?.meta.pricechange >= 0 ? "+" : ""}
+              { metaData?.meta.pricechange} (
+              { metaData?.meta.changePercent}%)
             </p>
           </div>
           <div>
@@ -122,7 +111,7 @@ const CompanyDetails = ({  }: CompanyDetailsProps) => {
         <div className="w-5/12 flex flex-col items-start ml-4">
           <div className="w-full flex flex-row items-center">
             <h1 className="text-4xl font-bold">
-              {chartData?.meta.previousClose}
+              {metaData?.meta.previousClose}
             </h1>
             <p className="ml-4 text-gray-500 text-lg">Previous Close</p>
           </div>

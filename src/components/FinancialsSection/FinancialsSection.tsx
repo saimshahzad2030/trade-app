@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { appleData1d, financialStatement } from "@/global/constants";
+import { appleData1d ,financialStatement} from "@/global/constants";
 import {
   Tooltip,
   TooltipContent,
@@ -22,12 +22,17 @@ import {
   IncomeStatement,
   BalanceSheet,
   CashFlowStatement,
+  MetaDataType,
 } from "@/types/types";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import CompanyDetails from "../Chart/CompanyDetailsSection";
 import { Download, DownloadCloud } from "lucide-react";
 import dynamic from 'next/dynamic';
+import { getSpecificStockFinancialData, getSpecificStockSummaryData } from "@/services/stock.services";
+import { useParams } from "next/navigation";
+import RoundLoader from "../Loader/RoundLoader";
+import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 
 const FinancialStatementPDFDownload = dynamic(
   () => import('@/components/FinancialsSection/DownloadPdf'),
@@ -35,18 +40,22 @@ const FinancialStatementPDFDownload = dynamic(
 );
 // import FinancialStatementPDFDownload from "./DownloadPdf";
 const FinancialsSection = () => {
-  const [activeRange, setActiveRange] = React.useState<'incomeStatement' | 'balanceSheet' | 'cashFlowStatement'>("cashFlowStatement");
+  const [financialData, setFinancialData] = React.useState<FinancialStatement | null>(null);
+    const params = useParams<{ symbol: string}>()
+      let symbol = params.symbol
+  const [activeRange, setActiveRange] = React.useState<'incomeStatement' | 'balanceSheet' | 'cashFlowStatement'>("incomeStatement");
   const ranges = ["incomeStatement", "balanceSheet", "cashFlowStatement"];
   const [timeRange, setTimeRange] = React.useState("annual");
   const timeRanges = ["annual", "quarterly"];
+  // const [financialData,setFinancialData] = React.useState<FinancialStatement | null>(null)
   const [incomeStatements, setIncomeStatements] = React.useState<
-    IncomeStatement[] | BalanceSheet[] | CashFlowStatement[]
-  >(financialStatement.incomeStatement);
-
-  const getFieldValues = (
+    IncomeStatement[] | BalanceSheet[] | CashFlowStatement[] | undefined
+  >(financialData?.incomeStatement );
+  const [loading,setLoading] = React.useState<boolean>(true)
+  let getFieldValues = (
     fieldPath: (s: IncomeStatement | BalanceSheet | CashFlowStatement) => string
   ): string[] => {
-    return incomeStatements.map(fieldPath);
+    return incomeStatements?.map(fieldPath) ?? financialStatement?.balanceSheet.map(fieldPath);
   };
 
   // Helper to create rows
@@ -80,26 +89,42 @@ const FinancialsSection = () => {
     return (s as BalanceSheet).assets !== undefined;
   };
 const [mounted, setMounted] = React.useState(false);
-
+ 
+   const [metaData,setMetaData] = React.useState<MetaDataType | null>(null)
+   
+ 
 React.useEffect(() => {
+  const fetchChartData = async()=>{
+   let response = await getSpecificStockFinancialData( symbol,timeRange);
+   let response2 = await getSpecificStockSummaryData(symbol);
+   setMetaData(response2.data)
+   setIncomeStatements(response.data.incomeStatement)
+   setFinancialData(response.data)
+   setLoading(false)
+      
+          }
+          fetchChartData()
   setMounted(true);
 }, []);
   return (
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails />
+                              <CompanyDetails loading={loading} metaData={metaData}/>
+
+          {!loading && financialData && 
+          <>
           <div className="w-full flex flex-row items-center justify-between mt-4">
-            <div className="flex flex-row w-10/12">
+            {financialData && <div className="flex flex-row w-10/12">
               {(
-                Object.keys(financialStatement) as (keyof FinancialStatement)[]
+                Object.keys(financialData) as (keyof FinancialStatement)[]
               ).map((range) => (
                 <Button
                   key={range}
                   variant="graphTab2"
                   onClick={() => {
                     setActiveRange(range);
-                    setIncomeStatements(financialStatement[range]);
+                    setIncomeStatements(financialData[range]);
                   }}
                   className={`mr-1  text-[var(--variant-4)] border hover:border-[var(--variant-3)] ${
                     activeRange === range
@@ -110,7 +135,7 @@ React.useEffect(() => {
                   {formatKey(range)}
                 </Button>
               ))}
-            </div>
+            </div>}
             <p className="text-sm">Currency in USD</p>
           </div>
          
@@ -119,64 +144,72 @@ React.useEffect(() => {
             <p className="text-sm w-2/12">All in Thousand</p>
 
             <div className="flex flex-row justify-end w-10/12">
-              <Button 
-                  variant="graphTab2"
-                  onClick={() => {}}
-                  className={`cursor-pointer   text-[var(--variant-4)]   text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]   `}
-                >
-           
-                <TooltipProvider>
+             <TooltipProvider>
   <Tooltip>
-    <TooltipTrigger className="cursor-pointer">  
-      <DownloadCloud className="cursor-pointer"/>
-              </TooltipTrigger>
+    <TooltipTrigger asChild>
+      <Button 
+        variant="graphTab2"
+        onClick={() => {}}
+        className={`cursor-pointer text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
+      >
+        <DownloadCloud className="cursor-pointer" />
+      </Button>
+    </TooltipTrigger>
     <TooltipContent>
       <p>{`Download ${activeRange} with ratios`}</p>
     </TooltipContent>
   </Tooltip>
+</TooltipProvider>
 
+         {mounted && (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button 
+          variant="graphTab2"
+          className={`mr-1 text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
+        >
+          {activeRange === "incomeStatement" && (
+            <FinancialStatementPDFDownload
+              activeRange="incomeStatement"
+              financialStatement={financialData}
+            />
+          )}
+          {activeRange === "balanceSheet" && (
+            <FinancialStatementPDFDownload
+              activeRange="balanceSheet"
+              financialStatement={financialData}
+            />
+          )}
+          {activeRange === "cashFlowStatement" && (
+            <FinancialStatementPDFDownload
+              activeRange="cashFlowStatement"
+              financialStatement={financialData}
+            />
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{`Download ${activeRange}`}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+)}
 
-              </TooltipProvider> 
-                </Button>
-             <Button 
-                  variant="graphTab2"
-                  onClick={() => {}}
-                  className={`mr-1  text-[var(--variant-4)]   text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]   `}
-                >
-                {mounted   &&
-                  <> 
-                <TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger>  
-             {activeRange=="incomeStatement" &&
-             <FinancialStatementPDFDownload
-    activeRange={"incomeStatement"}
-    financialStatement={financialStatement}
-  />}
-   {activeRange=="balanceSheet" &&
-             <FinancialStatementPDFDownload
-    activeRange={"balanceSheet"}
-    financialStatement={financialStatement}
-  />}
-   {activeRange=="cashFlowStatement" &&
-             <FinancialStatementPDFDownload
-    activeRange={"cashFlowStatement"}
-    financialStatement={financialStatement}
-  />}
-              </TooltipTrigger>
-    <TooltipContent>
-      <p>{`Download ${activeRange}`}</p>
-    </TooltipContent>
-  </Tooltip>
-
-
-              </TooltipProvider></>}
-                </Button>
               {timeRanges.map((range) => (
                 <Button
                   key={range}
                   variant="graphTab2"
-                  onClick={() => setTimeRange(range)}
+                  onClick={async() => {
+                        setLoading(true)
+                    
+                       let response = await getSpecificStockFinancialData( symbol,range);
+                        setLoading(false)
+
+            setIncomeStatements(response.data.incomeStatement)
+            setFinancialData(response.data)
+                    setActiveRange("incomeStatement")
+                    setTimeRange(range)}}
                   className={`mr-1  text-[var(--variant-4)] border hover:border-[var(--variant-3)] ${
                     timeRange === range
                       ? "  bg-[var(--variant-2)]/50   border-[var(--variant-3)]    "
@@ -187,35 +220,48 @@ React.useEffect(() => {
                 </Button>
               ))}
             </div>
-          </div>
+          </div></>}
           <div className="w-full flex flex-col items-center mt-2 mb-10">
-            <Table>
+           {loading?<div className="w-full py-20 flex flex-col items-center">
+            <RoundLoader/>
+           </div>:
+           <>{financialData &&  <Table>
               <TableHeader>
                 {activeRange === "incomeStatement" && (
                   <TableRow>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    {financialStatement.incomeStatement.map((s, i) => {
-                      const date = new Date(s.date);
-                      const formattedDate = `${date.getDate()}-${
-                        date.getMonth() + 1
-                      }-${date.getFullYear().toString()}`;
+  <TableHead className="w-[200px]">Name</TableHead>
+  {financialData?.incomeStatement?.map((s, i) => {
+    if (!s.date) {
+      return (
+        <TableHead key={i} className="text-center text-red-400">
+          No Date
+        </TableHead>
+      );
+    }
 
-                      return (
-                        <TableHead key={i} className="text-center">
-                          {formattedDate}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
+    const date = new Date(s.date);
+    const formattedDate = isNaN(date.getTime())
+      ? 'TTM'
+      : `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+
+    return (
+      <TableHead key={i} className="text-center">
+        {formattedDate}
+      </TableHead>
+    );
+  })}
+</TableRow>
                 )}
                 {activeRange === "balanceSheet" && (
                   <TableRow>
                     <TableHead className="w-[200px]">Name</TableHead>
-                    {financialStatement.incomeStatement.map((s, i) => {
+                    {financialData.balanceSheet.map((s, i) => {
                       const date = new Date(s.date);
-                      const formattedDate = `${date.getDate()}-${
-                        date.getMonth() + 1
-                      }-${date.getFullYear().toString()}`;
+                        // const date = new Date(s.date);
+    const formattedDate = isNaN(date.getTime())
+      ? 'TTM'
+      : `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+                       
 
                       return (
                         <TableHead key={i} className="text-center">
@@ -228,11 +274,13 @@ React.useEffect(() => {
                 {activeRange === "cashFlowStatement" && (
                   <TableRow>
                     <TableHead className="w-[200px]">Name</TableHead>
-                    {financialStatement.incomeStatement.map((s, i) => {
-                      const date = new Date(s.date);
-                      const formattedDate = `${date.getDate()}-${
-                        date.getMonth() + 1
-                      }-${date.getFullYear().toString()}`;
+                    {financialData.cashFlowStatement.map((s, i) => {
+                      const rawDate = s?.date;
+const date = rawDate ? new Date(String(rawDate)) : null;
+               const formattedDate =
+  date && !isNaN(date.getTime())
+    ? `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+    : "TTM";
 
                       return (
                         <TableHead key={i} className="text-center">
@@ -815,77 +863,12 @@ React.useEffect(() => {
                   )}
                 </TableBody>
               )}
-            </Table>
+            </Table>}</>}
           </div>
         </div>
       </div>
-      <div className="w-3/12 flex flex-col items-center p-4 text-white">
-        <div className=" pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Previous close</p>
-          <p>{appleData1d.chart.result[0].meta.previousClose}</p>
-        </div>
+                <CompanySummarySection metaData={metaData} loading={loading}/>
 
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Open</p>
-          <p>{appleData1d.chart.result[0].meta.open}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Bid</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ask</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Day's Range</p>
-          <p>{appleData1d.chart.result[0].meta.dayRange}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>52 Week Range</p>
-          <p>{appleData1d.chart.result[0].meta.week52Range}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Volume</p>
-          <p>{appleData1d.chart.result[0].meta.volume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Avg. Volume</p>
-          <p>{appleData1d.chart.result[0].meta.avgVolume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Market Cap (intraday)</p>
-          <p>{appleData1d.chart.result[0].meta.marketCap}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Beta (5Y Monthly)</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>PE Ratio (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.peRatio}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>EPS (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.eps}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Earnings Date</p>
-          <p>{appleData1d.chart.result[0].meta.earningsDate}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Forward Dividend & Yield</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ex-Dividend Date</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>1y Target Est</p>
-          <p>null</p>
-        </div>
-      </div>
     </div>
   );
 };

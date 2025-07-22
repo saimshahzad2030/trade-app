@@ -111,27 +111,16 @@ export type historicalDataType = {
     next: string | null; // e.g., null
     previous: string | null; // e.g., null
     results: [
-        {
-            dates: string[]; // e.g., ["April 14, 2025", "April 11, 2025", ...]
-            indicators: {
-                quote: [
-                    {
-                        open: number[]; // e.g., [211.44, 186.1, ...]
-                        high: number[]; // e.g., [212.94, 199.54, ...]
-                        low: number[]; // e.g., [201.16, 186.06, ...]
-                        close: number[]; // e.g., [202.52, 198.15, ...]
-                        change: number[]; // e.g., [-8.92, 12.05, ...]
-                        changePercent: number[]; // e.g., [-4.22, 6.48, ...]
-                        volume: number[]; // e.g., [100846206, 87435915, ...]
-                    }
-                ];
-                adjclose: [
-                    {
-                        adjclose: number[]; // e.g., [202.52, 198.15, ...]
-                    }
-                ];
-            };
-        }
+         
+           {
+    date: string,
+    open: number,
+    high:number,
+    low: number,
+    close: number,
+    volume: number,
+    adjClose: number
+} 
     ];
 };
 interface Revenue {
@@ -314,6 +303,7 @@ interface OtherCashFlowItems {
 
 export interface CashFlowStatement {
     period: string;
+    date:String;
     cashFlowsFromOperatingActivities: CashFlowsFromOperatingActivities;
     cashFlowsFromInvestingActivities: CashFlowsFromInvestingActivities;
     cashFlowsFromFinancingActivities: CashFlowsFromFinancingActivities;
@@ -663,4 +653,120 @@ export interface GrowthProfitabilityAndDebtAnalysisChartData {
 
 export interface GrowthProfitabilityAndDebtAnalysisChartRootData {
   growth_profitability_and_debt_analysis_chart_data: GrowthProfitabilityAndDebtAnalysisChartData;
+}
+export type FinancialDataType = {
+  financial_highlights: {
+    fiscalYear: {
+      fiscalYearEnd: string;
+      mostRecentQuarter: string;
+    };
+    profitability: {
+      profitMargin: string;
+      operatingMarginTtm: string;
+    };
+    managementEffectiveness: {
+      returnOnAssetsTtm: string;
+      returnOnEquityTtm: string;
+    };
+    incomeStatement: {
+      revenueTtm: string;
+      revenuePerShareTtm: string;
+      quarterlyRevenueGrowthYoy: string;
+      grossProfitTtm: string;
+      ebitdaTtm: string;
+      netIncomeTtm: string;
+      dilutedEpsTtm: string;
+      quarterlyEarningsGrowthYoy: string;
+    };
+    balanceSheet: {
+      totalCash: string;
+      totalCashPerShare: string;
+      totalDebt: string;
+      debtToEquity: string;
+      currentRatio: string;
+      bookValuePerShare: string;
+    };
+    cashFlowStatement: {
+      operatingCashFlowTtm: string;
+      leveredFreeCashFlowTtm: string;
+    };
+  };
+  trading_info: {
+    stockPriceHistory: {
+      beta5yMonthly: number;
+      regularMarketPrice: number;
+      fiftyTwoWeekHigh: number;
+      fiftyTwoWeekLow: number;
+      regularMarketDayHigh: number;
+      regularMarketDayLow: number;
+      regularMarketVolume: string;
+      fiftyDayMovingAverage: number;
+      twoHundredDayMovingAverage: number;
+    };
+    shareStatistics: {
+      avgVol3Month: string;
+      sharesOutstanding: string;
+      impliedSharesOutstanding: string;
+      float: string;
+    };
+    dividendsAndSplits: {
+      forwardAnnualDividendRate: string;
+      forwardAnnualDividendYield: string;
+      trailingAnnualDividendRate: string;
+      trailingAnnualDividendYield: string;
+      payoutRatio: string;
+      dividendDate: string;
+      exDividendDate: string;
+      lastSplitFactor: string;
+      lastSplitDate: string;
+    };
+  };
+};
+export interface MetaDataType {
+  meta: {
+    ticker: string;
+    exchange: string;
+    previousClose: string;
+    open: string;
+    pricechange: number;
+    changePercent: number;
+    dayRange: string;
+    week52Range: string;
+    volume: string;
+    avgVolume: string;
+    marketCap: string;
+    currency: string;
+    symbol: string;
+    exchangeName: string;
+    regularMarketTime: string; // ISO date string
+    exchangeTimezoneName: string;
+    regularMarketPrice: string;
+    fiftyTwoWeekHigh: string;
+    fiftyTwoWeekLow: string;
+    regularMarketDayHigh: string;
+    regularMarketDayLow: string;
+    regularMarketVolume: string;
+    priceAvg1Y: string;
+    beta: string;
+    chartPreviousClose: string;
+    priceHint: number;
+    instrumentType: string;
+    revenue: string;
+    grossProfit: string;
+    ebitda: string;
+    peRatio: number;
+    eps: number;
+    earningsDate: string; // could be parsed to Date
+    companyName: string;
+    website: string;
+    fullTimeEmployees: string;
+    sector: string;
+    industry: string;
+    description: string;
+    fiscalYearEnds: string;
+    firstTradeDate: string;
+    dividend: number;
+    yield: string;
+  };
+  error: null | string;
 }

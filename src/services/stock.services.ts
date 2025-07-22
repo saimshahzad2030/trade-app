@@ -151,3 +151,72 @@ export const getSpecificStockSummaryData = async (symbol:string) => {
     };
   }
 };
+
+export const getSpecificStockStatistics = async (symbol:string) => {
+  try {
+   
+    const response = await axiosInstanceJson.get(`statistics/${symbol}`);
+      
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
+export const getSpecificStockValuationMetrics = async (symbol:string) => {
+  try {
+   
+    const response = await axiosInstanceJson.get(`valuation-measures/${symbol}`);
+      
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
+export const getSpecificStockHistoricalData = async (symbol:string,start_date:Date |undefined,end_date:Date |undefined,interval:string,currentUrl?:string) => {
+  try {
+   
+    const response = await axiosInstanceJson.get(currentUrl??`historical-data/${symbol}/${start_date}/${end_date}?interval=${interval}`);
+      
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
+export const getSpecificStockFinancialData = async (symbol:string,period:string) => {
+  try {
+   
+    const response = await axiosInstanceJson.get(`/financials-data/${symbol}/${period}`);
+      
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};

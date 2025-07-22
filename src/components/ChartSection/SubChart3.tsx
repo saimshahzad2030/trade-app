@@ -82,7 +82,11 @@ const SubChart3 = () => {
       boundaryGap: false,
       data: timeLabels,
       axisLine: { lineStyle: { color: "#888" } },
-      axisLabel: { color: "white" }
+      axisLabel: { color: "white" },
+      splitLine: {
+    show: false,
+     
+  }
     },
     yAxis: {
       type: "value",
@@ -91,7 +95,13 @@ const SubChart3 = () => {
       max: 11,
       axisLine: { lineStyle: { color: "#888" } },
       axisLabel: { color: "white" },
-      splitLine: { lineStyle: { color: "#eee" } }
+      splitLine: {
+    show: true,
+    lineStyle: {
+      color: "#aaa", // ⬅ lighter vertical grid lines
+      width: 0.1
+    }
+  }
     },
     series: [
       ...companySeries,

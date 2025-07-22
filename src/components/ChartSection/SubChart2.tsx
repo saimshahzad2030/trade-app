@@ -65,7 +65,7 @@ const SubChart2 = () => {
     legend: {
       type: "scroll",
       data: [...companyNames, "Industry Avg PE"],
-      top: 10,
+      top: 0,
       textStyle: {
         color: "white"
       },
@@ -73,9 +73,9 @@ const SubChart2 = () => {
     },
     grid: {
       left: "5%",
-      right: "5%",
+      right: "15%",
       containLabel: true,
-      top: "50",
+      top: "60",
       bottom: "60"
     },
     xAxis: {
@@ -84,7 +84,10 @@ const SubChart2 = () => {
       boundaryGap: false,
       data: timeLabels,
       axisLine: { lineStyle: { color: "#888" } },
-      axisLabel: { color: "white" }
+      axisLabel: { color: "white" },
+ splitLine: {
+    show: false,
+ }
     },
     yAxis: {
       type: "value",
@@ -93,7 +96,14 @@ const SubChart2 = () => {
       max: 27.5,
       axisLine: { lineStyle: { color: "#888" } },
       axisLabel: { color: "white" },
-      splitLine: { lineStyle: { color: "#eee" } }
+       splitLine: {
+    show: true,
+    lineStyle: {
+      color: "#aaa", // ⬅ lighter vertical grid lines
+      width: 0.1
+    }
+  }
+      // splitLine: { lineStyle: { color: "#eee" } }
     },
     series: [
       ...companySeries,

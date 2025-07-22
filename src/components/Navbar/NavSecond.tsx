@@ -13,10 +13,10 @@ const NavSecond = () => {
         <Link href={`/summary/${pathName.split("/")[2]}`}>
           <h1
             className={`text-sm ${
-              pathName == "/summary"
-                ? "text-[var(--variant-4)]"
-                : " text-current "
-            } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
+            pathName === `/summary/${pathName.split("/")[2]}`
+      ? "text-[var(--variant-4)] font-semibold"
+      : "text-current"
+  }  group-hover:text-[var(--variant-4)] duration-300 transition-all`}
           >
             Summary
           </h1>
@@ -26,10 +26,10 @@ const NavSecond = () => {
         <Link href={`/chart/${pathName.split("/")[2]}`}>
           <h1
             className={`text-sm ${
-              pathName == "/chart"
-                ? "text-[var(--variant-4)] font-semibold"
-                : " text-current "
-            } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
+             pathName === `/chart/${pathName.split("/")[2]}`
+      ? "text-[var(--variant-4)] font-semibold"
+      : "text-current"
+  }  group-hover:text-[var(--variant-4)] duration-300 transition-all`}
           >
             Chart
           </h1>
@@ -38,11 +38,11 @@ const NavSecond = () => {
       <div className="flex flex-col items-start cursor-pointer group">
         <Link href={`/history/${pathName.split("/")[2]}`}>
           <h1
-            className={`text-sm ${
-              pathName == "/history"
-                ? "text-[var(--variant-4)] font-semibold"
-                : " text-current "
-            } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
+           className={`text-sm ${
+    pathName === `/history/${pathName.split("/")[2]}`
+      ? "text-[var(--variant-4)] font-semibold"
+      : "text-current"
+  } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
           >
             History
           </h1>
@@ -51,11 +51,12 @@ const NavSecond = () => {
       <div className="flex flex-col items-start cursor-pointer group">
         <Link  href={`/statistics/${pathName.split("/")[2]}`} >
           <h1
-            className={`text-sm ${
-              pathName == "/statistics"
-                ? "text-[var(--variant-4)] font-semibold"
-                : " text-current "
-            } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
+            className={`text-sm 
+              ${
+    pathName === `/statistics/${pathName.split("/")[2]}`
+      ? "text-[var(--variant-4)] font-semibold"
+      : "text-current"
+  }  group-hover:text-[var(--variant-4)] duration-300 transition-all`}
           >
             Statistics
           </h1>
@@ -65,10 +66,10 @@ const NavSecond = () => {
         <Link href={`/financials/${pathName.split("/")[2]}`}   className="flex flex-row items-center">
           <h1
             className={`text-sm ${
-              pathName == "/financials"
-                ? "text-[var(--variant-4)] font-semibold"
-                : " text-current "
-            } group-hover:text-[var(--variant-4)] duration-300 transition-all`}
+              pathName === `/financials/${pathName.split("/")[2]}`
+      ? "text-[var(--variant-4)] font-semibold"
+      : "text-current"
+  }  group-hover:text-[var(--variant-4)] duration-300 transition-all`}
           >
             Financials
           </h1>

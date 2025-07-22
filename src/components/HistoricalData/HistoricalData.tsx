@@ -20,24 +20,48 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { appleData1d, historicalData } from "@/global/constants";
-import { historicalDataType } from "@/types/types";
+import { appleData1d } from "@/global/constants";
+import { historicalDataType, MetaDataType } from "@/types/types";
 import { InputSection } from "./InputSection";
 import CompanyDetails from "../Chart/CompanyDetailsSection";
 import HistoricalDataPDFDownload from "./DownloadHistoricalData";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { DownloadCloud } from "lucide-react";
+import { getSpecificStockHistoricalData, getSpecificStockSummaryData } from "@/services/stock.services";
+import { useParams } from "next/navigation";
+import RoundLoader from "../Loader/RoundLoader";
+import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
+function formatLargeNumber(value: number): string {
+  if (value >= 1_000_000_000_000) {
+    return (value / 1_000_000_000_000).toFixed(2) + "T";
+  } else if (value >= 1_000_000_000) {
+    return (value / 1_000_000_000).toFixed(2) + "B";
+  } else if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(2) + "M";
+  } else {
+    return value.toLocaleString(); // For smaller numbers
+  }
+}
 const HistoricalData = () => {
+  
+
+  const params = useParams<{ symbol: string}>()
+    let symbol = params.symbol
   const [mounted, setMounted] = React.useState(false);
   
   React.useEffect(() => {
     setMounted(true);
   }, []);
-  const [data, setData] = React.useState<historicalDataType >(
-    historicalData
+  const [data, setData] = React.useState<historicalDataType|null >(
+    null
   );
-  const [loading, setLoading] = React.useState(false);
-  const [currentUrl, setCurrentUrl] = React.useState("/api/historical-data");
+  const [loading, setLoading] = React.useState(false); 
+ 
+  const [range, setRange] = React.useState("Daily");
+  const [historicalPrice, setHistoryPrice] = React.useState("Historical Price");
+
+  const [fromDate, setFromDate] = React.useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 1)));
+  const [toDate, setToDate] = React.useState<Date | undefined>(new Date());
 
   //   const fetchData = async (url: string) => {
   //     setLoading(true);
@@ -55,24 +79,58 @@ const HistoricalData = () => {
   //   useEffect(() => {
   //     fetchData(currentUrl);
   //   }, [currentUrl]);
+   const [metaData,setMetaData] = React.useState<MetaDataType | null>(null)
+ 
+        React.useEffect(()=>{
+          const fetchChartData = async()=>{
+            setLoading(true)
+        
+    const formatDate = (date: Date | undefined) => {
+      if (!date || isNaN(date.getTime())) return "";
+      return date.toISOString().split("T")[0]; // Returns 'YYYY-MM-DD'
+    };
 
-  if (!historicalData || loading) {
-    return <p className="text-white p-4">Loading historical data...</p>;
-  }
+    const formattedFromDate = formatDate(fromDate);
+    const formattedToDate = formatDate(toDate);
 
-  const quote = data?.results[0].indicators.quote[0];
-  const adjclose = data?.results[0].indicators.adjclose[0];
-  const dates = data?.results[0].dates;
-  const prev = data?.previous; // e.g. null or a string URL
-  const next = data?.next;
+    if (!formattedFromDate || !formattedToDate) {
+      console.error("Invalid date(s) provided.");
+      setLoading(false);
+      return;
+    }
+
+    const endpoint = `historical-data/${symbol}/${formattedFromDate}/${formattedToDate}?interval=${range.toLowerCase()}`;
+
+            let response = await getSpecificStockHistoricalData( symbol,fromDate,toDate,range,endpoint);
+            let response2 = await getSpecificStockSummaryData(symbol);
+                      setMetaData(response2.data)
+                        
+            
+            setData(response.data)
+            setLoading(false)
+      
+          }
+          fetchChartData()
+  
+        },[range,toDate,fromDate])
+ 
+ 
   return (
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails />
+          <CompanyDetails loading={loading} metaData={metaData}/>
 
+          {!loading && <>
           <div className="flex flex-row items-center justify-start  ">
-            <InputSection />
+            <InputSection toDate={toDate}
+            setToDate={setToDate}
+            fromDate={fromDate}
+            setFromDate={setFromDate}
+            range={range}
+            setRange={setRange}
+            setHistoryPrice={setHistoryPrice} 
+            historicalPrice={historicalPrice}/>
           </div>
           <div className="flex flex-row items-center w-full justify-end ">
             <Button 
@@ -101,12 +159,12 @@ const HistoricalData = () => {
                 >
             {mounted   && <>
                           
-               <TooltipProvider>
+             {data &&  <>  <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>  
-                          <HistoricalDataPDFDownload 
-                historicalData={data}
-              /> 
+                          {/* <HistoricalDataPDFDownload 
+                historicalData={data }
+              />  */}
                             </TooltipTrigger>
                   <TooltipContent>
                     <p>{`Download Historical Data`}</p>
@@ -114,7 +172,7 @@ const HistoricalData = () => {
                 </Tooltip>
               
               
-                            </TooltipProvider>
+                            </TooltipProvider></>}
                        
                          </>}
                          </Button>
@@ -123,7 +181,11 @@ const HistoricalData = () => {
             <div className="flex flex-row items-center justify-end w-full">
               <p className="text-end text-sm my-2 mr-2">Currency in USD</p>
             </div>
-            <Table>
+            {loading?
+            <div className="flex flex-col items-center justify-center w-full my-4 h-[400px] border border-2 border-[var(--variant-1)]">
+              <RoundLoader/>
+              </div>:
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[100px]">Date</TableHead>
@@ -136,151 +198,82 @@ const HistoricalData = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data?.results[0].indicators.quote[0].open.map(
-                  (item, index) => (
+                {data && <>
+                {data.results.map(
+                  ( item,index) => (
                     <TableRow>
                       <TableCell className="font-medium text-center">
-                        {historicalData.results[0].dates[index]}
+                        {item.date}
                       </TableCell>
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.quote[0].open[
-                            index
-                          ]
-                        }
+                        {item.open}
                       </TableCell>
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.quote[0].high[
-                            index
-                          ]
-                        }
+                        {item.high}
                       </TableCell>
 
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.quote[0].low[
-                            index
-                          ]
-                        }
+                       {item.low}
                       </TableCell>
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.quote[0].close[
-                            index
-                          ]
-                        }
+                      {item.close}
                       </TableCell>
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.adjclose[0]
-                            .adjclose[index]
-                        }
+                       {item.adjClose}
                       </TableCell>
                       <TableCell className="text-center">
-                        {
-                          historicalData.results[0].indicators.quote[0].volume[
-                            index
-                          ]
-                        }
+                        {formatLargeNumber(item.volume)}
                       </TableCell>
                     </TableRow>
                   )
-                )}
+                )}</>}
               </TableBody>
-            </Table>
+            </Table>}
             <Pagination className="mt-4">
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious
-                    href={prev ?? "#"}
-                    className={prev ? "" : "pointer-events-none opacity-50"}
+                  <PaginationPrevious 
+                       onClick={async()=>{ 
+            setLoading(true)
+            let response = await getSpecificStockHistoricalData(symbol,fromDate,toDate,range,data?.previous || "");
+                        setLoading(false)
+
+            setData(response.data)
+          
+             
+                  }}
+           
+                    className={data?.previous ? "cursor-pointer button" : "pointer-events-none opacity-50"}
                   />
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationLink href="#">1</PaginationLink>
+                  <PaginationLink href="#">{Number(data?.next?.split('')[data?.next?.split('').length-1])-1 || 1}</PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationEllipsis />
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationNext
-                    href={next ?? "#"}
-                    className={next ? "" : "pointer-events-none opacity-50"}
+                  
+                  onClick={async()=>{ 
+            setLoading(true)
+            let response = await getSpecificStockHistoricalData(symbol,fromDate,toDate,range,data?.next || "");
+                        setLoading(false)
+
+            setData(response.data)
+          
+             
+                  }}
+                    // href={next ?? "#"}
+                    className={data?.next ? "cursor-pointer button" : "pointer-events-none opacity-50"}
                   />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
-          </div>
+          </div></>}
         </div>
       </div>
-      <div className="w-3/12 flex flex-col items-center p-4 text-white">
-        <div className=" pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Previous close</p>
-          <p>{appleData1d.chart.result[0].meta.previousClose}</p>
-        </div>
-
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Open</p>
-          <p>{appleData1d.chart.result[0].meta.open}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Bid</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ask</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Day's Range</p>
-          <p>{appleData1d.chart.result[0].meta.dayRange}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>52 Week Range</p>
-          <p>{appleData1d.chart.result[0].meta.week52Range}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Volume</p>
-          <p>{appleData1d.chart.result[0].meta.volume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Avg. Volume</p>
-          <p>{appleData1d.chart.result[0].meta.avgVolume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Market Cap (intraday)</p>
-          <p>{appleData1d.chart.result[0].meta.marketCap}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Beta (5Y Monthly)</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>PE Ratio (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.peRatio}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>EPS (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.eps}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Earnings Date</p>
-          <p>{appleData1d.chart.result[0].meta.earningsDate}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Forward Dividend & Yield</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ex-Dividend Date</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>1y Target Est</p>
-          <p>null</p>
-        </div>
-      </div>
+      <CompanySummarySection metaData={metaData} loading={loading}/>
     </div>
   );
 };

@@ -53,7 +53,7 @@ const SubChart1 = () => {
     legend: {
       data: ["Industry Avg Beta", ...companyNames],
       type: "scroll",
-      top: 10,
+      top: 0,
       textStyle: {
         color: "#ffffff"
       },

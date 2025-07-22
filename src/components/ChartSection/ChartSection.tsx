@@ -32,10 +32,11 @@ import SubChart3 from "./SubChart3";
 import SubChart4 from "./SubChart4";
 import SubChart5 from "./SubChart5";
 import HeatMap1 from "./HeatMap1";
-import { getSpecificStockChart } from "@/services/stock.services";
-import { EmaChartPoint } from "@/types/types";
+import { getSpecificStockChart, getSpecificStockSummaryData } from "@/services/stock.services";
+import { EmaChartPoint, MetaDataType } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import { useParams } from "next/navigation";
+import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 
 const timeFrames = ["1min", "5min", "15min", "30min", "1hour", "4hour", "1day"];
 export const technicalIndicators = [
@@ -150,13 +151,16 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
     fromDate && toDate
       ? `${format(fromDate, "MMM-dd-yyyy")} to ${format(toDate, "MMM-dd-yyyy")}`
       : "Select Range";
+       const [metaData,setMetaData] = React.useState<MetaDataType | null>(null)
      
       React.useEffect(()=>{
         const fetchChartData = async()=>{
           setChartDataLoading(true)
           let response = await getSpecificStockChart('AAPL','1day',technicalIndicator,fromDate,toDate);
-          setChartDataLoading(false)
+          let response2 = await getSpecificStockSummaryData(symbol);
+          setMetaData(response2.data)
           setChartData(response.data['chart-data'].result)
+          setChartDataLoading(false)
           
         }
         fetchChartData()
@@ -168,7 +172,9 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
     >
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails symbol={symbol}/>
+          <CompanyDetails loading={chartDataLoading} metaData={metaData}/>
+          {!chartDataLoading && 
+          <>
           <div className="flex flex-row items-center w-full my-2">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -455,7 +461,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
                 onChange={(e) => setPeriodLength(Number(e.target.value))}
               />
             </div>
-          </div>
+          </div></>}
             {chartDataLoading?
             <div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]">
               <RoundLoader/>
@@ -469,76 +475,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
          <FinancialRatiosChart symbol={symbol}/> 
         </div>
       </div>
-      <div className="w-3/12 flex flex-col items-center p-4 text-white">   
-      <div className="w-full flex flex-col items-center p-4 text-white">
-        <div className=" pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Previous close</p>
-          <p>{appleData1d.chart.result[0].meta.previousClose}</p>
-        </div>
-
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Open</p>
-          <p>{appleData1d.chart.result[0].meta.open}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Bid</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ask</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Day's Range</p>
-          <p>{appleData1d.chart.result[0].meta.dayRange}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>52 Week Range</p>
-          <p>{appleData1d.chart.result[0].meta.week52Range}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Volume</p>
-          <p>{appleData1d.chart.result[0].meta.volume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Avg. Volume</p>
-          <p>{appleData1d.chart.result[0].meta.avgVolume}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Market Cap (intraday)</p>
-          <p>{appleData1d.chart.result[0].meta.marketCap}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Beta (5Y Monthly)</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>PE Ratio (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.peRatio}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>EPS (TTM)</p>
-          <p>{appleData1d.chart.result[0].meta.eps}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Earnings Date</p>
-          <p>{appleData1d.chart.result[0].meta.earningsDate}</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Forward Dividend & Yield</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>Ex-Dividend Date</p>
-          <p>null</p>
-        </div>
-        <div className="mt-4 pb-1 w-full flex flex-row items-center justify-between text-xs border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed">
-          <p>1y Target Est</p>
-          <p>null</p>
-        </div>
-      </div>
-
-      </div>
+      <CompanySummarySection metaData={metaData} loading={chartDataLoading}/>
     </div>
   );
 };

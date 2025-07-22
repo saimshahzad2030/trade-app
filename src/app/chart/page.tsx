@@ -1,4 +1,5 @@
 "use client"
+import  { MarketMapAll } from '@/components/ChartSection/HeatMap'
 import SubChart1 from '@/components/ChartSection/SubChart1'
 import SubChart2 from '@/components/ChartSection/SubChart2'
 import SubChart3 from '@/components/ChartSection/SubChart3'
@@ -14,6 +15,7 @@ const ChartPage = () => {
       <Navbar/>
 
       <div className="relative flex flex-col    w-full overflow-x-hidden  pt-20 bg-[#13131f]">
+        <MarketMapAll/>
       
          <div className="w-full grid grid-cols-2 gap-4  my-12 px-12">
             <SubChart1 />

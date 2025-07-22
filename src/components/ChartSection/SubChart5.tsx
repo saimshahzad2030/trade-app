@@ -83,7 +83,10 @@ const SubChart5 = () => {
       boundaryGap: false,
       data: timeLabels,
       axisLine: { lineStyle: { color: "#888" } },
-      axisLabel: { color: "white" }
+      axisLabel: { color: "white" },
+      splitLine: {
+    show: false
+  }
     },
     yAxis: {
       type: "value",
@@ -95,7 +98,13 @@ const SubChart5 = () => {
         color: "white",
         formatter: "{value}%"
       },
-      splitLine: { lineStyle: { color: "#eee" } }
+     splitLine: {
+    show: true,
+    lineStyle: {
+      color: "#aaa", // ⬅ lighter vertical grid lines
+      width: 0.1
+    }
+  }
     },
     series: [
       ...companySeries,

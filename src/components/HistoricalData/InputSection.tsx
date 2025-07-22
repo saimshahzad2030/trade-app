@@ -26,12 +26,28 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-export function InputSection() {
-  const [range, setRange] = React.useState("Daily");
-  const [historicalPrice, setHistoryPrice] = React.useState("Historical Price");
+type InputSectionProps = {
+  range: string;
+  setRange: React.Dispatch<React.SetStateAction<string>>;
+  historicalPrice: string;
+  setHistoryPrice: React.Dispatch<React.SetStateAction<string>>;
+  fromDate: Date | undefined;
+  setFromDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  toDate: Date | undefined;
+  setToDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  
+};
 
-  const [fromDate, setFromDate] = React.useState<Date | undefined>(new Date());
-  const [toDate, setToDate] = React.useState<Date | undefined>(new Date());
+export function InputSection({
+  range,
+  setHistoryPrice,
+  historicalPrice,
+  setRange,
+  fromDate,
+  setFromDate,
+  toDate,
+  setToDate, 
+}: InputSectionProps) {
 
   const predefinedRanges = [
     { label: "1d", value: 1, type: "day" },
