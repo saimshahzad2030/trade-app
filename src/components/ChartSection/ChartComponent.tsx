@@ -21,8 +21,9 @@ const ChartComponent: React.FC<ChartComponentProps> = ({ data,technicalIndicator
   ]);
 
   const emaData = data.map((item:EmaChartPoint) => +item.ema);
-  const intrinsicData = data.map((item:EmaChartPoint) => +item.intrinsicValue);
-
+const intrinsicData = data.map((item: EmaChartPoint) =>
+  parseFloat(item.intrinsicValue.replace("$", ""))
+);
   // ✅ Custom series render function to draw the area between intrinsic and mid price
   const renderGreenArea = (params: any, api: any) => {
     const xValue = api.value(0);
