@@ -770,3 +770,133 @@ export interface MetaDataType {
   };
   error: null | string;
 }
+// types.ts
+export type ChartPoint = {
+  date: string;
+  period: string;
+  marketCap?: string;
+  enterpriseValue?: string;
+  priceToEarnings?: number;
+  dilutedepsDilutedEPS?: number;
+  forwardDividendYield?: string;
+};
+
+export type PricePerformance = {
+  "5D": number;
+  "3M": number;
+  ytd: number;
+  "1Y": number;
+};
+
+export type IncomeStatement2 = {
+  date: string;
+  revenue: string;
+  operatingexpenses: string;
+  operatingIncome: string;
+  revenueGrowth: string;
+  costOfRevenue: string;
+  grossProfit: string;
+  researchAndDevelopmentExpenses: string;
+  sellingGeneralAndAdministrativeExpenses: string;
+  depreciationAndAmortization: string;
+  totalOtherIncomeExpensesNet: string;
+  incomeBeforeTax: string;
+  incomeTaxExpense: string;
+  netIncome: string;
+  eps: number;
+  epsDiluted: number;
+  weightedAverageShsOut: string;
+  weightedAverageShsOutDil: string;
+};
+
+export type BalanceSheet2 = {
+  date: string;
+  inventory: string;
+  cashAndCashEquivalents: string;
+  shortTermInvestments: string;
+  netReceivables: string;
+  accountsReceivables: string;
+  accountsReceivableTurnover: string;
+  totalCurrentAssets: string;
+  longTermInvestments: string;
+  totalAssets: string;
+  totalPayables: string;
+  accountsPayables: string;
+  totalLiabilities: string;
+  taxPayables: string;
+  commonStock: string;
+  totalLiabilitiesAndTotalEquity: string;
+  totalEquity: string;
+  totalDebt: string;
+  netDebt: string;
+};
+
+export type CashFlowStatement2 = {
+  operatingCashFlow: string;
+  capitalExpenditure: string;
+  freeCashFlow: string;
+  cashFromInvestingActivities: string;
+  cashFromFinancingActivities: string;
+  netChangeInCash: string;
+  cashAtEndOfPeriod: string;
+};
+
+export type PriceRatios = {
+  priceToEarnings: number;
+  priceToBook: number;
+  priceToSales: number;
+  dividendYield: number;
+  evToEbitda: number;
+};
+
+export type Margins = {
+  grossProfitMargin: string;
+  operatingProfitMargin: string;
+  netProfitMargin: string;
+  ebitdaMargin: string;
+};
+
+export type EquityReturn = {
+  returnOnEquity: string;
+  returnOnAssets: string;
+  returnOnInvestedCapital: string;
+};
+
+export type Earnings = {
+  earningsPerShare: number;
+};
+
+export type ComparisonStockData = {
+  as_of_today_date: string;
+  companyName: string;
+  symbol: string;
+  price: number;
+  priceChange: number;
+  changePercentage: number;
+  marketValueHead: string;
+  enterpriseValueHead: string;
+  priceToEarnings: number;
+  priceToBook: number;
+  priceToSales: number;
+  earningspersharediluted: number;
+  dividendYield: number;
+  sector: string;
+  industry: string;
+  ceo: string;
+  marketValueChart: ChartPoint[];
+  enterpriseValueChart: ChartPoint[];
+  peRatioChart: ChartPoint[];
+  dilutedEPSChart: ChartPoint[];
+  dividendYieldChart: ChartPoint[];
+  pricePerformance: PricePerformance;
+  incomeStatement: IncomeStatement2;
+  balanceSheet: BalanceSheet2;
+  cashFlowStatement: CashFlowStatement2;
+  priceRatios: PriceRatios;
+  margins: Margins;
+  earnings: Earnings;
+  equityReturn: EquityReturn;
+};
+
+export type ComparisonDataTypes = ComparisonStockData[];
+

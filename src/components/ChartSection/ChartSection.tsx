@@ -139,7 +139,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
   }
                       
                         setChartDataLoading(true)
-                        let response = await getSpecificStockChart('AAPL',timeFrame,technicalIndicator || 'sma',startDate,now);
+                        let response = await getSpecificStockChart(symbol,timeFrame,technicalIndicator || 'sma',startDate,now);
                         setChartDataLoading(false)
                         setChartData(response.data['chart-data'].result)
            
@@ -156,7 +156,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
       React.useEffect(()=>{
         const fetchChartData = async()=>{
           setChartDataLoading(true)
-          let response = await getSpecificStockChart('AAPL','1day',technicalIndicator,fromDate,toDate);
+          let response = await getSpecificStockChart(symbol,timeFrame || '1day',technicalIndicator,fromDate,toDate);
           let response2 = await getSpecificStockSummaryData(symbol);
           setMetaData(response2.data)
           setChartData(response.data['chart-data'].result)
@@ -325,7 +325,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
                       
                         console.log(selected,"selected")
                         setChartDataLoading(true)
-                        let response = await getSpecificStockChart('AAPL',selected || "1day",technicalIndicator || 'sma',fromDate,toDate);
+                        let response = await getSpecificStockChart(symbol,selected || "1day",technicalIndicator || 'sma',fromDate,toDate);
                         setChartDataLoading(false)
                         setChartData(response.data['chart-data'].result)
            

@@ -72,7 +72,7 @@ const CompanyDetails = ({loading,metaData  }: CompanyDetailsProps) => {
       <p>{`${metaData?.meta.exchangeName} - ${metaData?.meta.currency}`}</p>
       <div className="w-full flex flex-row items-center mt-2">
         <h1 className="text-3xl font-bold">{metaData?.meta.companyName}</h1>
-        <Link href={"/compare"}>
+        <Link href={`/compare/${symbol}`}>
           <button className="ml-4 cursor-pointer p-1 px-2 text-xs rounded-full bg-[#13131f] border text-white border-white hover:border-[var(--variant-4)] hover:text-[var(--variant-4)]">
             Compare
           </button>

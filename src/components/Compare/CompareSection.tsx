@@ -2,15 +2,54 @@
 import { ChevronDown, ChevronLeft, ChevronUp, Plus, X } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
+type SearchedStock = {symbol: string,
+  name: string,
+  currency: string,
+  stockExchange: string,
+  exchangeShortName: string, }
 import ReactECharts from "echarts-for-react";
+function parseValueWithSuffix(value: string): number {
+  if (typeof value !== "string") return Number(value);
+
+  const suffix = value.slice(-1).toUpperCase();
+  const number = parseFloat(value.replace(/[^0-9.]/g, ""));
+
+  switch (suffix) {
+    case "T":
+      return number * 1e12;
+    case "B":
+      return number * 1e9;
+    case "M":
+      return number * 1e6;
+    default:
+      return number;
+  }
+}
+
 type Company = {
   symbol: string;
-  name: string;
+  name?: string;
+  as_of_today_date?: string;
+  companyName?:string;
+            // "": "Apple Inc.", 
+            // "price": 214.4,
+            // "priceChange": 1.92,
+            // "changePercentage": 0.9,
+            // "marketValueHead": "3.20T",
+            // "enterpriseValueHead": "3.27T",
+            // "priceToEarnings": 33.04,
+            // "priceToBook": 48.13,
+            // "priceToSales": 8.0,
+            // "earningspersharediluted": 6.08,
+            // "dividendYield": 0.0,
+            // "sector": "Technology",
+            // "industry": "Consumer Electronics",
+            // "ceo": "Timothy D. Cook",
   [key: string]: any; // Add this line to allow dynamic keys
 };
 type CompanyMetricKey =
   | "pricePerformance"
-  | "margin"
+  | "margins"
   | "earnings"
   | "financials"
   | "valuation"
@@ -40,19 +79,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { comparisionMockApi } from "@/global/constants";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RadarCharts from "./RadarCharts";
+import { getcomparisonData } from "@/services/compareStocks.services";
+import { ComparisonDataTypes, ComparisonStockData } from "@/types/types";
+import RoundLoader from "../Loader/RoundLoader";
+import StockAccordion from "./StockAccordion";
+import { searchStock } from "@/services/search.services";
 const excludedKeys = [
-  "name",
+  "companyName",
   "symbol",
-  "sector",
-  "industry",
-  "ceo",
-  "marketValue",
-  "enterpriseValue",
-  "priceToEarnings",
-  "dilutedEPS",
-  "forwardDividendYield",
+  "price",
+  "as_of_today_date",
+  "priceChange",
+  "marketValueChart",
+  "enterpriseValueChart",
+  "peRatioChart",
+  "dilutedEPSChart",
+  "dividendYieldChart",
+  "changePercentage", "marketValueHead","enterpriseValueHead","priceToEarnings","priceToBook","priceToSales", "earningspersharediluted", "dividendYield","sector", "industry","ceo"
 ];
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
@@ -81,99 +126,53 @@ const stockList = [
   },
   { symbol: "TSLA", name: "Tesla Inc.", price: "264.90", change: "+1.45%" },
 ];
+type StockCard = {
+  symbol: string;
+  name: string;
+  price: string;
+  change: string;
+};
 const CompareSection = () => {
+  const chartKeys: (keyof ComparisonStockData)[] = [
+  "marketValueChart",
+  "enterpriseValueChart",
+  "peRatioChart",
+  "dilutedEPSChart",
+  "dividendYieldChart",
+];
+    const params = useParams<{ symbol: string}>()
+    let symbol = params.symbol
   const router = useRouter();
   const colors = ["#5470C6", "#91CC75", "#EE6666", "#73C0DE"]; // Add more if needed
   const [expandedRow, setExpandedRow] = React.useState<number | null>(null);
+  const [stocks,setStocks] = React.useState<ComparisonDataTypes>([])
+
+  const [selectedCurrency, setSelectedCurrency] = React.useState(
+    topCurrencies[0].code
+  );
+
+
+const [stockCards, setStockCards] = React.useState<(StockCard | null)[]>([
+  null,
+  null,
+  null,
+  null,
+]);
+  const [openModal, setOpenModal] = React.useState(false);
+  const [selectedCardIndex, setSelectedCardIndex] = React.useState<
+    number | null
+  >(null);
+  const [filterLoading,setFilterLoading] = React.useState(false)
+    const [searchQuery, setSearchQuery] = React.useState("");
+const [filteredStocks,setFilteredStocks] = React.useState<SearchedStock[]>([])
 
   const toggleRow = (index: number) => {
     setExpandedRow(expandedRow === index ? null : index);
   };
 
-  const generateChartOption = (key: string) => {
-    const series = comparisionMockApi.companies
-      .map((company, i) => {
-        const typedKey = key as CompanyMetricKey;
-        const data = company[typedKey]?.chartData;
-        if (!data) return null;
+  
 
-        return {
-          name: company.name || `Company ${i + 1}`,
-          type: "line",
-          step: "middle",
-          data: data.map(
-            (item: {
-              date: Date;
-              marketCap?: number;
-              value?: number;
-              ratio?: number;
-            }) => [item.date, item?.marketCap || item?.value || item?.ratio]
-          ),
-          lineStyle: {
-            width: 2,
-            color: colors[i % colors.length],
-          },
-          itemStyle: {
-            color: colors[i % colors.length],
-          },
-          showSymbol: false,
-        };
-      })
-      .filter(Boolean); // remove nulls
 
-    const dates =
-      series.length && series[0] !== null
-        ? (series[0].data as [Date, number][]).map((item) => item[0])
-        : [];
-
-    return {
-      tooltip: {
-        trigger: "axis",
-      },
-      legend: {
-        top: 0,
-      },
-      xAxis: {
-        type: "category",
-        data: dates,
-      },
-      yAxis: {
-        type: "value",
-        axisLabel: {
-          formatter: "{value}",
-        },
-        splitLine: {
-          lineStyle: {
-            type: "dotted", // Makes it dotted
-            color: "#ccc", // Light gray color
-            width: 0.4, // Lightweight
-          },
-        },
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
-
-      series,
-    };
-  };
-  const [selectedCurrency, setSelectedCurrency] = React.useState(
-    topCurrencies[0].code
-  );
-  const [stockCards, setStockCards] = React.useState([
-    { symbol: "AAPL", name: "Apple Inc.", price: "196.14", change: "+1.36%" },
-    null,
-    null,
-    null,
-  ]);
-  const [openModal, setOpenModal] = React.useState(false);
-  const [selectedCardIndex, setSelectedCardIndex] = React.useState<
-    number | null
-  >(null);
-  const [searchQuery, setSearchQuery] = React.useState("");
   const handleAddStockClick = (index: number) => {
     setSelectedCardIndex(index);
     setOpenModal(true);
@@ -183,28 +182,79 @@ const CompareSection = () => {
     updated[index] = null;
     setStockCards(updated);
   };
+   // const filteredStocks = stockList.filter(
+  //   (s) =>
+  //     s.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     s.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
-  const filteredStocks = stockList.filter(
-    (s) =>
-      s.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleStockSelect = (stock: any) => {
-    const updatedCards = [...stockCards];
-    if (selectedCardIndex !== null) {
-      updatedCards[selectedCardIndex] = stock;
-      setStockCards(updatedCards);
-      setOpenModal(false);
-      setSearchQuery("");
-    }
+  const handleStockSelect = async(stock: SearchedStock) => 
+    {
+       setLoading((prev) =>
+  prev.map((val, index) => (index === selectedCardIndex ? true : val))
+);
+          let response = await getcomparisonData(stock?.symbol);
+          let s = [...stocks]
+          console.log(s)
+          s.push(response.data['comparison_data'].result)
+          setStocks(s)
+          setStockCards((prev) => {
+  const updated = [...prev];
+  const stock = response.data['comparison_data'].result;
+  updated[selectedCardIndex || 0] = {
+    symbol: stock.symbol,
+    name: stock.companyName,
+    price: stock.price.toString(),
+    change: `${stock.priceChange > 0 ? "+" : ""}${stock.priceChange.toFixed(2)}%`,
+  };
+  return updated;
+});
+         setLoading((prev) =>
+  prev.map((val, index) => (index === selectedCardIndex ? false : val))
+);
+setOpenModal(false);
+ setSearchQuery("");
+    // const updatedCards = [...stockCards];
+    // if (selectedCardIndex !== null) {
+    //   updatedCards[selectedCardIndex] = stock;
+    //   setStockCards(updatedCards);
+    //   setOpenModal(false);
+    //   setSearchQuery("");
+    // }
   };
   const formatKey = (key: string): string =>
     key
       .replace(/([a-z\d])([A-Z])/g, "$1 $2") // Space before caps that follow lowercase/digits
       .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // Fix acronyms followed by capitalized words
       .replace(/^./, (char) => char.toUpperCase());
+      const [loading,setLoading] = React.useState([true,false,false,false])
+React.useEffect(()=>{
+        const fetchChartData = async()=>{
+      setLoading((prev) =>
+  prev.map((val, index) => (index === 0 ? true : val))
+);
+          let response = await getcomparisonData(symbol);
+          
+          setStocks([response.data['comparison_data'].result])
+          setStockCards((prev) => {
+  const updated = [...prev];
+  const stock = response.data['comparison_data'].result;
+  updated[0] = {
+    symbol: stock.symbol,
+    name: stock.companyName,
+    price: stock.price.toString(),
+    change: `${stock.priceChange > 0 ? "+" : ""}${stock.priceChange.toFixed(2)}%`,
+  };
+  return updated;
+});
+         setLoading((prev) =>
+  prev.map((val, index) => (index === 0 ? false : val))
+);
+          
+        }
+        fetchChartData()
 
+      },[])
   return (
     <div className="w-full p-4 px-8 pt-0 bg-[#13131f] flex flex-col items-start text-white">
       <Button variant={"second"} className="mb-4" onClick={() => router.back()}>
@@ -213,7 +263,12 @@ const CompareSection = () => {
       </Button>
       <h1 className="font-bold">Compare Stocks</h1>
       <div className="flex flex-row items-center justify-between mt-2 w-full">
-        <h2 className="font-extrabold text-3xl">AAPL, SONY, 2498.TW</h2>
+        <h2 className="font-extrabold text-3xl">
+          {stockCards
+    .filter((card) => card !== null) // remove nulls
+    .map((card) => card!.symbol)     // get symbols
+    .join(", ")} {" "}
+        </h2>
         <div className="">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -262,7 +317,11 @@ const CompareSection = () => {
               className="relative p-4 col-span-1 cursor-pointer border border-gray-600 rounded-2xl h-[100px] w-full bg-[#1a1a2b] transition-shadow duration-300 hover:shadow-lg hover:shadow-gray-700 flex flex-col items-start justify-center"
             >
               {/* X Icon for removing stock, except for the first card */}
-              {stock && index !== 0 && (
+              {loading[index]==true ?
+              <div className="flex flex-col items-center w-full justify-center h-full">
+                <RoundLoader/>
+                </div>:
+              <>{stock && index !== 0 && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation(); // prevent opening modal
@@ -298,7 +357,7 @@ const CompareSection = () => {
                   <Plus className="text-white w-4 mr-2" />
                   <p className="font-bold">Add Stock</p>
                 </div>
-              )}
+              )}</>}
             </div>
           ))}
         </div>
@@ -307,18 +366,26 @@ const CompareSection = () => {
         <TableHeader>
           <TableRow className="bg-none w-full">
             <TableHead className="pl-6 w-1/5 text-start">{`As of ${comparisionMockApi.asOfDate}`}</TableHead>
-            <TableHead className=" pr-6 w-1/5 text-center">AAPL</TableHead>
-            <TableHead className="pr-6 w-1/5 text-center">XIACY</TableHead>
-            <TableHead className="pr-6 w-1/5 text-center">--</TableHead>
-            <TableHead className="pr-6 w-1/5 text-center">--</TableHead>
+            {stockCards.map((s,index)=>(
+              <TableHead className=" pr-6 w-1/5 text-center">{s?s?.symbol:'--'}</TableHead>
+             
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {excludedKeys.map((key, index) => {
-            const hasChartData = comparisionMockApi.companies.some(
-              (company: Company) => company[key]?.chartData
-            );
-
+            // const hasChartData = comparisionMockApi.companies.some(
+            //   (company: Company) => company[key]?.chartData
+            // );
+            //   const hasChartData = stocks.some(
+            //   (company: Company) => Array.isArray(company[key])
+            // );
+const hasChartData =
+  chartKeys.includes(key as keyof ComparisonStockData) &&
+  stocks.some(
+    (company) =>
+      Array.isArray(company[key as keyof ComparisonStockData])
+  );
             return (
               <React.Fragment key={index}>
                 {/* Main Row */}
@@ -338,7 +405,7 @@ const CompareSection = () => {
                     </div>
                   </TableCell>
 
-                  {comparisionMockApi.companies.map((company: Company, i) => {
+                  {stocks.map((company: Company, i) => {
                     const data = company[key];
                     let displayValue = "--";
 
@@ -352,6 +419,9 @@ const CompareSection = () => {
                       } else if ("marketCap" in data) {
                         displayValue = String(data.marketCap);
                       }
+                      else if (hasChartData){
+                        displayValue = ""
+                      }
                     }
 
                     return (
@@ -363,7 +433,7 @@ const CompareSection = () => {
 
                   {/* Empty columns */}
                   {Array.from({
-                    length: 4 - comparisionMockApi.companies.length,
+                    length: 4 - stocks.length,
                   }).map((_, i) => (
                     <TableCell key={`empty-${i}`} className="pr-6 text-center">
                       --
@@ -379,11 +449,100 @@ const CompareSection = () => {
                       className="pl-6 pr-6 pt-2 pb-4 hover:bg-none"
                     >
                       <div className="w-full  p-4 shadow-sm">
-                        <ReactECharts
+                        {/* <ReactECharts
                           option={generateChartOption(key)}
                           style={{ height: 300 }}
-                        />
+                        /> */
+                        }
+                         
                       </div>
+                      <div className="w-full p-4 shadow-sm">
+  <ReactECharts
+    option={{
+      tooltip: { trigger: "axis" },
+      legend: {
+        top: 0,
+        data: stocks.map((company) => company.symbol),
+      },
+      xAxis: {
+        type: "category",
+        data: (() => {
+          // Extract x-axis dates from the first valid company data
+          for (const company of stocks) {
+            const chartData = company[key as keyof ComparisonStockData];
+            if (Array.isArray(chartData)) {
+              return chartData.map((item: any) => item.date);
+            }
+          }
+          return [];
+        })(),
+        axisLabel: {
+          formatter: (value: string) =>
+            new Date(value).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+        },
+      },
+      yAxis: {
+        type: "value",
+        splitLine: { show: false },
+        axisLabel: {
+          formatter: (value: number) => {
+            if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
+            if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
+            if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+            return value;
+          },
+        },
+      },
+      grid: {
+        left: "0%",
+        right: "0%",
+        bottom: "3%",
+        containLabel: true,
+      },
+      series: stocks
+        .map((company, i) => {
+          const chartData = company[key as keyof ComparisonStockData] as
+            | { date: string; [k: string]: any }[]
+            | undefined;
+
+          if (!Array.isArray(chartData)) return null;
+
+          const dataPoints = chartData.map((item: any) => {
+            const raw =
+              item.marketCap ??
+              item.enterpriseValue ??
+              item.priceToEarnings ??
+              item.dilutedepsDilutedEPS ??
+              item.forwardDividendYield ??
+              "0";
+
+            return [item.date, parseValueWithSuffix(raw)];
+          });
+
+          return {
+            name: company.symbol,
+            type: "line",
+            data: dataPoints,
+            lineStyle: {
+              width: 2,
+              color: colors[i % colors.length],
+            },
+            itemStyle: {
+              color: colors[i % colors.length],
+            },
+            showSymbol: false,
+          };
+        })
+        .filter(Boolean),
+    }}
+    style={{ height: 300 }}
+  />
+</div>
+
+
                     </TableCell>
                   </TableRow>
                 )}
@@ -392,14 +551,15 @@ const CompareSection = () => {
           })}
         </TableBody>
       </Table>
-      <div className="w-full  py-4">
+          {/* {stocks.length>0 && <StockAccordion stocks={stocks}/>} */}
+     {stocks.length>0 && <div className="w-full  py-4">
         <Accordion type="single" collapsible>
-          {Object.keys(comparisionMockApi.companies[0]).map((key, index) => {
-            const sectionData1: Company[] = comparisionMockApi.companies;
+          {Object.keys(stocks[0]).map((key, index) => {
+            const sectionData1: Company[] = stocks;
             let sectionData = sectionData1[0][key];
-            const isChartSection =
-              typeof sectionData === "object" && sectionData?.chartData;
-            if (excludedKeys.includes(key) || isChartSection) return null;
+            // const isChartSection =
+            //   typeof sectionData === "object" && sectionData?.chartData;
+            if (excludedKeys.includes(key) ||key.includes('Chart')  ) return null;
             const isObject = typeof sectionData === "object"; // Check if the data is an object (e.g., pricePerformance)
             return (
               <AccordionItem key={index} value={key} className="mt-4">
@@ -407,6 +567,7 @@ const CompareSection = () => {
                   <span className="group-hover:text-[var(--variant-4)] font-bold text-2xl duration-300 transition-all">
                     {formatKey(key.replace(/([A-Z])/g, " $1").trim())}
                   </span>
+                  
                   <ChevronDown className="group-hover:text-[var(--variant-4)] h-6 w-6 transition-transform duration-500 data-[state=open]:rotate-180" />
                 </AccordionTrigger>
                 <AccordionContent className="w-full overflow-hidden transition-all duration-500 ease-in-out">
@@ -415,44 +576,38 @@ const CompareSection = () => {
                       <TableHeader>
                         <TableRow className="bg-none w-full">
                           <TableHead className="pl-6 w-1/5 text-start">{`As of ${comparisionMockApi.asOfDate}`}</TableHead>
-                          <TableHead className=" pr-6 w-1/5 text-center">
-                            AAPL
+                           {stockCards.map((s,index)=>(
+              <TableHead key={index} className=" pr-6 w-1/5 text-center">
+                            {s?s.symbol:'--'}
                           </TableHead>
-                          <TableHead className="pr-6 w-1/5 text-center">
-                            XIACY
-                          </TableHead>
-                          <TableHead className="pr-6 w-1/5 text-center">
-                            --
-                          </TableHead>
-                          <TableHead className="pr-6 w-1/5 text-center">
-                            --
-                          </TableHead>
+            ))}
+                        
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {Object.keys(sectionData).map((metricKey) => (
-                          <TableRow key={metricKey}>
+                        {Object.keys(sectionData).map((metricKey,index) => (
+                          <TableRow key={index}>
                             <TableCell className="font-medium text-start pl-6">
                               {metricKey}
                             </TableCell>
                             <TableCell className="pr-6 text-center">
                               {sectionData[metricKey]}
                             </TableCell>
-                            <TableCell className="pr-6 text-center">
-                              {comparisionMockApi.companies.length == 2
+                             <TableCell className="pr-6 text-center">
+                              {stocks.length == 2
                                 ? sectionData1[1][key][metricKey]
                                 : "--"}
                             </TableCell>
-                            <TableCell className="pr-6 text-center">
-                              {comparisionMockApi.companies.length == 3
+                             <TableCell className="pr-6 text-center">
+                              {stocks.length == 3
                                 ? sectionData1[2][key][metricKey]
                                 : "--"}
                             </TableCell>
                             <TableCell className="pr-6 text-center">
-                              {comparisionMockApi.companies.length == 4
+                              {stocks.length == 4
                                 ? sectionData1[3][key][metricKey]
                                 : "--"}
-                            </TableCell>
+                            </TableCell> 
                           </TableRow>
                         ))}
                       </TableBody>
@@ -465,9 +620,9 @@ const CompareSection = () => {
             );
           })}
         </Accordion>
-        <RadarCharts/>
-      </div>
-
+        {/* <RadarCharts/> */}
+      </div>}
+ 
       {openModal && (
         <div className="fixed inset-0   bg-opacity-20 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-[#1a1a2b] p-6 rounded-lg w-[400px]">
@@ -483,13 +638,28 @@ const CompareSection = () => {
               type="text"
               placeholder="Search stocks..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={async(e) => {
+                
+                setSearchQuery(e.target.value)
+                setFilterLoading(true)
+                    const searchedStock = await searchStock(e.target.value)
+                    setFilterLoading(false)
+                      setFilteredStocks(searchedStock.data!=null?searchedStock.data:[])
+                    if (!e.target.value.trim()) {
+                      setFilteredStocks([]);
+                      return;
+                    }
+              }}
               className="w-full p-2 rounded bg-[#2a2a3d] border border-gray-500 text-white"
             />
             <div className="mt-4 max-h-[200px] overflow-y-auto">
-              {filteredStocks.map((stock) => (
+              {filterLoading?
+              <div className="flex flex-col items-center w-full py-4">
+                <RoundLoader/>
+              </div>:
+              <>{filteredStocks.map((stock) => (
                 <div
-                  key={stock.symbol}
+                  key={stock?.symbol}
                   onClick={() => handleStockSelect(stock)}
                   className="p-2 hover:bg-[#2d2d42] rounded cursor-pointer"
                 >
@@ -497,11 +667,11 @@ const CompareSection = () => {
                   <div className="text-sm text-gray-400">{stock.name}</div>
                 </div>
               ))}
-              {filteredStocks.length === 0 && (
+              { filteredStocks.length === 0 && (
                 <div className="text-gray-400 text-sm text-center">
                   No results found
                 </div>
-              )}
+              )}</>}
             </div>
           </div>
         </div>

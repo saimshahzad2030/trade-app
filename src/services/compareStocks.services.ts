@@ -1,13 +1,14 @@
  
-import {axiosInstanceJson} from "../../axios/axiosInstance"; 
-export const searchStock = async (query:string) => {
+import axiosInstance,{axiosInstanceJson} from "../../axios/axiosInstance";
+ 
+export const getcomparisonData = async (symbol:string) => {
   try {
-    const response = await axiosInstanceJson.get(`company-search/${query}`);
+    const response = await axiosInstanceJson.get(`comparison-data/${symbol}`);
      
     console.log(response.data)
     return {
       status: response.status,
-      data: response.data.results,
+      data: response.data,
     };
   } catch (err) {
   const error = err as { response:{status: number; data: string} };
