@@ -176,11 +176,14 @@ const [filteredStocks,setFilteredStocks] = React.useState<SearchedStock[]>([])
   const handleAddStockClick = (index: number) => {
     setSelectedCardIndex(index);
     setOpenModal(true);
+    
   };
   const handleRemoveStock = (index: number) => {
     const updated = [...stockCards];
+    setStocks(prevStocks => prevStocks.filter(stock => stock.symbol !== stockCards[index]?.symbol));
     updated[index] = null;
-    setStockCards(updated);
+    setStockCards(updated); 
+
   };
    // const filteredStocks = stockList.filter(
   //   (s) =>
