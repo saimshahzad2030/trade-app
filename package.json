@@ -21,7 +21,7 @@
     "@react-pdf/renderer": "^4.3.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@shadcn/ui": "^0.0.4",
-    "@tabler/icons-react": "^3.31.0",
+    "@tabler/icons-react": "^3.34.1",
     "@types/js-cookie": "^3.0.6",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",

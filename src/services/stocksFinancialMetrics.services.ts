@@ -67,3 +67,60 @@ export const getPeRatioMetrices = async (symbol:string) => {
     };
   }
 };
+export const getRevenueGrowthMetrices = async (symbol:string) => {
+  try {
+    const response = await axiosInstanceJson.get(`company-revenue-growth-quarterly/${symbol}`); 
+      
+    return {
+      status: response.status,
+      data: {growth:response.data.revenue_growth.result,
+        symbol,
+        
+      },
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
+export const getHistoricalBetaMetrices = async (symbol:string) => {
+  try {
+    const response = await axiosInstanceJson.get(`company-historical-beta-monthly/${symbol}`); 
+      
+    return {
+      status: response.status,
+      data: {beta:response.data.avg_beta_monthly.result,
+        symbol,
+        
+      },
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
+export const getWaccMetrices = async (symbol:string) => {
+  try {
+    const response = await axiosInstanceJson.get(`company-wacc/${symbol}`); 
+      
+    return {
+      status: response.status,
+      data: {wacc:response.data.wacc.result,
+        symbol,
+        
+      },
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};

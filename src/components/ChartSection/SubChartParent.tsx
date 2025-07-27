@@ -8,13 +8,13 @@ import SearchBar from '../Searchbar/Searchbar'
 import CompanySectionSearchbar from '../Searchbar/CompanySectionSearchbar'
 import { searchStock } from '@/services/search.services'
 import { Cross, X } from 'lucide-react'
-import { getEpsDataMetrices, getPeRatioMetrices, getStockFinancialMetrices } from '@/services/stocksFinancialMetrics.services'
+import { getEpsDataMetrices, getHistoricalBetaMetrices, getPeRatioMetrices, getRevenueGrowthMetrices, getStockFinancialMetrices, getWaccMetrices } from '@/services/stocksFinancialMetrics.services'
 import RoundLoader from '../Loader/RoundLoader'
 export type EPSData = { date: string; eps: number | string };
 export type PEData = { date: string; pe_ratio: number | string };
-type GrowthData = { date: string; growth: number };
-type WACCData = { date: string; wacc: number };
-type BetaData = { date: string; beta: number };
+export type GrowthData = { date: string; growth: number };
+export type WACCData = { date: string; wacc: number };
+export type BetaData = { date: string; beta: number };
 
 export type CompanyFinancialMetrics = {
   eps: EPSData[];
@@ -40,17 +40,30 @@ const SubChartParent = () => {
     const [chartData,setChartData] = React.useState<CompanyFinancialMetrics[] | []>([]) 
     const [epsData,setEpsData] = React.useState<{eps: EPSData[],symbol:string}[] >([]) 
     const [peData,setPeData] = React.useState<{pe_ratio: PEData[],symbol:string}[] >([]) 
+    const [growthData,setGrowthData] = React.useState<{growth: GrowthData[],symbol:string}[] >([]) 
+    const [waccData,setWaccData] = React.useState<{wacc: WACCData[],symbol:string}[] >([]) 
+    const [betaData,setBetaData] = React.useState<{beta: BetaData[],symbol:string}[] >([]) 
     let handleNewData= (newData:CompanyFinancialMetrics)=>{
     let c = [...chartData]
     c.push(newData as CompanyFinancialMetrics)
                   setChartData(c);
   }
+ 
+const handleAddGrowth = (newData: { growth: GrowthData[]; symbol: string }) => {  
+  setGrowthData(prev => [...prev, newData]);
+};
 const handleAddEps = (newData: { eps: EPSData[]; symbol: string }) => { 
   setEpsData(prev => [...prev, newData]);
 };
 const handleAddPe = (newData: { pe_ratio: PEData[]; symbol: string }) => { 
   console.log("new data",newData)
   setPeData(prev => [...prev, newData]);
+};
+const handleAddWACC = (newData: { wacc: WACCData[]; symbol: string }) => {  
+  setWaccData(prev => [...prev, newData]);
+};
+const handleAddBeta = (newData: { beta: BetaData[]; symbol: string }) => {  
+  setBetaData(prev => [...prev, newData]);
 };
     const [loading,setLoading] = React.useState<boolean>(false)
      React.useEffect(()=>{
@@ -59,15 +72,24 @@ const handleAddPe = (newData: { pe_ratio: PEData[]; symbol: string }) => {
               let response = await searchStock('aapl'); 
               let response2 = await getEpsDataMetrices('aapl');   
               let response3 = await getPeRatioMetrices('aapl');   
+              let response4 = await getRevenueGrowthMetrices('aapl')
+              let response5 = await getWaccMetrices('aapl')
+              let response6 = await getHistoricalBetaMetrices('aapl')
               setChartData([response2.data as CompanyFinancialMetrics]);
 if (
   typeof response2.data === "object" && "eps" in response2.data &&
-  typeof response3.data === "object" && "pe_ratio" in response3.data
-) {
+  typeof response3.data === "object" && "pe_ratio" in response3.data &&
+  typeof response4.data === "object" && "growth" in response4.data &&
+  typeof response5.data === "object" && "wacc" in response5.data &&
+  typeof response6.data === "object" && "beta" in response6.data 
+   ) {
+  setGrowthData([{ growth: response4.data.growth as GrowthData[], symbol: 'aapl' }]);
   setEpsData([{ eps: response2.data.eps as EPSData[], symbol: 'aapl' }]);
   setPeData([{ pe_ratio: response3.data.pe_ratio as PEData[], symbol: 'aapl' }]);
+  setWaccData([{ wacc: response5.data.wacc as WACCData[], symbol: 'aapl' }]);
+  setBetaData([{ beta: response6.data.beta as BetaData[], symbol: 'aapl' }]);
 } else {
-  console.error("Invalid EPS or PE data", { epsData: response2.data, peData: response3.data });
+  console.error("Invaliddata", { epsData: response2.data, peData: response3.data });
 }
               setStocks([response.data[0]])
               setLoading(false) 
@@ -108,13 +130,13 @@ stocks.map((stock,index)=>(
             stocks?.length>0 &&<SubChart2 peData={peData} handleAddPe={handleAddPe}/>}
             {loading?
             <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart3 />}
+            stocks?.length>0 &&<SubChart3 growthData={growthData} handleAddGrowth={handleAddGrowth}/>}
             {loading?
             <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart4 />}
+            stocks?.length>0 &&<SubChart4 waccData={waccData} handleAddWACC={handleAddWACC}/>}
             {loading?
             <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart5 />}
+            stocks?.length>0 &&<SubChart5 betaData={betaData} handleAddBeta={handleAddBeta}/>}
              
                    
           </div>}
