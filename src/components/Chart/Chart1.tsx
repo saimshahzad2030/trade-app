@@ -154,13 +154,22 @@ const option = {
     type: "time",
     boundaryGap: false,
     position: "bottom",
-    splitNumber: 5,
+  splitNumber: activeRange === "1d" ? 6 : 5,
     axisLabel: {
       align: "bottom",
       formatter: (value: number) => {
-        const date = new Date(value);
-        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-      },
+    const date = new Date(value);
+   if (activeRange === "1d") {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      
+    });
+  } else {
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }
+  },
     },
     axisLine: {
       lineStyle: {

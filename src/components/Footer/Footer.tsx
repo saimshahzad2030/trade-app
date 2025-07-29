@@ -26,8 +26,8 @@ const Footer = () => {
   ];
   return (
     <div className="flex flex-col items-center w-full bg-[#13131f] px-8 pt-20">
-      <div className="w-full grid grid-cols-4 gap-2 pb-8">
-        {/* <ChartFooter /> */}
+      <div className="w-full grid grid-cols-5 gap-2 pb-8">
+        <ChartFooter />
 
         <div className="flex flex-col items-start w-full   text-white">
           <h1 className="mb-4 font-bold ">Analysis Tools</h1>
