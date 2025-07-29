@@ -1,12 +1,63 @@
 "use client";
 import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+ 
+import { useState } from "react";
 import SearchBar from "../Searchbar/Searchbar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"; 
+import Cookies from "js-cookie"; 
+import { useRouter } from "next/navigation";
+function ConfirmationModal({
+  onConfirm,
+  title = "Are you sure?",
+  description = "This action cannot be undone.",
+  children,
+}: {
+  onConfirm: () => void;
+  title?: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = React.useState(false);
 
-const Navbar = () => {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <DialogFooter>
+          <Button className="cursor-pointer" variant="ghost" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+          className="cursor-pointer"
+            variant="destructive"
+            onClick={() => {
+              onConfirm();
+              setOpen(false);
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const Navbar = () => {   
+  const token = Cookies.get('accessToken')
+  const router = useRouter()
   const pathName = usePathname();
+   const handleLogout = () => {
+    Cookies.remove('accessToken');
+    router.push('/'); // or homepage if preferred
+  };
   return (
     <div className=" fixed w-full  z-50">
       <div
@@ -41,7 +92,23 @@ const Navbar = () => {
           Portfolio
         </Link>
         </div>
-          <Link href="/login">
+   
+         {token?
+        <ConfirmationModal
+          title="Log out?"
+          description="Are you sure you want to logout?"
+          onConfirm={handleLogout}
+        >
+          <Button
+            size="lg"
+            variant="second"
+            className="mr-1 text-red-400 hover:border-red-400"
+          >
+            Logout
+          </Button>
+        </ConfirmationModal>
+         :
+         <> <Link href="/login">
             <Button
               size="lg"
               variant="second"
@@ -58,7 +125,7 @@ const Navbar = () => {
             >
               Sign Up
             </Button>
-          </Link>
+          </Link></>}
         </div>
       </div>
     </div>

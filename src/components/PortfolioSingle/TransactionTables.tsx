@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { textColor } from "@/utils/functionalUtils";
-import { Holdings, Transactions, TransactionType } from "@/types/types";
+import { Holdings, HoldingSummary, Transactions, TransactionType } from "@/types/types";
 type Lot = {
   shares: number;
   cost: number;
@@ -43,7 +43,7 @@ type Lot = {
 
 type LotTableProps = {
   transactions: Transactions[];
-  holding: Holdings;
+  holding: HoldingSummary;
   setTransactions: React.Dispatch<React.SetStateAction<Transactions[]>>;
 };
 const TransactionTables: React.FC<LotTableProps> = ({
@@ -276,7 +276,7 @@ const TransactionTables: React.FC<LotTableProps> = ({
 
                 {calculateRealizedGain({
                   shares: transaction.shares,
-                  lastPrice: holding.lastPrice,
+                  lastPrice: parseFloat(holding.last_price),
                   avgCostPerShare: transaction.costPerShare,
                 })}
                 <TableCell>

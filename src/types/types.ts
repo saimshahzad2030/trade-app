@@ -584,15 +584,26 @@ export interface StockFundamentals {
     trlAnnDivYield: number;
     priceToBook: number;
 }
-export interface Portfolio {
-    portfolioName: string,
-    symbols: number;
-    costBasis: string;
-    marketValue: string;
-    dayChange: string;
-    unrealizedGainLoss: string;
-    realizedGainLoss: string;
-}
+export type Portfolio = {
+  id: number;
+  name: string;
+  symbols: number;
+  cost_basis: string;
+  market_value: string;
+  day_change: {
+    value: string;
+    percent: string;
+  };
+  unrealized_gain_loss: {
+    value: string;
+    percent: string;
+  };
+  realized_gain_loss: {
+    value: string;
+    percent: string;
+  };
+};
+
 export type PortfolioData = {
     portfolioName: string;
     symbols: number;
@@ -907,3 +918,72 @@ export type RealtimePriceData = {
     price: number;
   }[];
 };
+export interface SectorHeatmapResponse {
+  [sector: string]: Array<{
+    ticker: string;
+    name: string;
+    sector: string;
+    percentChange: string;
+    volume: string;
+    marketCap: string;
+  }>;
+}
+export interface Fundamentals {
+  revenue: string;
+  grossProfit: string;
+  peRatio: number;
+  roe: number;
+  debtToEquity: number;
+  currentRatio: number;
+  netProfitMargin: number;
+  dividendYield: number;
+  eps: number;
+  epsDiluted: number;
+  ebitda: string;
+  bookValuePerShare: number;
+}
+ 
+export interface HoldingSummary {
+  symbol: string;
+  shares: number;
+  last_price: string;
+  ac_per_share: string;
+  total_cost: string;
+  market_value: string;
+  total_div_income: string;
+  day_gain_unrealized_percent: string;
+  day_gain_unrealized_value: string;
+  total_gain_unrealized_percent: string;
+  total_gain_unrealized_value: string;
+  realized_gain_percent: string;
+  realized_gain_value: string;
+}
+ 
+interface PortfolioAsset {
+  fundamentals: Fundamentals;
+  holdings: HoldingSummary;
+
+  portfolio: number;
+  id: number;
+  asset_name: string;
+  asset_symbol: string;
+  asset_type: string; 
+  last_price: number;
+  change: number;
+  change_percent: string;
+  currency: string;
+  market_time: string;
+  volume: string;
+  shares: number;
+  avg_volume_3m: string;
+  day_range: string;
+  fifty_two_week_range: string;
+  day_chart: Array<{
+    date: string;
+    price: number;
+  }>;
+  market_cap: string;
+  
+}
+
+export type PortfolioDataResponse= PortfolioAsset[];

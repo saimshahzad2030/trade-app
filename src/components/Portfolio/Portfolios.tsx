@@ -20,6 +20,7 @@ import Link from "next/link";
 import {
   ChevronDown,
   ChevronLeft,
+  Currency,
   FileIcon,
   Plus,
   Tickets,
@@ -29,6 +30,9 @@ import { Portfolio } from "@/types/types";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { CreateNewPortfolio, FetchPortfolios } from "@/services/portfolio.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
+import { current } from "@reduxjs/toolkit";
 type TabKey = string | null; // or e.g. 'overview' | 'holdings' | 'analytics'
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
@@ -67,54 +71,64 @@ const Portfolios = () => {
   const [selectedCurrency, setSelectedCurrency] = React.useState(
     topCurrencies[0].code
   );
-  const [portfolios, setPortfolios] = React.useState<Portfolio[]>([
-    {
-      portfolioName: "Tech Growth Fund",
-      symbols: 5,
-      costBasis: "$10,500",
-      marketValue: "$12,300",
-      dayChange: "+$300",
-      unrealizedGainLoss: "+$1,800",
-      realizedGainLoss: "+$1,200",
-    },
-    {
-      portfolioName: "Dividend Portfolio",
-      symbols: 10,
-      costBasis: "$15,000",
-      marketValue: "$16,200",
-      dayChange: "+$200",
-      unrealizedGainLoss: "+$1,200",
-      realizedGainLoss: "+$800",
-    },
-    {
-      portfolioName: "Global Stocks",
-      symbols: 8,
-      costBasis: "$25,000",
-      marketValue: "$24,500",
-      dayChange: "-$500",
-      unrealizedGainLoss: "-$500",
-      realizedGainLoss: "+$500",
-    },
-    {
-      portfolioName: "Crypto Investments",
-      symbols: 3,
-      costBasis: "$5,000",
-      marketValue: "$5,200",
-      dayChange: "+$200",
-      unrealizedGainLoss: "+$200",
-      realizedGainLoss: "$0",
-    },
-    {
-      portfolioName: "Real Estate Fund",
-      symbols: 2,
-      costBasis: "$30,000",
-      marketValue: "$31,000",
-      dayChange: "+$500",
-      unrealizedGainLoss: "+$1,000",
-      realizedGainLoss: "+$500",
-    },
-  ]);
-
+  // const [portfolios, setPortfolios] = React.useState<Portfolio[]>([
+  //   {
+  //     portfolioName: "Tech Growth Fund",
+  //     symbols: 5,
+  //     costBasis: "$10,500",
+  //     marketValue: "$12,300",
+  //     dayChange: "+$300",
+  //     unrealizedGainLoss: "+$1,800",
+  //     realizedGainLoss: "+$1,200",
+  //   },
+  //   {
+  //     portfolioName: "Dividend Portfolio",
+  //     symbols: 10,
+  //     costBasis: "$15,000",
+  //     marketValue: "$16,200",
+  //     dayChange: "+$200",
+  //     unrealizedGainLoss: "+$1,200",
+  //     realizedGainLoss: "+$800",
+  //   },
+  //   {
+  //     portfolioName: "Global Stocks",
+  //     symbols: 8,
+  //     costBasis: "$25,000",
+  //     marketValue: "$24,500",
+  //     dayChange: "-$500",
+  //     unrealizedGainLoss: "-$500",
+  //     realizedGainLoss: "+$500",
+  //   },
+  //   {
+  //     portfolioName: "Crypto Investments",
+  //     symbols: 3,
+  //     costBasis: "$5,000",
+  //     marketValue: "$5,200",
+  //     dayChange: "+$200",
+  //     unrealizedGainLoss: "+$200",
+  //     realizedGainLoss: "$0",
+  //   },
+  //   {
+  //     portfolioName: "Real Estate Fund",
+  //     symbols: 2,
+  //     costBasis: "$30,000",
+  //     marketValue: "$31,000",
+  //     dayChange: "+$500",
+  //     unrealizedGainLoss: "+$1,000",
+  //     realizedGainLoss: "+$500",
+  //   },
+  // ]);
+const [loading,setLoading] = React.useState(true)
+const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
+  React.useEffect(() => {
+    const fetchChartData = async () => {
+      setLoading(true);
+      let response = await FetchPortfolios();
+      setUserPortfolios(response.data);
+      setLoading(false);
+    };
+    fetchChartData();
+  }, []);
   return (
     <div className="overflow-x-auto w-full mt-8 flex flex-col items-start pt-20 px-8">
       <Link
@@ -147,25 +161,58 @@ const Portfolios = () => {
             <TableCell>Unrealized Gain/Loss</TableCell>
             <TableCell>Realized Gain/Loss</TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {portfolios.map((portfolio, index) => (
-            <TableRow key={index}>
-              <TableCell className="flex flex-row items-center">
-                <Tickets className="mr-2" />
-                <Link href={`/portfolio/${index}`}>
-                  {portfolio.portfolioName}
-                </Link>
-              </TableCell>
-              <TableCell>{portfolio.symbols}</TableCell>
-              <TableCell>{portfolio.costBasis}</TableCell>
-              <TableCell>{portfolio.marketValue}</TableCell>
-              <TableCell>{portfolio.dayChange}</TableCell>
-              <TableCell>{portfolio.unrealizedGainLoss}</TableCell>
-              <TableCell>{portfolio.realizedGainLoss}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+        </TableHeader> 
+  {loading ? (
+   <TableBody>
+    {[...Array(3)].map((_, i) => (
+      <TableRow key={i}>
+        <TableCell>
+          <SkeletonLoader className="h-6 w-40 bg-gray-700" />
+        </TableCell>
+        <TableCell>
+          <SkeletonLoader className="h-6 w-10 bg-gray-700" />
+        </TableCell>
+        <TableCell>
+          <SkeletonLoader className="h-6 w-20 bg-gray-700" />
+        </TableCell>
+        <TableCell>
+          <SkeletonLoader className="h-6 w-20 bg-gray-700" />
+        </TableCell>
+        <TableCell>
+          <SkeletonLoader className="h-6 w-20 bg-gray-700" />
+          
+        </TableCell>
+        <TableCell>
+                   <SkeletonLoader className="h-6 w-20 bg-gray-700" />
+
+        </TableCell>
+        <TableCell>
+          <SkeletonLoader className="h-4 w-28 bg-gray-700" />
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+) : (
+  <TableBody>
+    {userPortfolios.map((portfolio) => (
+    <TableRow key={portfolio.id}>
+      <TableCell className="flex flex-row items-center">
+        <Tickets className="mr-2" />
+        <Link href={`/portfolio/${portfolio.id}`}>
+          {portfolio.name}
+        </Link>
+      </TableCell>
+      <TableCell>{portfolio.symbols}</TableCell>
+      <TableCell>{portfolio.cost_basis}</TableCell>
+      <TableCell>{portfolio.market_value}</TableCell>
+      <TableCell>{portfolio.day_change.value} ({portfolio.day_change.percent})</TableCell>
+      <TableCell>{portfolio.unrealized_gain_loss.value} ({portfolio.unrealized_gain_loss.percent})</TableCell>
+      <TableCell>{portfolio.realized_gain_loss.value} ({portfolio.realized_gain_loss.percent}%)</TableCell>
+    </TableRow>
+  ))}  
+
+</TableBody>
+)}
       </Table>
       {addPortfolio && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
@@ -300,21 +347,33 @@ const Portfolios = () => {
                   Back
                 </button> */}
               <button
-                onClick={() => {
-                  setPortfolios((prevPortfolio) => [
-                    ...prevPortfolio,
-                    {
-                      portfolioName,
-                      symbols: 2,
-                      costBasis: "$30,000",
-                      marketValue: "$31,000",
-                      dayChange: "+$500",
-                      unrealizedGainLoss: "+$1,000",
-                      realizedGainLoss: "+$500",
-                    },
-                  ]);
-                  setAddPortfolio(false);
-                  setPortfolioName("");
+                onClick={async() => {
+                 const newPortfolio: Portfolio = {
+      id: Date.now(), // or generate a UUID
+      name: portfolioName,
+      symbols: 2,
+      cost_basis: "$30,000",
+      market_value: "$31,000",
+      day_change: {
+        value: "+$500",
+        percent: "+1.6%",
+      },
+      unrealized_gain_loss: {
+        value: "+$1,000",
+        percent: "+3.3%",
+      },
+      realized_gain_loss: {
+        value: "+$500",
+        percent: "+1.6%",
+      },
+    };
+let newPortfolioReponse = await CreateNewPortfolio({name:portfolioName,currency:"USD"})
+if(newPortfolioReponse.status==201){
+     setUserPortfolios((prev) => [...(Array.isArray(prev) ? prev : [prev]), newPortfolioReponse.data]);
+}
+
+    setAddPortfolio(false);
+    setPortfolioName("");
                 }}
                 className="bg-[var(--variant-4)] text-white px-6 py-2 rounded-md cursor-pointer"
               >

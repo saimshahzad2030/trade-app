@@ -14,18 +14,7 @@ const PortfolioSinglePage = async ({
       <Navbar />
 
       <NavSecond />
-      <PortfolioSingle
-        portfolio={{
-          portfolioName: "Dividend Portfolio",
-          symbols: 10,
-          currency: "US$",
-          costBasis: "$15,000",
-          marketValue: "$16,200",
-          dayChange: "+$200",
-          unrealizedGainLoss: "+$1,200",
-          realizedGainLoss: "+$800",
-        }}
-      />
+      <PortfolioSingle />
     </div>
   );
 };

@@ -4,58 +4,62 @@ import { companyData } from "@/types/types";
 import {appleData1d, CompanyData1 } from "@/global/constants";
 import ReactECharts from "echarts-for-react";
 import { color } from "echarts";
-const WatchlistTableChart = () => {
-  const companies = [appleData1d,appleData1d,appleData1d];
-  const getChartOptions = (company: CompanyData1, index: number) => {
-    const chartData = company.chart.result[0];
-    const timestamps = chartData.timestamp.map((ts) =>
-      new Date(ts * 1000).toLocaleTimeString()
-    );
-    const prices = chartData.indicators.quote[0].close;
-    const minPrice = Math.min(...prices.filter((p) => p != null)); // filter out nulls if any
+type props={
+ data: Array<{
+    date: string;
+    price: number;
+  }>; 
+}
+const WatchlistTableChart = ({data}:props) => {
+  const timestamps = data.map((point) =>
+    new Date(point.date).toLocaleTimeString()
+  );
 
-    return {
-      tooltip: {
-        trigger: "axis",
+  const prices = data.map((point) => point.price);
+  const validPrices = prices.filter((p) => p != null);
+  const minPrice = Math.min(...validPrices);
+
+  const getChartOptions = () => ({
+    tooltip: {
+      trigger: "axis",
+    },
+    xAxis: {
+      type: "category",
+      data: timestamps,
+      axisLabel: { show: false },
+      axisTick: { show: false },
+      axisLine: { show: false },
+    },
+    yAxis: {
+      type: "value",
+      min: minPrice,
+      axisLabel: { show: false },
+      axisTick: { show: false },
+      axisLine: { show: false },
+      splitLine: { show: false },
+    },
+    series: [
+      {
+        color: "#0A7075",
+        data: prices,
+        type: "line",
+        smooth: true,
+        showSymbol: false,
       },
-      xAxis: {
-        type: "category",
-        data: timestamps,
-        axisLabel: { show: false }, // ❌ hide X labels
-        axisTick: { show: false }, // ❌ hide X ticks
-        axisLine: { show: false }, // ❌ hide X line
-      },
-      yAxis: {
-        type: "value",
-        min: minPrice,
-        axisLabel: { show: false }, // ❌ hide Y labels
-        axisTick: { show: false }, // ❌ hide Y ticks
-        axisLine: { show: false }, // ❌ hide Y line
-        splitLine: { show: false }, // ❌ hide grid lines
-      },
-      series: [
-        {
-          color: "#0A7075",
-          data: prices,
-          type: "line",
-          smooth: true,
-          showSymbol: false,
-        },
-      ],
-      grid: {
-        top: 2,
-        bottom: 2,
-        left: 2,
-        right: 2,
-      },
-    };
-  };
+    ],
+    grid: {
+      top: 2,
+      bottom: 2,
+      left: 2,
+      right: 2,
+    },
+  });
 
   return (
     <div className="flex flex-col items-center h-auto mr-4">
-      <div className="w-full h-[40px] ">
+      <div className="w-full h-[40px]">
         <ReactECharts
-          option={getChartOptions(appleData1d, 1)}
+          option={getChartOptions()}
           style={{
             height: "100%",
             width: "100%",

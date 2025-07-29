@@ -4,6 +4,21 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "../ui/button";
 const ranges = ["summary", "holdings", "fundamentals"] as const;
+const fundamentalsLabelMap: Record<keyof Fundamentals, string> = {
+  revenue: "Revenue",
+  grossProfit: "Gross Profit",
+  peRatio: "P/E Ratio",
+  roe: "ROE",
+  debtToEquity: "Debt to Equity",
+  currentRatio: "Current Ratio",
+  netProfitMargin: "Net Profit Margin",
+  dividendYield: "Dividend Yield",
+  eps: "EPS",
+  epsDiluted: "EPS (Diluted)",
+  ebitda: "EBITDA",
+  bookValuePerShare: "Book Value / Share",
+};
+
 type StockOption = {
   symbol: string;
   name: string;
@@ -28,6 +43,13 @@ const stocks: StockOption[] = [
     type: "Futures",
   },
 ];
+let stock =  {
+            "symbol": "SAG",
+            "name": "SAG Holdings Ltd",
+            "currency": "USD",
+            "stockExchange": "NASDAQ Global Select",
+            "exchangeShortName": "NASDAQ"
+        }
 const stockFundamentalsMock: StockFundamentals[] = [
   {
     symbol: "AAPL",
@@ -96,11 +118,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { PortfolioData, StockFundamentals, WatchList } from "@/types/types";
+import { Fundamentals, Portfolio, PortfolioData, PortfolioDataResponse, StockFundamentals, WatchList } from "@/types/types";
 import WatchlistTableChart from "./WatchlistTableChart";
 import { Input } from "../ui/input";
 import HoldingsTable from "./HoldingsTable";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { CreateNewPortfolio, cretateNewHolding, FetchPortfolioHoldings, FetchSinglePortfolio } from "@/services/portfolio.services";
+import { searchStock } from "@/services/search.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
   { name: "Euro", code: "EUR", symbol: "€" },
@@ -113,7 +138,9 @@ const topCurrencies = [
   { name: "Indian Rupee", code: "INR", symbol: "₹" },
   { name: "Singapore Dollar", code: "SGD", symbol: "S$" },
 ];
-const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
+const PortfolioSingle = ( ) => {
+  const params = useParams<{ id: string}>()
+
   const router = useRouter();
   const [addNewSymbol, setAddNewSymbol] = React.useState(false);
   const stockData: WatchList[] = [
@@ -148,17 +175,24 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
     // More data entries can go here
   ];
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedStocks, setSelectedStocks] = React.useState<StockOption[]>([]);
-
-  const filteredStocks = stocks.filter(
-    (stock) =>
-      `${stock.symbol} ${stock.name}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) &&
-      !selectedStocks.some((s) => s.symbol === stock.symbol)
-  );
-  const addStock = (stock: StockOption) => {
-    setSelectedStocks((prev) => [...prev, stock]);
+  const [selectedStocks, setSelectedStocks] = React.useState<typeof stock[]>([]);
+  let [filteredStocks,setFilteredStocks] = React.useState<typeof stock[] | []>([])
+  const [summaryData,setSummaryData] = React.useState<PortfolioDataResponse | []>([])
+  // const filteredStocks = stocks.filter(
+  //   (stock) =>
+  //     `${stock.symbol} ${stock.name}`
+  //       .toLowerCase()
+  //       .includes(searchTerm.toLowerCase()) &&
+  //     !selectedStocks.some((s) => s.symbol === stock.symbol)
+  // );
+  const addStock =  (stock: {
+            symbol: string,
+            name: string,
+            currency: string,
+            stockExchange: string,
+            exchangeShortName: string
+        }) => {
+  setSelectedStocks((prev) => [...prev, stock]);
     setSearchTerm("");
   };
 
@@ -190,7 +224,9 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
       }
     }
   };
+  const [portfolio,setPrtfolio] =React.useState<Portfolio | null>(null)
   const [tabSelected, setTabSelected] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   const [portfolioName, setPortfolioName] = React.useState<string>("");
 
@@ -198,7 +234,24 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
   const [selectedCurrency, setSelectedCurrency] = React.useState(
     topCurrencies[0].code
   );
+React.useEffect(()=>{
+        const fetchChartData = async()=>{
+          setLoading(true)
+          // let response = await FetchSinglePortfolio(Number(params.id));
+          let response = await FetchPortfolioHoldings(Number(params.id));
+          if(response.status==200){
+            setSummaryData(response.data)
+          } 
+          else{
+            setSummaryData([])
 
+          }
+          setLoading(false)
+          
+        }
+        fetchChartData()
+
+      },[])
   return (
     <div className="flex flex-col items-start w-full px-8 pt-40 text-white">
       <div className="flex flex-row items-center justify-between   w-full mt-4">
@@ -247,7 +300,7 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
           Add Symbol
         </button>
       </div>
-      {selectedTab === "summary" && (
+      {/* {selectedTab === "summary" && (
         <Table className="text-xs">
           <TableHeader>
             <TableRow>
@@ -290,50 +343,100 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
             ))}
           </TableBody>
         </Table>
-      )}
+      )} */}
+{selectedTab === "summary" && (
+  loading ? (
+    <Table className="text-xs">
+      <TableHeader>
+        <TableRow>
+          {[
+            "Symbol", "Last Price", "Change %", "Change", "Currency", "Market Time",
+            "Volume", "Avg. Vol", "Day Range", "52W Range", "Day Chart", "Market Cap"
+          ].map((head, idx) => (
+            <TableHead key={idx}>{head}</TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <TableRow key={i}>
+            {Array.from({ length: 12 }).map((_, j) => (
+              <TableCell key={j}>
+                <SkeletonLoader className="w-full h-4 bg-gray-700 rounded" />
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  ) : (
+    <Table className="text-xs">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Symbol</TableHead>
+          <TableHead>Last Price</TableHead>
+          <TableHead>Change %</TableHead>
+          <TableHead>Change</TableHead>
+          <TableHead>Currency</TableHead>
+          <TableHead>Market Time</TableHead>
+          <TableHead>Volume</TableHead>
+          <TableHead>Avg. Vol</TableHead>
+          <TableHead>Day Range</TableHead>
+          <TableHead>52W Range</TableHead>
+          <TableHead>Day Chart</TableHead>
+          <TableHead>Market Cap</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {summaryData.map((stock) => (
+          <TableRow key={stock.id}>
+            <TableCell className="font-bold">{stock.asset_symbol}</TableCell>
+            <TableCell>{stock.last_price}</TableCell>
+            <TableCell>{stock.change_percent}%</TableCell>
+            <TableCell>{stock.change}</TableCell>
+            <TableCell>{stock.currency}</TableCell>
+            <TableCell>{new Date(stock.market_time).toLocaleString()}</TableCell>
+            <TableCell>{stock.volume}</TableCell>
+            <TableCell>{stock.avg_volume_3m}</TableCell>
+            <TableCell>{stock.day_range}</TableCell>
+            <TableCell>{stock.fifty_two_week_range}</TableCell>
+            <TableCell className="max-w-[100px]">
+              <WatchlistTableChart data={stock.day_chart} />
+            </TableCell>
+            <TableCell>{stock.market_cap}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+)}
 
-      {selectedTab === "holdings" && <HoldingsTable />}
+      {selectedTab === "holdings" && <HoldingsTable summaryData={summaryData} />}
       {selectedTab === "fundamentals" && (
         <Table className="text-xs">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Symbol</TableHead>
-              <TableHead>Last Price</TableHead>
-              <TableHead>Market Cap</TableHead>
-              <TableHead>Avg Vol (3M)</TableHead>
-              <TableHead>EPS Est. Next Yr</TableHead>
-              <TableHead>Forward P/E</TableHead>
-              <TableHead>Div Payment Date</TableHead>
-              <TableHead>Ex-Div Date</TableHead>
-              <TableHead>Div/Share</TableHead>
-              <TableHead>Fwd Ann Div Rate</TableHead>
-              <TableHead>Fwd Ann Div Yield</TableHead>
-              <TableHead>Trl Ann Div Rate</TableHead>
-              <TableHead>Trl Ann Div Yield</TableHead>
-              <TableHead>Price / Book</TableHead>
-            </TableRow>
-          </TableHeader>
+         <TableHeader>
+    <TableRow>
+      <TableHead  >Symbol</TableHead>
+
+      {(Object.keys(fundamentalsLabelMap) as Array<keyof Fundamentals>).map((key) => (
+      <TableHead key={key}>{fundamentalsLabelMap[key]}</TableHead>
+    ))}
+    </TableRow>
+  </TableHeader>
           <TableBody>
-            {stockFundamentalsMock.map((stock) => (
-              <TableRow key={stock.symbol}>
-                <TableCell className="text-xs font-bold">
-                  <Link href={`/stock/${stock.symbol}`}>{stock.symbol}</Link>
-                </TableCell>
-                <TableCell>{stock.lastPrice}</TableCell>
-                <TableCell>{stock.marketCap}</TableCell>
-                <TableCell>{stock.avgVolume3M}</TableCell>
-                <TableCell>{stock.epsEstNextYr}</TableCell>
-                <TableCell>{stock.forwardPE}</TableCell>
-                <TableCell>{stock.divPaymentDate}</TableCell>
-                <TableCell>{stock.exDivDate}</TableCell>
-                <TableCell>{stock.divPerShare}</TableCell>
-                <TableCell>{stock.fwdAnnDivRate}</TableCell>
-                <TableCell>{stock.fwdAnnDivYield}</TableCell>
-                <TableCell>{stock.trlAnnDivRate}</TableCell>
-                <TableCell>{stock.trlAnnDivYield}</TableCell>
-                <TableCell>{stock.priceToBook}</TableCell>
-              </TableRow>
-            ))}
+             {summaryData.map((stock) => (
+      <TableRow key={stock.asset_symbol}>
+        <TableCell className="font-bold">
+          <Link href={`/stock/${stock.asset_symbol}`}>{stock.asset_symbol}</Link>
+        </TableCell>
+        
+        {Object.keys(fundamentalsLabelMap).map((key) => (
+          <TableCell key={key}>
+            {stock.fundamentals?.[key as keyof Fundamentals] ?? "--"}
+          </TableCell>
+        ))}
+      </TableRow>
+    ))}
           </TableBody>
         </Table>
       )}
@@ -350,9 +453,15 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
                 type="text"
                 placeholder="Search Symbol or Name"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={async(e) => {
+                  setSearchTerm(e.target.value)
+                  let findStock = await searchStock(e.target.value)
+                  setFilteredStocks(findStock.data??[])
+                }
+                }
                 className="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-md"
               />
+              {searchTerm && filteredStocks.length==0 && <p>No Stocks Found yett</p>}
               {searchTerm && filteredStocks.length > 0 && (
                 <ul className="  z-10 bg-white border border-gray-300 rounded-md mt-1 w-full max-h-40 overflow-y-auto">
                   {filteredStocks.map((stock) => (
@@ -366,7 +475,7 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
                           {stock.symbol} - {stock.name}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {stock.exchange} ({stock.type})
+                          {stock.exchangeShortName} 
                         </span>
                       </div>
                     </li>
@@ -398,9 +507,30 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
                   selectedStocks.length != 0 && "cursor-pointer"
                 }`}
                 disabled={selectedStocks.length === 0}
-                onClick={() => {
+                onClick={async() => {
                   console.log("Proceed with:", selectedStocks);
                   // Add to portfolio logic here...
+                  
+  try {
+    // Call createNewHolding for each selected stock in parallel
+    const results = await Promise.all(
+    selectedStocks.map((stock) =>
+      cretateNewHolding(Number(params.id), stock)
+    )
+  );
+  console.log(results,"results")
+const newData = results.map((r) => r.data); 
+  // Append new results to summaryData state
+  console.log("newData",newData)
+  setSummaryData((prev) => [...prev, ...newData]);
+
+
+    // After all are done
+    setAddNewSymbol(false);
+  } catch (error) {
+    console.error("Error adding holdings:", error);
+    // Handle error (toast, alert, etc.)
+  }
                   setAddNewSymbol(false);
                 }}
               >
@@ -552,8 +682,12 @@ const PortfolioSingle = ({ portfolio }: { portfolio: PortfolioData }) => {
                   Back
                 </button> */}
               <button
-                onClick={() => {
-                  router.push("/portfolio/my-portfolios");
+                onClick={async() => {
+                  let newPortfolio = await CreateNewPortfolio({name:portfolioName,currency:"USD"})
+                  if(newPortfolio.status==201){
+                    router.push("/portfolio/my-portfolios");
+
+                  }
                 }}
                 className="bg-[var(--variant-4)] text-white px-6 py-2 rounded-md cursor-pointer"
               >

@@ -14,12 +14,24 @@ import Link from "next/link";
 import { signup } from "@/services/authentication.services";
 import { useRouter } from "next/navigation";
 
-// Zod schema for validation
-const signupSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+// Zod schema with confirm password and strong password rule
+const signupSchema = z
+  .object({
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -28,34 +40,27 @@ const SignupForm = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
-const router = useRouter()
+
+  const router = useRouter();
+
   const onSubmit = async (data: SignupFormData) => {
     try {
-        console.log(data)
-        let userSignup = await signup(data);
-    //   await new Promise((resolve, reject) => {
-    //     setTimeout(() => {
-    //       if (data.email === "taken@example.com") {
-    //         reject(new Error("Email already in use"));
-    //       } else {
-    //         resolve("success");
-    //       }
-    //     }, 1000);
-    //   });
-    console.log(userSignup.data)
-    if (userSignup.status==201){
-        toast.success(userSignup?.data?.msg || "User Signed Up :)");
-        router.push('/login')
-    }
-    else{
+      const { confirmPassword, ...signupData } = data; // exclude confirmPassword from API
+      const userSignup = await signup(signupData);
 
-        toast.error(userSignup.data?.email || userSignup.data.username || userSignup.data.password);
-    }
-    //   reset();
+      if (userSignup.status === 201) {
+        toast.success(userSignup?.data?.msg || "User Signed Up :)");
+        router.push("/login");
+      } else {
+        toast.error(
+          userSignup.data?.email ||
+            userSignup.data.username ||
+            userSignup.data.password
+        );
+      }
     } catch (error: any) {
       toast.error(error.message || "Signup failed. Please try again.");
     }
@@ -63,39 +68,50 @@ const router = useRouter()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-none px-4 w-full">
-      <Card className="w-full max-w-md shadow-lg border-none">
+      <Card className="w-full max-w-md shadow-lg border-none bg-[#0f0f19]">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Sign Up</CardTitle>
+          <CardTitle className="text-2xl text-center text-white">Sign Up</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" type="text" {...register("username")} />
+              <Label htmlFor="username" className="text-gray-300 mb-2">Username</Label>
+              <Input id="username" type="text"  className="text-gray-300" {...register("username")} />
               {errors.username && (
                 <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...register("email")} />
+              <Label htmlFor="email" className="text-gray-300 mb-2">Email</Label>
+              <Input id="email" type="email" className="text-gray-300" {...register("email")} />
               {errors.email && (
                 <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" {...register("password")} />
+              <Label htmlFor="password" className="text-gray-300 mb-2">Password</Label>
+              <Input id="password" type="password"  className="text-gray-300" {...register("password")} />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
               )}
             </div>
-<div className="w-full flex flex-row item-center justify-center text-sm ">
-             Already have an account? <Link href={'/login'} className="ml-2">login</Link>
+
+            <div>
+              <Label htmlFor="confirmPassword" className="text-gray-300 mb-2">Confirm Password</Label>
+              <Input id="confirmPassword" type="password" className="text-gray-300" {...register("confirmPassword")} />
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword.message}</p>
+              )}
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+            <div className="w-full flex flex-row item-center justify-center text-sm text-gray-300 ">
+              Already have an account?
+              <Link href="/login" className="ml-2 text-[var(--variant-4)]">login</Link>
+            </div>
+
+            <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? "Signing up..." : "Sign Up"}
             </Button>
           </form>

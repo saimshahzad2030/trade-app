@@ -107,6 +107,16 @@ const excludedKeys = [
   "dilutedEPSChart",
   "dividendYieldChart",
   "changePercentage", 
+  "roc",
+  "earningsPerShareDiluted",
+  "grossProfitMarginIndicator",
+  "dcf",
+  "debtToEquityRatioIndicator",
+  "peRatioIndicator",
+  "epsIndicator",
+  "beta",
+  "wacc",
+  "fcff",
   // "marketValueHead",
   // "enterpriseValueHead",
   // "priceToEarnings",
@@ -678,7 +688,7 @@ if (hasChartData) {
             );
           })}
         </Accordion>
-        <RadarCharts/>
+        <RadarCharts stocks={stocks}/>
       </div>}
  
       {openModal && (

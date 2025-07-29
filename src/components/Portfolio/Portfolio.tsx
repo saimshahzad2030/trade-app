@@ -22,6 +22,7 @@ import { Input } from "../ui/input";
 import { Select, SelectContent, SelectTrigger } from "@radix-ui/react-select";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { CreateNewPortfolio } from "@/services/portfolio.services";
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
   { name: "Euro", code: "EUR", symbol: "€" },
@@ -53,7 +54,16 @@ const Portfolio = () => {
     "Detailed Transaction History",
     "Access Anywhere with Cloud Sync",
   ];
-
+ 
+const proceedModal = async() => {
+  let addPortfolio = await CreateNewPortfolio({name:portfolioName,currency:currency})
+  if(addPortfolio.status ==201){
+    setPortfolioName("")
+    setCurrency("")
+    setTabSelected(null);
+    router.push('portfolio/my-portfolios')
+  } 
+  };
   const closeModal = () => {
     setTabSelected(null);
   };
@@ -243,7 +253,7 @@ const Portfolio = () => {
             )}
             <div className="flex justify-center gap-4 mt-4">
               <button
-                onClick={closeModal}
+                onClick={proceedModal}
                 className="bg-[var(--variant-4)] text-white px-6 py-2 rounded-md cursor-pointer"
               >
                 Proceed

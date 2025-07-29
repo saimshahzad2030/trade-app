@@ -1,7 +1,7 @@
 import axios,{AxiosInstance, InternalAxiosRequestConfig, AxiosError} from "axios";
 import { config } from "../config/config";
 import Cookies from "js-cookie";
-const token = Cookies.get("token"); // Retrieve token from cookies
+const token = Cookies.get("accessToken"); // Retrieve token from cookies
 
 const axiosInstance = axios.create({
   baseURL: config.BASE_URL, // Your backend base URL
@@ -16,14 +16,14 @@ export const axiosInstanceJson = axios.create({
   headers: {
     "Content-Type": "application/json",
     //  'ngrok-skip-browser-warning': 'true'
-    // Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
   },
 });
 
 const attachTokenInterceptor = (instance: AxiosInstance): void => {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const token = Cookies.get("token");
+      const token = Cookies.get("accessToken");
 
       // Retain existing headers
       // config.headers.set("ngrok-skip-browser-warning", "true");

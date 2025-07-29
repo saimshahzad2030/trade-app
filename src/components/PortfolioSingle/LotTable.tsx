@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { textColor } from "@/utils/functionalUtils";
-import { Holdings } from "@/types/types";
+import { Holdings, HoldingSummary } from "@/types/types";
 type Lot = {
   shares: number;
   cost: number;
@@ -35,7 +35,7 @@ type Lot = {
 
 type LotTableProps = {
   lots: Lot[];
-  holding: Holdings;
+  holding: HoldingSummary;
   setLots: React.Dispatch<React.SetStateAction<Lot[]>>;
 };
 const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
@@ -47,7 +47,7 @@ const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
       highLimit: number;
       lowLimit: number;
     },
-    holding: Holdings
+    holding: HoldingSummary
   ) => {
     const today = new Date();
     const daysHeld = Math.max(
@@ -57,10 +57,10 @@ const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
       )
     );
 
-    const marketValue = lot.shares * holding.lastPrice;
+    const marketValue = lot.shares * parseFloat(holding.last_price);
     const totalCost = lot.shares * lot.cost;
 
-    const dayGainPercent = holding.dayGainPercent;
+    const dayGainPercent = parseFloat(holding.day_gain_unrealized_percent.replace('%', ''));
     const dayGainAmount = marketValue * (dayGainPercent / 100);
 
     const totalGainAmount = marketValue - totalCost;
