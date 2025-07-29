@@ -10,6 +10,7 @@ import { searchStock } from '@/services/search.services'
 import { Cross, X } from 'lucide-react'
 import { getEpsDataMetrices, getHistoricalBetaMetrices, getPeRatioMetrices, getRevenueGrowthMetrices, getStockFinancialMetrices, getWaccMetrices } from '@/services/stocksFinancialMetrics.services'
 import RoundLoader from '../Loader/RoundLoader'
+import SkeletonLoader from '../Loader/SkeletonLoader'
 export type EPSData = { date: string; eps: number | string };
 export type PEData = { date: string; pe_ratio: number | string };
 export type GrowthData = { date: string; growth: number };
@@ -65,7 +66,7 @@ const handleAddWACC = (newData: { wacc: WACCData[]; symbol: string }) => {
 const handleAddBeta = (newData: { beta: BetaData[]; symbol: string }) => {  
   setBetaData(prev => [...prev, newData]);
 };
-    const [loading,setLoading] = React.useState<boolean>(false)
+    const [loading,setLoading] = React.useState<boolean>(true)
      React.useEffect(()=>{
             const fetchChartData = async()=>{
               setLoading(true)
@@ -123,20 +124,22 @@ stocks.map((stock,index)=>(
         { 
         <div className="w-full grid grid-cols-2 gap-4  my-12 px-12">
             {loading?
-            <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
+    <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
+ :
             stocks?.length>0 &&<SubChart1  epsData={epsData} handleAddEps={handleAddEps}/>}
             {loading?
-            <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading PE Ratio Data...</p><RoundLoader/></div>:
+             <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
+ :
             stocks?.length>0 &&<SubChart2 peData={peData} handleAddPe={handleAddPe}/>}
             {loading?
-            <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart3 growthData={growthData} handleAddGrowth={handleAddGrowth}/>}
+           <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
+ : stocks?.length>0 &&<SubChart3 growthData={growthData} handleAddGrowth={handleAddGrowth}/>}
             {loading?
-            <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart4 waccData={waccData} handleAddWACC={handleAddWACC}/>}
+            <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
+ : stocks?.length>0 &&<SubChart4 waccData={waccData} handleAddWACC={handleAddWACC}/>}
             {loading?
-            <div className='w-full flex flex-col items-center justify-center h-[500px] bg-[#0d0d14] rounded-md'><p className='text-white'>Loading EPS Data...</p><RoundLoader/></div>:
-            stocks?.length>0 &&<SubChart5 betaData={betaData} handleAddBeta={handleAddBeta}/>}
+            <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
+ : stocks?.length>0 &&<SubChart5 betaData={betaData} handleAddBeta={handleAddBeta}/>}
              
                    
           </div>}

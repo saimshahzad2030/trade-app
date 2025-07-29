@@ -50,7 +50,7 @@ const Navbar = () => {
               Login
             </Button>
           </Link>
-          <Link href="/login">
+          <Link href="/signup">
             <Button
               size="lg"
               variant="second"

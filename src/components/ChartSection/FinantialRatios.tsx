@@ -4,6 +4,7 @@
 import { getSpecificStockKeyFinancialRatios } from "@/services/stock.services";
 import React from "react";
 import RoundLoader from "../Loader/RoundLoader";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 interface RatioGroup {
   title: string;
   data: Record<string, string>;
@@ -57,7 +58,7 @@ type ChartSectionProps = {
 };
 const FinancialRatiosTables = ({symbol}:ChartSectionProps) => {
   const [groupedRatios, setGroupedRatios] = React.useState<RatioGroup[]>([]);
-  const [loading,setLoading] = React.useState<boolean>(false)
+  const [loading,setLoading] = React.useState<boolean>(true)
     React.useEffect(() => {
   const fetchChartData = async () => {
     setLoading(true)
@@ -95,38 +96,66 @@ const FinancialRatiosTables = ({symbol}:ChartSectionProps) => {
         <div className="flex flex-col w-full items-center p-6 rounded-xl  mt-8 bg-[#0f0e17]">
         <h1 className="text-center text-4xl font-bold mb-2 ">Key Financial Ratios (AAPL)</h1>
     <div className="  text-white grid grid-cols-2  w-full">
-     <>
-     {loading?
-     <div className="col-span-2 w-full flex flex-row justify-center p-4">
-      <RoundLoader/>
-     </div>:
-    groupedRatios.length<1?<p className="col-span-2 w-full text-center text-red-600">Error fetching Financial Ratios</p>: groupedRatios.map((group, idx) => {
-        const keys = Object.keys(group.data) as string[];
-        return (
-          <div key={idx}>
-            <h2 className="text-xl font-bold mb-4  mt-8">{group.title}</h2>
-            <table className="w-full border-collapse border border-gray-700">
-              <thead>
-                <tr className="bg-gray-800">
-                  <th className="border border-gray-600 p-2 text-left w-1/2">Metric</th>
-                  <th className="border border-gray-600 p-2 text-left w-1/2">Value</th>
+     <>{loading ? (
+  <>
+    {[...Array(4)].map((_, idx) => (
+      <div key={idx}>
+        <SkeletonLoader className="mt-4 h-6 w-1/3 mb-4 bg-gray-700 rounded" /> {/* Section Title */}
+        <table className="w-full border-collapse border border-gray-700">
+          <thead>
+            <tr className="bg-gray-800">
+              <th className="border border-gray-600 p-2 text-left w-1/2">Metric</th>
+              <th className="border border-gray-600 p-2 text-left w-1/2">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...Array(8)].map((_, i) => (
+              <tr key={i} className={i % 2 === 0 ? "bg-gray-900" : "bg-gray-800"}>
+                <td className="border border-gray-600 p-2">
+                  <SkeletonLoader className="h-6 w-3/4 bg-gray-600 rounded" />
+                </td>
+                <td className="border border-gray-600 p-2">
+                  <SkeletonLoader className="h-6 w-1/2 bg-gray-600 rounded" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ))}
+  </>
+) : (
+  groupedRatios.length < 1 ? (
+    <p className="col-span-2 w-full text-center text-red-600">Error fetching Financial Ratios</p>
+  ) : (
+    groupedRatios.map((group, idx) => {
+      const keys = Object.keys(group.data) as string[];
+      return (
+        <div key={idx}>
+          <h2 className="text-xl font-bold mb-4 mt-8">{group.title}</h2>
+          <table className="w-full border-collapse border border-gray-700">
+            <thead>
+              <tr className="bg-gray-800">
+                <th className="border border-gray-600 p-2 text-left w-1/2">Metric</th>
+                <th className="border border-gray-600 p-2 text-left w-1/2">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((key, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-gray-900" : "bg-gray-800"}>
+                  <td className="border border-gray-600 p-2">{key}</td>
+                  <td className="border border-gray-600 p-2">
+                    {(group.data as Record<string, string>)[key]}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-               {keys.map((key, i) => (
-  <tr key={i} className={i % 2 === 0 ? "bg-gray-900" : "bg-gray-800"}>
-    <td className="border border-gray-600 p-2">{key}</td>
-    <td className="border border-gray-600 p-2">{(group.data as Record<string, string>)[key]}</td>
-  </tr>
-))}
-
-              </tbody>
-            </table>
-          </div>
-        );
-      })}
-      
-      </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    })
+  )
+)}</>
     </div></div>
   );
 };

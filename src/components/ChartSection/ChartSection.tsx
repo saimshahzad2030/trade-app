@@ -37,6 +37,7 @@ import { EmaChartPoint, MetaDataType } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import { useParams } from "next/navigation";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
 const timeFrames = ["1min", "5min", "15min", "30min", "1hour", "4hour", "1day"];
 export const technicalIndicators = [
@@ -87,7 +88,7 @@ const ChartSection = () => {
   const filteredStocks = stocks.filter((stock) =>
     `${stock.name} ${stock.symbol}`.toLowerCase().includes(search.toLowerCase())
   );
-  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
 const [toDate, setToDate] = React.useState<Date | undefined>(subDays(new Date(), 1));
 
 // Set fromDate as one month before today
@@ -173,8 +174,20 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
           <CompanyDetails loading={chartDataLoading} metaData={metaData}/>
-          {!chartDataLoading && 
+          {chartDataLoading ?  (
+<>  <div className="flex flex-row item-center justify-start w-full mt-4 h-[35px] w-7/12">
+    <SkeletonLoader className=" bg-gray-700 h-full w-2/12" />
+  <SkeletonLoader className="ml-4 bg-gray-700 h-full w-1/12" />
+  <SkeletonLoader className="ml-4 bg-gray-700 h-full w-3/12" />
+  <SkeletonLoader className="ml-4 bg-gray-700 h-full w-2/12" />
+  </div>
+   <div className="flex flex-col item-start justify-start w-full mt-1 h-auto w-7/12">
+    <SkeletonLoader className=" bg-gray-700 h-4 w-2/12 mt-1" /> 
+    <SkeletonLoader className=" bg-gray-700 h-[40px] w-2/12 mt-2" /> 
+  </div></>
+):  
           <>
+          
           <div className="flex flex-row items-center w-full my-2">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -462,16 +475,15 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
               />
             </div>
           </div></>}
-            {chartDataLoading?
-            <div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]">
-              <RoundLoader/>
-              </div>:
+            {chartDataLoading? 
+    <SkeletonLoader className=" bg-gray-700 h-[75vh] w-full mt-1" />:
               <>
               {chartData.length>0 ? <ChartComponent technicalIndicator={technicalIndicator} data={chartData}/> :<div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]"><p className="text-red-400">Error Showing Chart Data</p></div>}
               </>
               }
-        
-          <SingleStockRadarChart symbol={symbol}/>
+        {chartDataLoading? 
+    <SkeletonLoader className=" bg-gray-900 h-[400px] w-full mt-8 rounded-md" />:
+          <SingleStockRadarChart symbol={symbol}/>}
          <FinancialRatiosChart symbol={symbol}/> 
         </div>
       </div>

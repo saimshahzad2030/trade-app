@@ -6,10 +6,11 @@ import { poppins } from "@/fonts/fonts";
 import { getDailyMarketSectorPerformance } from "@/services/stocks.services";
 import { dailyMarketSectorPerformanceResponse } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
 const DailyMarketSectorPerformance = () => {
      const [dailyData,setDailyData] = React.useState<dailyMarketSectorPerformanceResponse|null>(null)
-     const [loading,setLoading] = React.useState(false)
+     const [loading,setLoading] = React.useState(true)
   const data =
     dailyData?.daily_market_sector_performance.result;
 
@@ -70,23 +71,22 @@ setLoading(false)
         },[])
   return (
     <div className="   w-[48%]    flex flex-col items-center">
-      <div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
-         {loading?
-     <div className="flex flex-col items-center my-4">
-      <RoundLoader/>
-      </div>
-        :<ReactECharts
+      {loading? 
+            <div className='flex flex-col items-center w-full  rounded-2xl '><SkeletonLoader className=" h-[60vh]  rounded-2xl  bg-[#0d0d14] w-full mt-1" />  </div>
+
+        :<div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
+         <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
-         }
       </div>
+         }
 
      {loading?
-     <div className="flex flex-col items-center my-4">
-      <RoundLoader/>
+     <div className="flex flex-col items-center my-1">
+      <SkeletonLoader className=" h-8  rounded-md  bg-[#0d0d14] w-40 mt-1" />  
       </div>:
       <>
       {dailyData &&

@@ -4,6 +4,7 @@ import ReactECharts from "echarts-for-react";
 import { poppins } from "@/fonts/fonts";
 import { DebtCoverageEntry } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
 interface DebtAnalysisProps {
   loading: boolean;
@@ -102,7 +103,8 @@ const DebtAnalysis: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
   return (
     <div className="w-full col-span-2 flex flex-col items-center">
       <div className="bg-[#13131f] w-full rounded-2xl p-4 flex flex-col items-center justify-center">
-        {loading?<RoundLoader/>:
+    {loading?
+       <SkeletonLoader className="h-[60vh] w-full bg-gray-700"/>:
         error?
       <p className="text-gray-600">{error}</p>:
       <ReactECharts

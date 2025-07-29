@@ -90,6 +90,7 @@ import { FinancialDataType, MetaDataType } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 import { Button } from "../ui/button";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 const StatisticsSection = () => {
 const [view, setView] = React.useState<"annual" | "quarterly">("annual");
    const [valuationMeasures,setValuationMeasures] = React.useState<ValuationMeasuresResponse | null>(null)
@@ -164,7 +165,39 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
               </p>
             </div>
             {loading?
-            <div className="flex flex-col items-start w-full"><RoundLoader/></div>:
+           <div className="flex flex-col w-full gap-4">
+    {/* Skeleton tabs */}
+    <div className="flex flex-row items-center justify-center w-full gap-4 mb-4">
+      <SkeletonLoader className="h-8 w-24 bg-gray-700 rounded-md m-2 " />
+      <SkeletonLoader className="h-8 w-24 bg-gray-700 rounded-md m-2 " />
+    </div>
+
+    {/* Skeleton Table */}
+    <div className="border border-gray-700 rounded-md overflow-hidden">
+      <div className="grid grid-cols-[200px_repeat(4,1fr)] bg-gray-800">
+        <SkeletonLoader className="h-10 bg-[var(--variant-4)]/20 col-span-1" />
+        <SkeletonLoader className="h-10 bg-[var(--variant-4)]/20 col-span-1" />
+        <SkeletonLoader className="h-10 bg-[var(--variant-4)]/20 col-span-1" />
+        <SkeletonLoader className="h-10 bg-[var(--variant-4)]/20 col-span-1" />
+        <SkeletonLoader className="h-10 bg-[var(--variant-4)]/20 col-span-1" />
+      </div>
+
+      {[...Array(10)].map((_, rowIdx) => (
+        <div key={rowIdx} className="grid grid-cols-[200px_repeat(4,1fr)]">
+          {[...Array(5)].map((_, colIdx) => (
+            <SkeletonLoader
+              key={colIdx}
+              className={`h-8 bg-gray-900 ${
+                colIdx === 0 ? "pl-4 text-left" : "text-center"
+              }`}
+            >
+              &nbsp;
+            </SkeletonLoader>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>:
             <>
             <div className="flex gap-4 mb-4">
   
@@ -231,7 +264,26 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
               <h1 className="text-2xl font-bold capitalize mb-4">
                 Financial Highlights
               </h1>
-                   {loading? <div className="flex flex-col items-start w-full"><RoundLoader/></div>:<>
+                   {loading? <div className="flex flex-col gap-6 w-full">
+    {[...Array(4)].map((_, sectionIdx) => (
+      <div key={sectionIdx} className="w-full">
+        {/* Section title skeleton */}
+        <SkeletonLoader className="h-5 w-48 bg-gray-700 mb-3 rounded" />
+
+        {/* Placeholder rows */}
+        {[...Array(7)].map((_, rowIdx) => (
+          <div
+            key={rowIdx}
+            className="mt-2 pb-1 w-full flex flex-row items-center justify-between text-sm border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed"
+          >
+            <SkeletonLoader className="h-6 w-1/3 bg-gray-800 rounded" />
+            <SkeletonLoader className="h-6 w-1/4 bg-gray-800 rounded" />
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+  :<>
               {data?.financial_highlights && <>
               {Object.entries(data?.financial_highlights).map(
                 ([sectionKey, sectionValue]) => (
@@ -256,7 +308,25 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
               <h1 className="text-2xl font-bold capitalize mb-4">
                 Trading Information
               </h1>
-                {loading? <div className="flex flex-col items-start w-full"><RoundLoader/></div>:<>
+                {loading? <div className="flex flex-col gap-6 w-full">
+    {[...Array(4)].map((_, sectionIdx) => (
+      <div key={sectionIdx} className="w-full">
+        {/* Section title skeleton */}
+        <SkeletonLoader className="h-5 w-48 bg-gray-700 mb-3 rounded" />
+
+        {/* Placeholder rows */}
+        {[...Array(7)].map((_, rowIdx) => (
+          <div
+            key={rowIdx}
+            className="mt-2 pb-1 w-full flex flex-row items-center justify-between text-sm border border-t-0 border-r-0 border-l-0 border-b-[var(--variant-5)] border-dashed"
+          >
+            <SkeletonLoader className="h-6 w-1/3 bg-gray-800 rounded" />
+            <SkeletonLoader className="h-6 w-1/4 bg-gray-800 rounded" />
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>:<>
              {data?.trading_info && <> {Object.entries(data.trading_info).map(
                 ([sectionKey, sectionValue]) => (
                   <div key={sectionKey} className="mb-4 w-full">

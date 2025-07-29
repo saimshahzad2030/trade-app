@@ -64,7 +64,7 @@ const SubChart4 = ({ waccData, handleAddWACC }: Props) => {
         lineStyle: {
           color: colors[index],
           width: 1,
-          opacity: 0.05
+          opacity: 0.2
         },
         itemStyle: {
           color: colors[index]
@@ -143,11 +143,13 @@ const SubChart4 = ({ waccData, handleAddWACC }: Props) => {
   smooth: true,
   lineStyle: {
     width: 1,
+    opacity: 0.09,
     type: "dashed",
     color: "#ffffff"
   },
   symbol: "circle",
-  symbolSize: 2,
+    symbolSize: 0,
+
   itemStyle: {
     color: "#ffffff"
   },

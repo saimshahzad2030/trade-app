@@ -2,35 +2,32 @@ import React from "react";
 
 import ChartFooter from "./ChartFooter";
 import Link from "next/link";
-import {
-  IconBrandTwitter,
-  IconBrandFacebook,
-  IconBrandInstagram,
-} from "@tabler/icons-react";
+
+ import { FacebookIcon,InstagramIcon,TwitterIcon } from "@/global/svgs";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const socials = [
     {
-      icon: <IconBrandTwitter size={24} />,
+      icon: <TwitterIcon  />,
       href: "https://x.com/YourProfile",
       label: "X (formerly Twitter)",
     },
     {
-      icon: <IconBrandFacebook size={24} />,
+      icon: <FacebookIcon   />,
       href: "https://facebook.com/YourPage",
       label: "Facebook",
     },
     {
-      icon: <IconBrandInstagram size={24} />,
+      icon: <InstagramIcon  />,
       href: "https://instagram.com/YourProfile",
       label: "Instagram",
     },
   ];
   return (
     <div className="flex flex-col items-center w-full bg-[#13131f] px-8 pt-20">
-      <div className="w-full grid grid-cols-5 gap-2 pb-8">
-        <ChartFooter />
+      <div className="w-full grid grid-cols-4 gap-2 pb-8">
+        {/* <ChartFooter /> */}
 
         <div className="flex flex-col items-start w-full   text-white">
           <h1 className="mb-4 font-bold ">Analysis Tools</h1>

@@ -17,6 +17,7 @@ import DebtAnalysisAndDebtCourageChart from "../SummaryCharts/DebtAnalysis&DebtC
 import { useParams } from "next/navigation";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 import SearchBar from "../Searchbar/Searchbar";
+import SkeletonLoader from "../Loader/SkeletonLoader";
  
 const Chart1 = () => {
     const params = useParams<{ symbol: string}>()
@@ -71,6 +72,7 @@ const Chart1 = () => {
   };
   const [chartData,setChartData] = React.useState<companyData | null>(null)
   const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
+  const [loading,setLoading] = React.useState<boolean>(true)
   // Prepare data for the chart
   const timestamps = chartData?.chart?.result[0]?.timestamp;
   const intrinsicValues  = chartData?.chart.result[0]?.indicators?.quote[0]?.intrinsic || [];
@@ -202,19 +204,19 @@ const option = {
       symbol: "circle", // ✅ show hoverable points
       symbolSize: 2,
       lineStyle: {
-        color: "#4cc9f0",
+        color: chartData?.chart.result[0].meta.chartColor=='red'?'red':'#006400',
         width: 2,
       },
       itemStyle: {
-        color: "#4cc9f0"
+        color:chartData?.chart.result[0].meta.chartColor=='red'?'red':'#003a00ff',
       },
       areaStyle: {
         color: {
           type: "linear",
           x: 0, y: 0, x2: 0, y2: 1,
           colorStops: [
-            { offset: 0, color: "rgba(76, 201, 240, 0.2)" },
-            { offset: 1, color: "rgba(76, 201, 240, 0)" },
+            { offset: 0, color: chartData?.chart.result[0].meta.chartColor=='red'?'#920202ff':'#012201ff'},
+            { offset: 1, color: chartData?.chart.result[0].meta.chartColor=='red'?'#3b1616ff':'#414141ff' },
           ],
         },
       },
@@ -242,24 +244,42 @@ const option = {
 
   React.useEffect(()=>{
         const fetchChartData = async()=>{
+          setLoading(true)
           setChartDataLoading(true)
           let response = await getSpecificStockSummaryChart(activeRange,symbol);
           let response2 = await getSpecificStockSummaryData(symbol);
           setMetaData(response2.data)
+          setChartData(response.data)
           setChartDataLoading(false)
-            setChartData(response.data)
+          setLoading(false)
           
         }
         fetchChartData()
 
       },[])
   return (<>
-  {!chartData?.chart.error &&  <><div className="w-full flex flex-row items-start justify-between px-8">
+ <div className="w-full flex flex-row items-start justify-between px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails loading={chartDataLoading} metaData={metaData}/>
-         {!chartDataLoading && 
-         <> <div className="w-full flex flex-row items-center mt-4 px-8">
+          <CompanyDetails loading={loading} metaData={metaData}/>
+           {chartDataLoading?
+           <div className="w-full flex flex-row items-center mt-4 px-8">
+            <div className="w-9/12 flex flex-row item-center">
+              {ranges.map((range) => (
+                   <SkeletonLoader className="w-8 h-8 rounded-md bg-gray-700 mr-2"/>
+           
+              ))}
+            </div>
+            <div className="w-4/12 flex flex-row items-center justify-end gap-2">
+              <SkeletonLoader className="w-8 h-4 bg-gray-700 mr-2"/>
+              <SkeletonLoader className="w-8 h-4 bg-gray-700 mr-2"/>
+              <SkeletonLoader className="w-8 h-4 bg-gray-700 mr-2"/>
+              <SkeletonLoader className="w-8 h-4 bg-gray-700"/>
+              
+            </div>
+          </div> 
+          :
+          <div className="w-full flex flex-row items-center mt-4 px-8">
             <div className="w-9/12">
               {ranges.map((range) => (
                 <Button
@@ -319,14 +339,18 @@ const option = {
                 <Download className="w-5 h-5" />
               </Button>
             </div>
-          </div></>}
+          </div> }
         </div>
 
-        {chartDataLoading ?<div className="w-full h-[60vh] flex flex-col items-center justify-center">
-          <RoundLoader/>
-        </div>:
-       <> 
-      {chartData?.chart &&  <>
+         
+        
+      <div className="flex flex-col items-center w-full">
+        {chartDataLoading?
+      <>
+      <SkeletonLoader className="bg-gray-700 h-[60vh] w-full rounded-md my-2"/>
+      <SkeletonLoader className="bg-gray-700 h-[70px] w-7/12 rounded-md my-2"/></>
+      :
+       <>{chartData?.chart &&  <>
          {chartData?.chart?.error?
        <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-[#13131f]">
           <p className="text-gray-700">{chartData?.chart?.error}</p>
@@ -352,11 +376,10 @@ const option = {
             employees: chartData?.chart?.result[0]?.meta?.fullTimeEmployees || 'null',
           }}
         /> 
-        </>} </>}
+        </>} </>}</>}
+      </div>
     
-       </>
-        }
-       { !chartDataLoading && !chartData?.chart?.error &&  <div className="grid grid-cols-4 w-full gap-4 mt-8">
+       {   !chartData?.chart?.error &&  <div className="grid grid-cols-4 w-full gap-4 mt-8">
           <div className="w-full col-span-4">
             <EPSProjectionChart symbol={symbol}/>
           </div>
@@ -365,8 +388,8 @@ const option = {
         </div>}
       </div>
 
-       <CompanySummarySection loading={chartDataLoading} metaData={metaData}/> 
-    </div></>}
+       <CompanySummarySection loading={loading} metaData={metaData}/> 
+    </div> 
   {chartData?.chart.error &&<div className="z-50 w-full flex flex-col items-center justify-between px-8 text-gray-400"><p className="mb-2">{`${chartData?.chart.error }. Try Seaching some other thing other than ${symbol}`}</p>
   {/* <SearchBar className="w-9/12"/>
    */}

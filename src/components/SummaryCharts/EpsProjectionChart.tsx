@@ -6,12 +6,14 @@ import { poppins } from "@/fonts/fonts";
 import { EPSProjectionData } from "@/types/types";
 import { getEPSProjectionChart } from "@/services/stock.services";
 import RoundLoader from "../Loader/RoundLoader";
+import { Skeleton } from "../ui/skeleton";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 type ChartSectionProps = {
     symbol: string;
 };
 const EPSProjectionChart =({symbol}:ChartSectionProps) => {
     const [chartData,setChartData] = React.useState<EPSProjectionData | null>(null)
-  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+  const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
   const sortedData =chartData?.eps_projection?.result
   ? [...chartData.eps_projection.result].sort((a, b) => +a.year - +b.year)
   : [];
@@ -174,7 +176,7 @@ const option = {
     <div className="w-full col-span-2 flex flex-col items-center">
       <div className=" w-full rounded-2xl ">
        {chartDataLoading?
-       <RoundLoader/>:
+       <SkeletonLoader className="h-[80vh] w-full bg-gray-700"/>:
        <ReactECharts
           option={option}
           style={{ height: "80vh", width: "100%" }}

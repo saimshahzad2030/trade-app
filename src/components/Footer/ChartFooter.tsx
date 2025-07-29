@@ -8,111 +8,152 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { companyData } from "@/types/types";
+import { companyData, RealtimePriceData } from "@/types/types";
 import { appleData1d, CompanyData1} from "@/global/constants";
 import ReactECharts from "echarts-for-react";
 import { color } from "echarts";
+import { getFooterStocksData } from "@/services/stocks.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 const ChartFooter = () => {
-  const companies = [appleData1d, appleData1d, appleData1d];
-  const getChartOptions = (company: CompanyData1, index: number) => {
-    const chartData = company.chart.result[0];
-    const timestamps = chartData.timestamp.map((ts) =>
-      new Date(ts * 1000).toLocaleTimeString()
-    );
-    const prices = chartData.indicators.quote[0].close;
-    const minPrice = Math.min(...prices.filter((p) => p != null)); // filter out nulls if any
+  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState<RealtimePriceData>({});
 
-    return {
-      title: {
-        text:
-          index === 0
-            ? "Apple Inc."
-            : index === 1
-            ? "Nvidia Inc."
-            : "Amazon Inc.",
-        left: "center",
-        bottom: "10%",
-        textStyle: {
-          color: "#0A7075",
-          fontSize: 18,
-        },
-      },
-      tooltip: {
-        trigger: "axis",
-      },
-      xAxis: {
-        type: "category",
-        data: timestamps,
-        axisLabel: { show: false }, // ❌ hide X labels
-        axisTick: { show: false }, // ❌ hide X ticks
-        axisLine: { show: false }, // ❌ hide X line
-      },
-      yAxis: {
-        type: "value",
-        min: minPrice,
-        axisLabel: { show: false }, // ❌ hide Y labels
-        axisTick: { show: false }, // ❌ hide Y ticks
-        axisLine: { show: false }, // ❌ hide Y line
-        splitLine: { show: false }, // ❌ hide grid lines
-      },
-      series: [
-        {
-          color: "#0A7075",
-          data: prices,
-          type: "line",
-          smooth: true,
-          showSymbol: false,
-        },
-      ],
-      grid: {
-        top: 20,
-        bottom: 60,
-        left: 20,
-        right: 20,
-      },
+  React.useEffect(() => {
+    const fetchChartData = async () => {
+      setLoading(true);
+      let response = await getFooterStocksData();
+      setData(response.data);
+      setLoading(false);
     };
+    fetchChartData();
+  }, []);
+
+const getChartOptions = (
+  prices: { date: string; price: number }[],
+  title: string
+) => {
+  const timestamps = prices.map((item) => item.date);
+  const values = prices.map((item) => item.price);
+
+  const upSeries: (number | null)[] = [values[0]];
+  const downSeries: (number | null)[] = [null];
+
+  for (let i = 1; i < values.length; i++) {
+    const prev = values[i - 1];
+    const curr = values[i];
+
+    if (curr >= prev) {
+      upSeries.push(curr);
+      downSeries.push(null);
+    } else {
+      upSeries.push(null);
+      downSeries.push(curr);
+    }
+  }
+
+  const minPrice = Math.min(...values);
+
+  return {
+    title: {
+      text: title,
+      left: "center",
+      bottom: "10%",
+      textStyle: {
+        color: "#ffffffff",
+        fontSize: 18,
+      },
+    },
+    tooltip: {
+      trigger: "axis",
+    },
+    xAxis: {
+      type: "category",
+      data: timestamps,
+      axisLabel: { show: false },
+      axisTick: { show: false },
+      axisLine: { show: false },
+    },
+    yAxis: {
+      type: "value",
+      min: minPrice,
+      axisLabel: { show: false },
+      axisTick: { show: false },
+      axisLine: { show: false },
+      splitLine: { show: false },
+    },
+    series: [
+      {
+        name: "Up",
+        type: "line",
+        data: upSeries,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: {
+          color: "#00C49F", // green
+          width: 2,
+        },
+      },
+      {
+        name: "Down",
+        type: "line",
+        data: downSeries,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: {
+          color: "#FF4C4C", // red
+          width: 2,
+        },
+      },
+    ],
+    grid: {
+      top: 20,
+      bottom: 60,
+      left: 20,
+      right: 20,
+    },
   };
+};
+
+
+  const companySymbols = Object.keys(data); // e.g., ["AAPL", "GOOG", ...]
 
   return (
     <div className="flex flex-col items-center h-auto mr-4">
-      <div className="text-start text-white  pb-4">
-        <h1 className="  font-bold ">Live Stocks</h1>
+      <div className="text-start text-white pb-4">
+        <h1 className="font-bold">Live Stocks</h1>
       </div>
-      <Carousel
-        opts={{
-          loop: true,
-        }}
-        plugins={[
-          Autoplay({
-            delay: 3000,
-            stopOnInteraction: false,
-          }),
-        ]}
-        className="w-full   h-[200px] "
-      >
-        <CarouselContent>
-          {companies.map((company, index) => (
-            <CarouselItem
-              key={index}
-              className="  flex flex-col justify-center items-center "
-            >
-              <div className="w-full h-[200px] ">
-                <ReactECharts
-                  option={getChartOptions(company, index)}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                  }}
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        {/* <CarouselPrevious className="cursor-pointer w-4 h-auto " />
-        <CarouselNext className="cursor-pointer  w-4 h-auto " /> */}
-      </Carousel>
+
+      {loading ? (
+        <SkeletonLoader className="w-full h-[200px] bg-gray-900"/>
+      ) : (
+        <Carousel
+          opts={{ loop: true }}
+          plugins={[
+            Autoplay({
+              delay: 3000,
+              stopOnInteraction: false,
+            }),
+          ]}
+          className="w-full h-[200px]"
+        >
+          <CarouselContent>
+            {companySymbols.map((symbol, index) => (
+              <CarouselItem
+                key={index}
+                className="flex flex-col justify-center items-center"
+              >
+                <div className="w-full h-[200px]">
+                  <ReactECharts
+                    option={getChartOptions(data[symbol], symbol)}
+                    style={{ height: "100%", width: "100%" }}
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      )}
     </div>
   );
 };
-
-export default ChartFooter;
+export default ChartFooter

@@ -8,6 +8,13 @@ type SearchedStock = {symbol: string,
   stockExchange: string,
   exchangeShortName: string, }
 import ReactECharts from "echarts-for-react";
+const displayNameMap: Record<string, string> = {
+  marketValueChart: "Market Value",
+  enterpriseValueChart: "Enterprise Value",
+  peRatioChart: "P/E Ratio",
+  dilutedEPSChart: "EPS (Diluted)",
+  dividendYieldChart: "Dividend Yield", 
+};
 function parseValueWithSuffix(value: string): number {
   if (typeof value !== "string") return Number(value);
 
@@ -86,6 +93,8 @@ import { ComparisonDataTypes, ComparisonStockData } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import StockAccordion from "./StockAccordion";
 import { searchStock } from "@/services/search.services";
+import { toast } from "sonner";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 const excludedKeys = [
   "companyName",
   "symbol",
@@ -97,7 +106,13 @@ const excludedKeys = [
   "peRatioChart",
   "dilutedEPSChart",
   "dividendYieldChart",
-  "changePercentage", "marketValueHead","enterpriseValueHead","priceToEarnings","priceToBook","priceToSales", "earningspersharediluted", "dividendYield","sector", "industry","ceo"
+  "changePercentage", 
+  // "marketValueHead",
+  // "enterpriseValueHead",
+  // "priceToEarnings",
+  "priceToBook","priceToSales", 
+  // "earningspersharediluted", "dividendYield",
+  "sector", "industry","ceo"
 ];
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
@@ -179,11 +194,19 @@ const [filteredStocks,setFilteredStocks] = React.useState<SearchedStock[]>([])
     
   };
   const handleRemoveStock = (index: number) => {
-    const updated = [...stockCards];
+    // const updated = [...stockCards];
     setStocks(prevStocks => prevStocks.filter(stock => stock.symbol !== stockCards[index]?.symbol));
-    updated[index] = null;
-    setStockCards(updated); 
+    // updated[index] = null;
 
+    // setStockCards(updated); 
+ setStockCards((prevCards) => {
+    const newCards = [...prevCards];
+    newCards.splice(index, 1); // Remove the item at the index
+    while (newCards.length < 4) {
+      newCards.push(null); // Fill to length 4
+    }
+    return newCards;
+  });
   };
    // const filteredStocks = stockList.filter(
   //   (s) =>
@@ -197,8 +220,8 @@ const [filteredStocks,setFilteredStocks] = React.useState<SearchedStock[]>([])
   prev.map((val, index) => (index === selectedCardIndex ? true : val))
 );
           let response = await getcomparisonData(stock?.symbol);
-          let s = [...stocks]
-          console.log(s)
+        if(response.data.comparison_data.error == null){
+            let s = [...stocks] 
           s.push(response.data['comparison_data'].result)
           setStocks(s)
           setStockCards((prev) => {
@@ -212,23 +235,21 @@ const [filteredStocks,setFilteredStocks] = React.useState<SearchedStock[]>([])
   };
   return updated;
 });
+        }
+        else{
+          toast("No Comparison Data Exist for This Stock")
+        }
          setLoading((prev) =>
   prev.map((val, index) => (index === selectedCardIndex ? false : val))
 );
 setOpenModal(false);
  setSearchQuery("");
-    // const updatedCards = [...stockCards];
-    // if (selectedCardIndex !== null) {
-    //   updatedCards[selectedCardIndex] = stock;
-    //   setStockCards(updatedCards);
-    //   setOpenModal(false);
-    //   setSearchQuery("");
-    // }
+    
   };
   const formatKey = (key: string): string =>
     key
-      .replace(/([a-z\d])([A-Z])/g, "$1 $2") // Space before caps that follow lowercase/digits
-      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // Fix acronyms followed by capitalized words
+      .replace(/([a-z\d])([A-Z])/g, "$1 $2")  
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")  
       .replace(/^./, (char) => char.toUpperCase());
       const [loading,setLoading] = React.useState([true,false,false,false])
 React.useEffect(()=>{
@@ -266,12 +287,18 @@ React.useEffect(()=>{
       </Button>
       <h1 className="font-bold">Compare Stocks</h1>
       <div className="flex flex-row items-center justify-between mt-2 w-full">
+        {loading[0]==true ||  loading[1] == true ||  loading[2] == true ||  loading[3] == true ?
+         
+                          <SkeletonLoader className="h-8 w-20 bg-gray-800 rounded" />
+         
+         :
         <h2 className="font-extrabold text-3xl">
+          
           {stockCards
     .filter((card) => card !== null) // remove nulls
     .map((card) => card!.symbol)     // get symbols
     .join(", ")} {" "}
-        </h2>
+        </h2> }
         <div className="">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -317,13 +344,12 @@ React.useEffect(()=>{
             <div
               key={index}
               onClick={() => !stock && handleAddStockClick(index)}
-              className="relative p-4 col-span-1 cursor-pointer border border-gray-600 rounded-2xl h-[100px] w-full bg-[#1a1a2b] transition-shadow duration-300 hover:shadow-lg hover:shadow-gray-700 flex flex-col items-start justify-center"
+              className={`relative ${loading[index]==true?'':'p-4'} col-span-1 cursor-pointer border border-gray-600 rounded-2xl h-[100px] w-full bg-[#1a1a2b] transition-shadow duration-300 hover:shadow-lg hover:shadow-gray-700 flex flex-col items-start justify-center`}
             >
               {/* X Icon for removing stock, except for the first card */}
               {loading[index]==true ?
-              <div className="flex flex-col items-center w-full justify-center h-full">
-                <RoundLoader/>
-                </div>:
+                          <SkeletonLoader className="h-full w-full bg-gray-800 rounded" />
+:
               <>{stock && index !== 0 && (
                 <button
                   onClick={(e) => {
@@ -370,19 +396,20 @@ React.useEffect(()=>{
           <TableRow className="bg-none w-full">
             <TableHead className="pl-6 w-1/5 text-start">{`As of ${comparisionMockApi.asOfDate}`}</TableHead>
             {stockCards.map((s,index)=>(
-              <TableHead className=" pr-6 w-1/5 text-center">{s?s?.symbol:'--'}</TableHead>
+              <TableHead className=" pr-6 w-1/5 text-center">
+                {loading[index]==true?
+                          <div className="flex flex-row item-center w-full justify-center">
+                            <SkeletonLoader className="h-5 w-12 bg-gray-700 rounded" />
+                          </div>
+                :<>{s?s?.symbol:'--'}</>}
+                </TableHead>
              
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {excludedKeys.map((key, index) => {
-            // const hasChartData = comparisionMockApi.companies.some(
-            //   (company: Company) => company[key]?.chartData
-            // );
-            //   const hasChartData = stocks.some(
-            //   (company: Company) => Array.isArray(company[key])
-            // );
+        
 const hasChartData =
   chartKeys.includes(key as keyof ComparisonStockData) &&
   stocks.some(
@@ -398,38 +425,57 @@ const hasChartData =
                     onClick={() => hasChartData && toggleRow(index)}
                   >
                     <div className="flex items-center gap-2">
+                      
+                      {displayNameMap[key] || formatKey(key)}
                       {hasChartData &&
                         (expandedRow === index ? (
                           <ChevronUp size={18} />
                         ) : (
                           <ChevronDown size={18} />
                         ))}
-                      {formatKey(key)}
                     </div>
                   </TableCell>
 
                   {stocks.map((company: Company, i) => {
                     const data = company[key];
                     let displayValue = "--";
+if (hasChartData) {
+  // If the key matches a chart, show the corresponding "head" value
+  const chartHeadMap: Record<string, keyof Company> = {
+    marketValueChart: "marketValueHead",
+    enterpriseValueChart: "enterpriseValueHead",
+    peRatioChart: "priceToEarnings",
+    dilutedEPSChart: "earningspersharediluted",
+    dividendYieldChart: "dividendYield",
+  };
 
-                    if (typeof data === "string" || typeof data === "number") {
-                      displayValue = String(data);
-                    } else if (data && typeof data === "object") {
-                      if ("value" in data) {
-                        displayValue = String(data.value);
-                      } else if ("ratio" in data) {
-                        displayValue = String(data.ratio);
-                      } else if ("marketCap" in data) {
-                        displayValue = String(data.marketCap);
-                      }
-                      else if (hasChartData){
-                        displayValue = ""
-                      }
-                    }
-
+  const headKey = chartHeadMap[key];
+  if (headKey && headKey in company) {
+    displayValue = String(company[headKey]);
+  } else {
+    displayValue = "--";
+  }
+} else {
+  // Fallback to the existing logic
+  if (typeof data === "string" || typeof data === "number") {
+    displayValue = String(data);
+  } else if (data && typeof data === "object") {
+    if ("value" in data) {
+      displayValue = String(data.value);
+    } else if ("ratio" in data) {
+      displayValue = String(data.ratio);
+    } else if ("marketCap" in data) {
+      displayValue = String(data.marketCap);
+    }
+  }
+}
                     return (
                       <TableCell key={i} className="pr-6 text-center">
-                        {displayValue}
+                                        {loading[i]==true?
+                          <div className="flex flex-row item-center w-full justify-center">
+                            <SkeletonLoader className="h-5 w-12 bg-gray-700 rounded" />
+                          </div>:
+                        displayValue}
                       </TableCell>
                     );
                   })}
@@ -514,13 +560,22 @@ const hasChartData =
           if (!Array.isArray(chartData)) return null;
 
           const dataPoints = chartData.map((item: any) => {
-            const raw =
-              item.marketCap ??
-              item.enterpriseValue ??
-              item.priceToEarnings ??
-              item.dilutedepsDilutedEPS ??
-              item.forwardDividendYield ??
-              "0";
+           const raw = (() => {
+  switch (key) {
+    case "marketValueChart":
+      return item.marketCap;
+    case "enterpriseValueChart":
+      return item.enterpriseValue;
+    case "peRatioChart":
+      return item.priceToEarnings;
+    case "dilutedEPSChart":
+      return item.dilutedepsDilutedEPS;
+    case "dividendYieldChart":
+      return item.forwardDividendYield;
+    default:
+      return "0";
+  }
+})();
 
             return [item.date, parseValueWithSuffix(raw)];
           });
@@ -562,7 +617,7 @@ const hasChartData =
             let sectionData = sectionData1[0][key];
             // const isChartSection =
             //   typeof sectionData === "object" && sectionData?.chartData;
-            if (excludedKeys.includes(key) ||key.includes('Chart')  ) return null;
+            if ((key== 'enterpriseValueHead' || key== 'marketValueHead' || key== 'dividendYield'|| key== 'priceToEarnings'|| key== 'earningspersharediluted')|| excludedKeys.includes(key) ||key.includes('Chart')  ) return null;
             const isObject = typeof sectionData === "object"; // Check if the data is an object (e.g., pricePerformance)
             return (
               <AccordionItem key={index} value={key} className="mt-4">
@@ -591,7 +646,7 @@ const hasChartData =
                         {Object.keys(sectionData).map((metricKey,index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium text-start pl-6">
-                              {metricKey}
+                              {formatKey(metricKey)} 
                             </TableCell>
                             <TableCell className="pr-6 text-center">
                               {sectionData[metricKey]}
@@ -623,7 +678,7 @@ const hasChartData =
             );
           })}
         </Accordion>
-        {/* <RadarCharts/> */}
+        <RadarCharts/>
       </div>}
  
       {openModal && (

@@ -66,7 +66,7 @@ const SubChart2 = ({ peData, handleAddPe }: Props) => {
       lineStyle: {
         color: colors[index],
         width: 1,
-        opacity: 0.05
+        opacity: 0.2
       },
       itemStyle: {
         color: colors[index]
@@ -144,10 +144,13 @@ const SubChart2 = ({ peData, handleAddPe }: Props) => {
     lineStyle: {
       width: 1,
       type: "dashed",
+      opacity: 0.09,
+
       color: "#ffffff"
     },
     symbol: "circle",
-    symbolSize: 2,
+      symbolSize: 0,
+
     itemStyle: {
       color: "#ffffff"
     },

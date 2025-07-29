@@ -8,7 +8,7 @@ type ChartSectionProps = {
 };
 const DebtAnalysisAndDebtCourageChart =({symbol}:ChartSectionProps) => {
     const [chartData,setChartData] = React.useState<GrowthProfitabilityAndDebtAnalysisChartRootData | null>(null)
-      const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(false)
+      const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
       
       React.useEffect(()=>{
             const fetchChartData = async()=>{

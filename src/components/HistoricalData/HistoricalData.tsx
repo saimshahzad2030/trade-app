@@ -31,6 +31,7 @@ import { getSpecificStockHistoricalData, getSpecificStockSummaryData } from "@/s
 import { useParams } from "next/navigation";
 import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 function formatLargeNumber(value: number): string {
   if (value >= 1_000_000_000_000) {
     return (value / 1_000_000_000_000).toFixed(2) + "T";
@@ -55,30 +56,14 @@ const HistoricalData = () => {
   const [data, setData] = React.useState<historicalDataType|null >(
     null
   );
-  const [loading, setLoading] = React.useState(false); 
+  const [loading, setLoading] = React.useState(true); 
  
   const [range, setRange] = React.useState("Daily");
   const [historicalPrice, setHistoryPrice] = React.useState("Historical Price");
 
-  const [fromDate, setFromDate] = React.useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 1)));
-  const [toDate, setToDate] = React.useState<Date | undefined>(new Date());
-
-  //   const fetchData = async (url: string) => {
-  //     setLoading(true);
-  //     try {
-  //       const res = await fetch(url);
-  //       const data = await res.json();
-  //       setHistoricalData(data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch historical data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   useEffect(() => {
-  //     fetchData(currentUrl);
-  //   }, [currentUrl]);
+  const [fromDate, setFromDate] = React.useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 30)));
+  const [toDate, setToDate] = React.useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() - 1)));
+ 
    const [metaData,setMetaData] = React.useState<MetaDataType | null>(null)
  
         React.useEffect(()=>{
@@ -121,7 +106,13 @@ const HistoricalData = () => {
         <div className="w-full flex-col items-start text-white">
           <CompanyDetails loading={loading} metaData={metaData}/>
 
-          {!loading && <>
+              {loading ? (
+  <div className="flex flex-row item-center justify-start w-full mt-4 h-[35px] w-7/12">
+    <SkeletonLoader className=" bg-gray-700 h-full w-2/12" />
+  <SkeletonLoader className="ml-4 bg-gray-700 h-full w-1/12" />
+  <SkeletonLoader className="ml-4 bg-gray-700 h-full w-3/12" />
+  </div>
+) :  
           <div className="flex flex-row items-center justify-start  ">
             <InputSection toDate={toDate}
             setToDate={setToDate}
@@ -131,9 +122,11 @@ const HistoricalData = () => {
             setRange={setRange}
             setHistoryPrice={setHistoryPrice} 
             historicalPrice={historicalPrice}/>
-          </div>
+          </div>}
           <div className="flex flex-row items-center w-full justify-end ">
-            <Button 
+            {loading?
+  <SkeletonLoader className=" mr-2 bg-gray-700 h-2 w-4"  />
+            :<Button 
                               variant="graphTab2"
                               onClick={() => {}}
                               className={`cursor-pointer   text-[var(--variant-4)]   text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]   `}
@@ -151,10 +144,11 @@ const HistoricalData = () => {
             
             
                           </TooltipProvider> 
-                            </Button>
+                            </Button>}
+            
             <Button 
                   variant="graphTab2"
-                  // onClick={() => {}}
+                   // onClick={() => {}}
                   className={`mr-1  text-[var(--variant-4)]   text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]   `}
                 >
             {mounted   && <>
@@ -181,11 +175,23 @@ const HistoricalData = () => {
             <div className="flex flex-row items-center justify-end w-full">
               <p className="text-end text-sm my-2 mr-2">Currency in USD</p>
             </div>
-            {loading?
-            <div className="flex flex-col items-center justify-center w-full my-4 h-[400px] border border-2 border-[var(--variant-1)]">
-              <RoundLoader/>
-              </div>:
-              <Table>
+             
+             
+              {loading?
+             
+  <div className="flex flex-col items-center w-full border border-[var(--variant-4)] rounded-md ">
+    <SkeletonLoader className={` bg-[var(--variant-4)]/20 h-8 w-full`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+    <SkeletonLoader className={` bg-gray-800 h-8 w-full border border-b-0 border-l-0 border-r-0 border-white`}  /> 
+
+  </div>
+: <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[100px]">Date</TableHead>
@@ -228,7 +234,10 @@ const HistoricalData = () => {
                   )
                 )}</>}
               </TableBody>
-            </Table>}
+            </Table>
+  }
+          
+              
             <Pagination className="mt-4">
               <PaginationContent>
                 <PaginationItem>
@@ -270,7 +279,7 @@ const HistoricalData = () => {
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
-          </div></>}
+          </div> 
         </div>
       </div>
       <CompanySummarySection metaData={metaData} loading={loading}/>

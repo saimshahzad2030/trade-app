@@ -353,7 +353,7 @@ const companySeries = epsData.map((company, index) => {
     lineStyle: {
       color: colors[index],
       width: 1,
-      opacity: 0.05
+      opacity: 0.2
     },
     itemStyle: {
       color: colors[index]

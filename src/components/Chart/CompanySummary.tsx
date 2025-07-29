@@ -23,7 +23,7 @@ const CompanySummary: React.FC<{ companySummary: CompanySummaryType }> = ({
 }) => {
   return (
     <div className="w-full max-w-2xl px-4 py-0 mx-auto   rounded-lg shadow-md   border-[0.1px] border-white">
-      <Accordion type="single" collapsible className="text-white">
+      <Accordion type="single"   className="text-white">
         <AccordionItem value="item-1">
           <AccordionTrigger>{companySummary.name}</AccordionTrigger>
           <AccordionContent>

@@ -3,6 +3,7 @@ export type companyData = {
         result: [
             {
                 meta: {
+                    chartColor?:string;
                     price: string; // e.g., "202.52"
                     priceChange: number; // e.g., 4.37
                     priceChangePercent: string; // e.g., "2.21%"
@@ -900,3 +901,9 @@ export type ComparisonStockData = {
 
 export type ComparisonDataTypes = ComparisonStockData[];
 
+export type RealtimePriceData = {
+  [symbol: string]: {
+    date: string;  // or consider using `Date` if you'll parse it
+    price: number;
+  }[];
+};
