@@ -24,7 +24,10 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { textColor } from "@/utils/functionalUtils";
-import { Holdings, HoldingSummary } from "@/types/types";
+import { HoldingLot, HoldingLots, Holdings, HoldingSummary } from "@/types/types";
+import { createNewLot, deleteLot, FetchLots } from "@/services/portfolio.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
+import ConfirmationModal from "../Modal/ConfirmationModal";
 type Lot = {
   shares: number;
   cost: number;
@@ -34,81 +37,76 @@ type Lot = {
 };
 
 type LotTableProps = {
-  lots: Lot[];
+  holdingId: number;
   holding: HoldingSummary;
-  setLots: React.Dispatch<React.SetStateAction<Lot[]>>;
 };
-const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
-  const calculateLotMetrics = (
-    lot: {
-      shares: number;
-      cost: number;
-      date: Date;
-      highLimit: number;
-      lowLimit: number;
-    },
-    holding: HoldingSummary
-  ) => {
-    const today = new Date();
-    const daysHeld = Math.max(
-      1,
-      Math.floor(
-        (today.getTime() - new Date(lot.date).getTime()) / (1000 * 60 * 60 * 24)
-      )
-    );
+const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
+  //   const calculateLotMetrics = (
+  //     lot: HoldingLot,
+  //     holding: HoldingSummary
+  //   ) => {
+  //     const today = new Date();
+  //   const daysHeld = Math.max(
+  //   1,
+  //   Math.floor(
+  //     (today.getTime() - (lot.date?.getTime?.() ?? today.getTime())) /
+  //       (1000 * 60 * 60 * 24)
+  //   )
+  // );
 
-    const marketValue = lot.shares * parseFloat(holding.last_price);
-    const totalCost = lot.shares * lot.cost;
 
-    const dayGainPercent = parseFloat(holding.day_gain_unrealized_percent.replace('%', ''));
-    const dayGainAmount = marketValue * (dayGainPercent / 100);
+  //     const marketValue = Number(lot.shares) * parseFloat(holding.last_price);
+  //     const totalCost = Number(lot.shares) * Number(lot.cost_per_share);
 
-    const totalGainAmount = marketValue - totalCost;
-    const totalGainPercent = (totalGainAmount / totalCost) * 100;
+  //     const dayGainPercent = parseFloat(holding.day_gain_unrealized_percent.replace('%', ''));
+  //     const dayGainAmount = marketValue * (dayGainPercent / 100);
 
-    let annGainPercent = 0;
-    if (totalCost > 0 && isFinite(totalGainAmount / totalCost)) {
-      const base = 1 + totalGainAmount / totalCost;
-      const exponent = 365 / daysHeld;
+  //     const totalGainAmount = marketValue - totalCost;
+  //     const totalGainPercent = (totalGainAmount / totalCost) * 100;
 
-      // Prevent overflow due to extreme exponentiation
-      if (base > 0 && base < 100) {
-        annGainPercent = (Math.pow(base, exponent) - 1) * 100;
-      }
-    }
-    const annGainAmount = (annGainPercent / 100) * totalCost;
-    const safe = (val: number, suffix = "") =>
-      !isFinite(val) || isNaN(val) || Math.abs(val) > 1e6
-        ? "--"
-        : `${val.toFixed(2)}${suffix}`;
+  //     let annGainPercent = 0;
+  //     if (totalCost > 0 && isFinite(totalGainAmount / totalCost)) {
+  //       const base = 1 + totalGainAmount / totalCost;
+  //       const exponent = 365 / daysHeld;
 
-    return (
-      <>
-        <TableCell>{safe(totalCost)}</TableCell>
-        <TableCell>{safe(marketValue)}</TableCell>
-        <TableCell className={textColor(dayGainPercent)}>
-          {safe(dayGainPercent, "%")}
-        </TableCell>
-        <TableCell className={textColor(dayGainAmount)}>
-          {safe(dayGainAmount)}
-        </TableCell>
-        <TableCell className={textColor(totalGainPercent)}>
-          {safe(totalGainPercent, "%")}
-        </TableCell>
-        <TableCell className={textColor(totalGainAmount)}>
-          {safe(totalGainAmount)}
-        </TableCell>
-        <TableCell className={textColor(annGainPercent)}>
-          {safe(annGainPercent, "%")}
-        </TableCell>
-        <TableCell className={textColor(annGainAmount)}>
-          {safe(annGainAmount)}
-        </TableCell>
-      </>
-    );
-  };
+  //       // Prevent overflow due to extreme exponentiation
+  //       if (base > 0 && base < 100) {
+  //         annGainPercent = (Math.pow(base, exponent) - 1) * 100;
+  //       }
+  //     }
+  //     const annGainAmount = (annGainPercent / 100) * totalCost;
+  //     const safe = (val: number, suffix = "") =>
+  //       !isFinite(val) || isNaN(val) || Math.abs(val) > 1e6
+  //         ? "--"
+  //         : `${val.toFixed(2)}${suffix}`;
+
+  //     return (
+  //       <>
+  //         <TableCell>{safe(totalCost)}</TableCell>
+  //         <TableCell>{safe(marketValue)}</TableCell>
+  //         <TableCell className={textColor(dayGainPercent)}>
+  //           {safe(dayGainPercent, "%")}
+  //         </TableCell>
+  //         <TableCell className={textColor(dayGainAmount)}>
+  //           {safe(dayGainAmount)}
+  //         </TableCell>
+  //         <TableCell className={textColor(totalGainPercent)}>
+  //           {safe(totalGainPercent, "%")}
+  //         </TableCell>
+  //         <TableCell className={textColor(totalGainAmount)}>
+  //           {safe(totalGainAmount)}
+  //         </TableCell>
+  //         <TableCell className={textColor(annGainPercent)}>
+  //           {safe(annGainPercent, "%")}
+  //         </TableCell>
+  //         <TableCell className={textColor(annGainAmount)}>
+  //           {safe(annGainAmount)}
+  //         </TableCell>
+  //       </>
+  //     );
+  //   };
   const sharesRef = React.useRef<HTMLInputElement[]>([]);
-
+  const [updatedLot, SetUpdatedLot] = React.useState<number | null>(null)
   const updateDate = (index: number, date: Date | undefined) => {
     if (!date) return;
     setLots((prevLots) =>
@@ -118,51 +116,80 @@ const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
   };
   const updateLotValue = (
     index: number,
-    field: "shares" | "cost" | "lowLimit" | "highLimit",
+    field: "shares" | "cost_per_share" | "low_limit" | "high_limit",
     value: number
   ) => {
+    
     setLots((prevLots) =>
       prevLots.map((lot, i) => (i === index ? { ...lot, [field]: value } : lot))
-    );
-    if (field === "shares") {
-      setTimeout(() => {
-        setShowModal(true);
-      }, 3000);
-    }
-    toast("Lot has been updated.");
+  );
+  SetUpdatedLot(index);
+
+    // setTimeout(() => {
+    //   setShowModal(true);
+    // }, 3000);  
   };
+  const [editingRowIndex, setEditingRowIndex] = React.useState<number | null>(null);
+  const [hasEdited, setHasEdited] = React.useState(false);
+  const rowRefs = React.useRef<(HTMLTableRowElement | null)[]>([]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (editingRowIndex !== null && hasEdited) {
+        const currentRow = rowRefs.current[editingRowIndex];
+        if (currentRow && !currentRow.contains(event.target as Node)) {
+          setShowModal(true);
+          setEditingRowIndex(null); // reset
+          setHasEdited(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingRowIndex, hasEdited]);
   const addLot = () => {
-    setLots((prevLots) => [
-      ...prevLots,
-      { shares: 0, cost: 0, date: new Date(), highLimit: 0, lowLimit: 0 },
-    ]);
-    toast("Lot has been created.");
+    setLots((prevLots) => {
+      const lastId = prevLots.length > 0 ? prevLots[prevLots.length - 1].id : 0;
+      const newLot: HoldingLot = {
+        id: lastId + 1,
+        holding: 0,
+        shares: "0",
+        cost_per_share: holding.last_price,
+        total_cost: "0",
+        market_value: "0",
+        day_gain_unrealized_percent: "0%",
+        day_gain_unrealized_value: "0",
+        total_gain_unrealized_percent: "0%",
+        total_gain_unrealized_value: "0",
+        annual_gain_percent: "0",
+        annual_gain_value: "0",
+        low_limit: 0,
+        high_limit: 0,
+        flag: null,
+        note: "",
+        date: new Date(),
+      };
+
+      return [...prevLots, newLot];
+    }); 
   };
-  const deleteLot = (index: number) => {
-    setLots((prevLots) => prevLots.filter((_, i) => i !== index));
-    toast("Lot deleted.");
-  };
+
+ 
   const [showModal, setShowModal] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  //   React.useEffect(() => {
-  //     const handleClickOutside = (event: MouseEvent) => {
-  //       if (sharesEdited) {
-  //         if (
-  //           sharesRef.current.every(
-  //             (ref) => ref && !ref.contains(event.target as Node)
-  //           )
-  //         ) {
-  //           setShowModal(true);
-  //         }
-  //       }
-  //     };
+  const [lots, setLots] = React.useState<HoldingLots | []>([]);
+  const [loading, setLoading] = React.useState<boolean>(true)
+   
+  React.useEffect(() => {
+    const fetchChartData = async () => {
+      let response = await FetchLots(holdingId);
+      setLots(response.data.results)
+      setLoading(false)
 
-  //     document.addEventListener("mousedown", handleClickOutside);
-  //     return () => {
-  //       document.removeEventListener("mousedown", handleClickOutside);
-  //     };
-  //   }, [sharesEdited]);
-
+    }
+    fetchChartData()
+  }, [])
   return (
     <div className="w-full relative flex flex-col items-start">
       <button
@@ -174,118 +201,211 @@ const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
         <Plus className="mr-1 w-3" />
         Add Lot
       </button>
-      {lots.length > 0 && (
-        <Table className="my-4 text-xs">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Shares</TableHead>
-              <TableHead>Cost/Share ($)</TableHead>
-              <TableHead>Total Cost ($)</TableHead>
-              <TableHead>Market Value ($)</TableHead>
-              <TableHead>Day Gain UNRL (%)</TableHead>
-              <TableHead>Day Gain UNRL ($)</TableHead>
-              <TableHead>Tot Gain UNRL (%)</TableHead>
-              <TableHead>Tot Gain UNRL ($)</TableHead>
-              <TableHead>Ann Gain (%)</TableHead>
-              <TableHead>Ann Gain ($)</TableHead>
-              <TableHead>Low Limit</TableHead>
-              <TableHead>High Limit</TableHead>
-              <TableHead>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {lots.map((lot, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline2"}
-                        className={cn(
-                          "w-[240px] white  cursor-pointer justify-start text-left font-normal",
-                          !lot.date && "text-muted-foreground"
-                        )}
-                      >
-                        <Calendar1Icon />
-                        {lot.date ? (
-                          format(lot.date, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        className="bg-[#13131f] text-red"
-                        mode="single"
-                        selected={lot.date}
-                        onSelect={(date) => updateDate(index, date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </TableCell>
-                <TableCell>
-                  <Input
-                    ref={(el) => {
-                      if (el) sharesRef.current[index] = el;
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        setShowModal(true);
-                      }
-                    }}
-                    type="number"
-                    className="w-[100px]"
-                    value={lot.shares}
-                    onChange={(e) =>
-                      updateLotValue(index, "shares", Number(e.target.value))
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    value={lot.cost}
-                    onChange={(e) =>
-                      updateLotValue(index, "cost", Number(e.target.value))
-                    }
-                  />
-                </TableCell>
-                {calculateLotMetrics(lot, holding)}
 
-                <TableCell>
-                  <Input
-                    type="number"
-                    value={lot.lowLimit}
-                    onChange={(e) =>
-                      updateLotValue(index, "lowLimit", Number(e.target.value))
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    value={lot.highLimit}
-                    onChange={(e) =>
-                      updateLotValue(index, "highLimit", Number(e.target.value))
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <button
-                    className=" cursor-pointer"
-                    onClick={() => deleteLot(index)}
-                  >
-                    <Trash2 className="w-4" />
-                  </button>
-                </TableCell>
+      {loading ?
+        <TableBody>
+          {loading ? (
+            [...Array(3)].map((_, i) => (
+              <TableRow key={i}>
+                {[...Array(14)].map((_, j) => (
+                  <TableCell key={j}>
+                    <SkeletonLoader className="h-4 w-full bg-gray-700" />
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+            ))
+          ) : (
+            lots.map((lot, index) => (
+              <TableRow key={index}>
+                {/* actual row content */}
+              </TableRow>
+            ))
+          )}
+        </TableBody> :
+        <>{lots.length > 0 ? (
+          <Table className="my-4 text-xs">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Shares</TableHead>
+                <TableHead>Cost/Share ($)</TableHead>
+                <TableHead>Total Cost ($)</TableHead>
+                <TableHead>Market Value ($)</TableHead>
+                <TableHead>Day Gain UNRL (%)</TableHead>
+                <TableHead>Day Gain UNRL ($)</TableHead>
+                <TableHead>Tot Gain UNRL (%)</TableHead>
+                <TableHead>Tot Gain UNRL ($)</TableHead>
+                <TableHead>Ann Gain (%)</TableHead>
+                <TableHead>Ann Gain ($)</TableHead>
+                <TableHead>Low Limit</TableHead>
+                <TableHead>High Limit</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lots.map((lot, index) => (
+                <TableRow key={index}
+                 ref={(el) => {
+  rowRefs.current[index] = el;
+}}
+                >
+                  <TableCell>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline2"}
+                          className={cn(
+                            "w-[240px] white  cursor-pointer justify-start text-left font-normal",
+                            !lot.date && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar1Icon />
+                          {lot.date ? (
+                            format(new Date(lot.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          className="bg-[#13131f] text-red"
+                          mode="single"
+                          selected={lot.date ?? undefined}
+                          onSelect={(date) => {
+                            setEditingRowIndex(index);
+                            updateDate(index, date)
+                          setHasEdited(true)
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      ref={(el) => {
+                        if (el) sharesRef.current[index] = el;
+                      }}
+
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setShowModal(true);
+                        }
+                      }}
+                      type="number"
+
+                      className="w-[100px]"
+                      value={lot.shares}
+                      onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
+                      onChange={(e) => {
+                        updateLotValue(index, "shares", Number(e.target.value))
+                        setHasEdited(true)
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+
+                      value={lot.cost_per_share}
+                      onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
+                      onChange={(e) => {
+                        updateLotValue(index, "cost_per_share", Number(e.target.value))
+                        setHasEdited(true)
+                      }}
+
+                    />
+                  </TableCell>
+                  {/* {calculateLotMetrics(lot, holding)} */}
+
+                  <TableCell className="  min-w-[100px]">
+                    {lot.total_cost}
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    {lot.market_value}
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    {lot.day_gain_unrealized_percent}
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    {lot.day_gain_unrealized_value}
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    {lot.total_gain_unrealized_percent}
+                  </TableCell><TableCell className="  min-w-[100px]">
+                    {lot.total_gain_unrealized_value}
+                  </TableCell><TableCell className="  min-w-[100px]">
+                    {lot.annual_gain_percent}
+                  </TableCell><TableCell className="  min-w-[100px]">
+                    {lot.annual_gain_value}
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    <Input
+                      type="number"
+                      value={lot.low_limit}
+                      onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
+                      onChange={(e) => {
+                        updateLotValue(index, "low_limit", Number(e.target.value))
+                        setHasEdited(true)
+                      }}
+
+                    />
+                  </TableCell>
+                  <TableCell className="  min-w-[100px]">
+                    <Input
+                      type="number"
+                      value={lot.high_limit}
+                      onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
+                      onChange={(e) => {
+                        updateLotValue(index, "high_limit", Number(e.target.value))
+                        setHasEdited(true)
+                      }}
+
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ConfirmationModal
+                      onConfirm={async () => {
+                        let deleteResponse = await deleteLot(holdingId, Number(lot.id));
+                        if (deleteResponse.status === 204) {
+                          setLots(prev => prev.filter(p => p.id !== lot.id));
+                          toast("Lot deleted successfully");
+                        } else {
+                          toast.error("Failed to delete Lot");
+                        }
+                      }}
+                      title="This action can't be undone?"
+                      description="You want to delete this Lot?">
+                      <Button
+                        size="lg"
+                        variant="second"
+                      >
+                        <Trash2 className="w-4" />
+                      </Button>
+                    </ConfirmationModal>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) :
+          <p className="w-full text-center my-2">No Lots Added Yet</p>
+        }</>
+      }
+
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#09090e] p-6 rounded-md max-w-lg w-full space-y-4 text-white">
@@ -299,20 +419,44 @@ const LotTable: React.FC<LotTableProps> = ({ lots, holding, setLots }) => {
             <div className="flex justify-end mt-4">
               <button
                 className="  text-white px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
-                onClick={() => {
-                  setShowModal(false);
-                  setIsEditing(false);
-                  // Handle cancel action
+                onClick={async () => {
+                  console.log(updatedLot,"updated")
+                 let updatedLotNew = lots[updatedLot || 0] ?? null;
+
+
+                  let newLot = await createNewLot(holdingId,
+                     { shares: Number(updatedLotNew?.shares),
+                       cost_per_share: Number(updatedLotNew?.cost_per_share), low_limit: Number(updatedLotNew?.low_limit), high_limit: Number(updatedLotNew?.low_limit), note: "", flag: "edit", date: updatedLotNew?.date  }
+                    )
+                  if (newLot.status == 201) {
+                    setShowModal(false);
+                    setIsEditing(false);
+                    setLots((prevLots) =>
+                      prevLots.map((lot, i) => (lot.id === updatedLotNew?.id ? newLot.data : lot))
+
+                    );
+                  }
                 }}
               >
                 No, This is an edit
               </button>
               <button
                 className="bg-white text-[#09090e] px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
-                onClick={() => {
-                  setShowModal(false);
-                  setIsEditing(true);
-                  // Handle cancel action
+                 onClick={async () => {
+                  console.log(updatedLot,"updated")
+                 let updatedLotNew = lots[updatedLot || 0] ?? null;
+
+
+                  let newLot = await createNewLot(holdingId,
+                     { shares: Number(updatedLotNew?.shares),
+                       cost_per_share: Number(updatedLotNew?.cost_per_share), low_limit: Number(updatedLotNew?.low_limit), high_limit: Number(updatedLotNew?.low_limit), note: "", flag: "new_transaction", date: updatedLotNew?.date  }
+                    )
+                  if (newLot.status == 201) {
+                    setShowModal(false);
+                    setIsEditing(false);
+               setLots((prevLots) => [...prevLots, newLot.data]);
+
+                  }
                 }}
               >
                 Yes

@@ -32,7 +32,10 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { textColor } from "@/utils/functionalUtils";
-import { Holdings, HoldingSummary, Transactions, TransactionType } from "@/types/types";
+import { Holdings, HoldingSummary, HoldingTransaction, HoldingTransactions, Transactions, TransactionType } from "@/types/types";
+import { createNewTransaction, deleteTransaction, FetchTransactions, updateTransaction } from "@/services/portfolio.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
+import ConfirmationModal from "../Modal/ConfirmationModal";
 type Lot = {
   shares: number;
   cost: number;
@@ -42,69 +45,100 @@ type Lot = {
 };
 
 type LotTableProps = {
-  transactions: Transactions[];
-  holding: HoldingSummary;
-  setTransactions: React.Dispatch<React.SetStateAction<Transactions[]>>;
+   holdingId:number,
+  holding: HoldingSummary; 
 };
-const TransactionTables: React.FC<LotTableProps> = ({
-  transactions,
-  holding,
-  setTransactions,
+const TransactionTables: React.FC<LotTableProps> = ({ 
+  holding, 
+  holdingId
 }) => {
+    const [updatedTransaction, setUpdatedTransaction] = React.useState<number | null>(null)
+  
   const sharesRef = React.useRef<HTMLInputElement[]>([]);
-
+const [transactions, setTransactions] = React.useState< HoldingTransactions | []>([]);
+  const [loading, setLoading] = React.useState<boolean>(true)
   const updateDate = (index: number, date: Date | undefined) => {
     if (!date) return;
-    setTransactions((prevLots) =>
-      prevLots.map((transaction, i) =>
-        i === index ? { ...transaction, date } : transaction
-      )
+    setTransactions((prevTrans) =>
+      prevTrans.map((trans, i) => (i === index ? { ...trans, date } : trans))
     );
     toast("Lot has been updated.");
   };
   const updateLotValue = (
     index: number,
-    field: "shares" | "costPerShare" | "commission",
+    field: "shares" | "cost_per_share" | "commission",
     value: number
   ) => {
+     
     setTransactions((prevLots) =>
-      prevLots.map((transaction, i) =>
-        i === index ? { ...transaction, [field]: value } : transaction
-      )
-    );
-    if (field === "shares") {
-      setTimeout(() => {
-        setShowModal(true);
-      }, 3000);
-    }
-    toast("Lot has been updated.");
+      prevLots.map((lot, i) => (i === index ? { ...lot, [field]: value } : lot))
+  );
+  setUpdatedTransaction(index);
+    // setTransactions((prevLots) =>
+    //   prevLots.map((transaction, i) =>
+    //     i === index ? { ...transaction, [field]: value } : transaction
+    //   )
+    // );
+    // if (field === "shares") {
+    //   setTimeout(() => {
+    //     setShowModal(true);
+    //   }, 3000);
+    // }
+    // toast("Lot has been updated.");
   };
   const addLot = () => {
-    setTransactions((prevTrans) => [
-      ...prevTrans,
-      {
-        date: new Date(), // ISO format recommended, e.g. '2025-04-30'
-        type: "buy",
-        shares: 0,
-        costPerShare: 0,
-        commission: 0,
-        totalCost: 0,
-        realizedGainPercent: 0,
-        realizedGainDollar: 0,
-      },
-    ]);
-    toast("Lot has been created.");
+    setTransactions((prevLots) => {
+          const lastId = prevLots.length > 0 ? prevLots[prevLots.length - 1].id : 0;
+          const newLot: HoldingTransaction = {
+            id: lastId + 1, 
+            share:0,
+            commission:null,
+            shares: "0",
+            transaction_type:"BUY",
+            cost_per_share: holding.last_price,
+            total_cost: "0",        
+             realized_gain_percent: "0.00%",
+  realized_gain_value: "0.00",  
+ flag: "new",
+            note: "",
+            date: new Date(),
+          };
+    
+          return [...prevLots, newLot];
+        }); 
+    
+    
+    toast("Transaction has been created.");
   };
   const deleteLot = (index: number) => {
-    setTransactions((prevLots) => prevLots.filter((_, i) => i !== index));
+    setTransactions((prevTrans) => prevTrans.filter((_, i) => i !== index));
     toast("Lot deleted.");
   };
   const [showModal, setShowModal] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
+    const [editingRowIndex, setEditingRowIndex] = React.useState<number | null>(null);
+    const [hasEdited, setHasEdited] = React.useState(false);
+    const rowRefs = React.useRef<(HTMLTableRowElement | null)[]>([]);
+  
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (editingRowIndex !== null && hasEdited) {
+          const currentRow = rowRefs.current[editingRowIndex];
+          if (currentRow && !currentRow.contains(event.target as Node)) {
+            setShowModal(true);
+            setEditingRowIndex(null); // reset
+            setHasEdited(false);
+          }
+        }
+      };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [editingRowIndex, hasEdited]);
   const updateTransactionType = (index: number, value: TransactionType) => {
     setTransactions((prev) => {
       const updated = [...prev];
-      updated[index].type = value;
+      updated[index].transaction_type = value;
       return updated;
     });
   };
@@ -137,7 +171,15 @@ const TransactionTables: React.FC<LotTableProps> = ({
       </>
     );
   }
+ React.useEffect(() => {
+    const fetchChartData = async () => {
+      let response = await FetchTransactions(holdingId);
+      setTransactions(response.data.results)
+      setLoading(false)
 
+    }
+    fetchChartData()
+  }, [])
   return (
     <div className="w-full relative flex flex-col items-start">
       <button
@@ -149,7 +191,26 @@ const TransactionTables: React.FC<LotTableProps> = ({
         <Plus className="mr-1 w-3" />
         Add Transaction
       </button>
-      {transactions.length > 0 && (
+      {loading ?
+        <TableBody>
+          {loading ? (
+            [...Array(3)].map((_, i) => (
+              <TableRow key={i}>
+                {[...Array(14)].map((_, j) => (
+                  <TableCell key={j}>
+                    <SkeletonLoader className="h-4 w-full bg-gray-700" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            transactions.map((lot, index) => (
+              <TableRow key={index}>
+                {/* actual row content */}
+              </TableRow>
+            ))
+          )}
+        </TableBody> :<>{transactions.length > 0 ? (
         <Table className="my-4  text-xs ">
           <TableHeader>
             <TableRow>
@@ -166,7 +227,11 @@ const TransactionTables: React.FC<LotTableProps> = ({
           </TableHeader>
           <TableBody>
             {transactions.map((transaction, index) => (
-              <TableRow key={index}>
+              <TableRow key={index}
+              
+                 ref={(el) => {
+  rowRefs.current[index] = el;
+}}>
                 <TableCell>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -179,7 +244,7 @@ const TransactionTables: React.FC<LotTableProps> = ({
                       >
                         <Calendar1Icon />
                         {transaction.date ? (
-                          format(transaction.date, "PPP")
+                          format(new Date(transaction.date), "PPP")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -189,8 +254,13 @@ const TransactionTables: React.FC<LotTableProps> = ({
                       <Calendar
                         className="bg-[#13131f] text-red"
                         mode="single"
-                        selected={transaction.date}
-                        onSelect={(date) => updateDate(index, date)}
+                                                  selected={transaction.date ?? undefined}
+
+                        onSelect={(date) => {
+                          setEditingRowIndex(index);
+                          updateDate(index, date)
+                        setHasEdited(true)
+                        }}
                         initialFocus
                       />
                     </PopoverContent>
@@ -201,7 +271,7 @@ const TransactionTables: React.FC<LotTableProps> = ({
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="dropdownButton2" className="w-full">
-                        {transaction.type}
+                        {transaction.transaction_type}
                         <ChevronDown />
                       </Button>
                     </DropdownMenuTrigger>
@@ -209,16 +279,19 @@ const TransactionTables: React.FC<LotTableProps> = ({
                       <DropdownMenuLabel>Type</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
-                        value={transaction.type}
+                        value={transaction.transaction_type}
                         onValueChange={(value) =>
-                          updateTransactionType(index, value as TransactionType)
+                    {         setEditingRowIndex(index);
+                       updateTransactionType(index, value as TransactionType)
+                          setHasEdited(true) 
+                        }
                         }
                       >
                         {[
-                          { name: "Buy", val: "buy" },
-                          { name: "Sell", val: "sell" },
-                          { name: "Sell Short", val: "sellshort" },
-                          { name: "buy To Cover", val: "buytocover" },
+                          { name: "Buy", val: "BUY" },
+                          { name: "Sell", val: "SELL" },
+                          { name: "Sell Short", val: "SELL SHORT" },
+                          { name: "buy To Cover", val: "BUY TO COVER" },
                         ].map((item, index) => (
                           <DropdownMenuRadioItem value={item.val} key={index}>
                             {item.name}
@@ -230,99 +303,167 @@ const TransactionTables: React.FC<LotTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Input
-                    ref={(el) => {
-                      if (el) sharesRef.current[index] = el;
-                    }}
+                    // ref={(el) => {
+                    //   if (el) sharesRef.current[index] = el;
+                    // }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setShowModal(true);
                       }
                     }}
+                    onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
                     type="number"
                     className="w-[100px]"
                     value={transaction.shares}
                     onChange={(e) =>
-                      updateLotValue(index, "shares", Number(e.target.value))
+                    {updateLotValue(index, "shares", Number(e.target.value))
+
+                                              setHasEdited(true);}
+
                     }
                   />
                 </TableCell>
                 <TableCell>
                   <Input
                     type="number"
-                    value={transaction.costPerShare}
+                    value={transaction.cost_per_share}
+                    onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
                     onChange={(e) =>
-                      updateLotValue(
+                      {updateLotValue(
                         index,
-                        "costPerShare",
+                        "cost_per_share",
                         Number(e.target.value)
-                      )
+                      )  
+                      setHasEdited(true);}
                     }
                   />
                 </TableCell>
                 <TableCell>
                   <Input
                     type="number"
-                    value={transaction.commission}
+                    value={String(transaction.commission)}
+                    onFocus={() => {
+                        setEditingRowIndex(index);
+                        setHasEdited(false);
+                      }}
                     onChange={(e) =>
-                      updateLotValue(
+                      {updateLotValue(
                         index,
                         "commission",
                         Number(e.target.value)
                       )
+                        setHasEdited(true);}
                     }
                   />
                 </TableCell>
-                <TableCell>{transaction.totalCost}</TableCell>
+                <TableCell>{transaction.total_cost}</TableCell>
 
                 {calculateRealizedGain({
-                  shares: transaction.shares,
+                  shares: Number(transaction.shares),
                   lastPrice: parseFloat(holding.last_price),
-                  avgCostPerShare: transaction.costPerShare,
+                  avgCostPerShare: Number(transaction.cost_per_share),
                 })}
                 <TableCell>
-                  <button
-                    className=" cursor-pointer"
-                    onClick={() => deleteLot(index)}
-                  >
-                    <Trash2 className="w-4" />
-                  </button>
+                 <ConfirmationModal
+                                       onConfirm={async () => {
+                                         let deleteResponse = await deleteTransaction(holdingId, Number(transaction.id));
+                                         if (deleteResponse.status === 204) {
+                                           setTransactions(prev => prev.filter(p => p.id !== transaction.id));
+                                           toast("Lot deleted successfully");
+                                         } else {
+                                           toast.error("Failed to delete Lot");
+                                         }
+                                       }}
+                                       title="This action can't be undone?"
+                                       description="You want to delete this Lot?">
+                                       <Button
+                                         size="lg"
+                                         variant="second"
+                                       >
+                                         <Trash2 className="w-4" />
+                                       </Button>
+                                     </ConfirmationModal>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      )}
+      
+        ) :
+          <p className="w-full text-center my-2">No Lots Added Yet</p>
+        }</>
+      }
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#09090e] p-6 rounded-md max-w-lg w-full space-y-4 text-white">
             <h2 className="text-xl font-semibold text-center mb-1">
-              Is this a new sell transaction?
+              Do u want to add this newly created transaction?
             </h2>
             <p className="text-center text-gray-600 text-xs">
               We'll automatically generate a sell transaction of 1 shares. Feel
               free to adjust it afterward to ensure accuracy.
             </p>
             <div className="flex justify-end mt-4">
-              <button
-                className="  text-white px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
-                onClick={() => {
-                  setShowModal(false);
-                  setIsEditing(false);
-                  // Handle cancel action
-                }}
-              >
-                No, This is an edit
-              </button>
-              <button
-                className="bg-white text-[#09090e] px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
-                onClick={() => {
-                  setShowModal(false);
-                  setIsEditing(true);
-                  // Handle cancel action
-                }}
-              >
-                Yes
-              </button>
+              
+                 <button
+                             className="bg-white text-[#09090e] px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
+                              onClick={async () => { 
+                              let updatedLotNew = transactions[updatedTransaction || 0] ?? null;
+             
+             
+                            if(updatedLotNew.flag){
+   let newLot = await createNewTransaction(holdingId,
+                                  { shares: Number(updatedLotNew?.shares),
+                                    cost_per_share: Number(updatedLotNew?.cost_per_share),transaction_type:updatedLotNew.transaction_type,   commission: Number(updatedLotNew?.commission), note: "", date: updatedLotNew?.date  }
+                                 )
+                               if (newLot.status == 201) {
+                                 setShowModal(false);
+                                 setIsEditing(false);
+                            setTransactions((prevLots) =>
+  prevLots.map((txn) =>
+    txn.id == updatedLotNew.id ? newLot.data : txn
+  )
+);
+             
+                               }
+                               else{
+                                 setShowModal(false);
+
+                                toast.error("Unable to add new Transaction")
+                               }
+                            }
+                            else{
+                                 let newLot = await updateTransaction(holdingId,
+                                  updatedLotNew.id,
+                                  { shares: Number(updatedLotNew?.shares),
+                                    cost_per_share: Number(updatedLotNew?.cost_per_share),transaction_type:updatedLotNew.transaction_type,   commission: Number(updatedLotNew?.commission), note: "", date: updatedLotNew?.date  }
+                                 )
+                               if (newLot.status == 200) {
+                                 setShowModal(false);
+                                 setIsEditing(false);
+                           setTransactions((prevLots) =>
+  prevLots.map((txn) =>
+    txn.id == updatedLotNew.id ? newLot.data : txn
+  )
+);
+             
+                               }
+                               else{
+                                 setShowModal(false);
+
+                                toast.error("Unable to add new Transaction")
+                               }
+                            }
+                             }}
+                           >
+                             Yes
+                           </button>
             </div>
           </div>
         </div>

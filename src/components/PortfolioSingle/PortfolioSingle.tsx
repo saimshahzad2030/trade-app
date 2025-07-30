@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, ChevronLeft, FileIcon, Plus, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, FileIcon, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Button } from "../ui/button";
@@ -123,9 +123,11 @@ import WatchlistTableChart from "./WatchlistTableChart";
 import { Input } from "../ui/input";
 import HoldingsTable from "./HoldingsTable";
 import { useParams, useRouter } from "next/navigation";
-import { CreateNewPortfolio, cretateNewHolding, FetchPortfolioHoldings, FetchSinglePortfolio } from "@/services/portfolio.services";
+import { CreateNewPortfolio, cretateNewHolding, deletePortfolioHolding, FetchPortfolioHoldings, FetchSinglePortfolio } from "@/services/portfolio.services";
 import { searchStock } from "@/services/search.services";
 import SkeletonLoader from "../Loader/SkeletonLoader";
+import ConfirmationModal from "../Modal/ConfirmationModal";
+import { toast } from "sonner";
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
   { name: "Euro", code: "EUR", symbol: "€" },
@@ -370,7 +372,8 @@ React.useEffect(()=>{
       </TableBody>
     </Table>
   ) : (
-    <Table className="text-xs">
+    <>{summaryData.length>0?
+      <Table className="text-xs">
       <TableHeader>
         <TableRow>
           <TableHead>Symbol</TableHead>
@@ -385,6 +388,7 @@ React.useEffect(()=>{
           <TableHead>52W Range</TableHead>
           <TableHead>Day Chart</TableHead>
           <TableHead>Market Cap</TableHead>
+          <TableHead>Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -395,7 +399,7 @@ React.useEffect(()=>{
             <TableCell>{stock.change_percent}%</TableCell>
             <TableCell>{stock.change}</TableCell>
             <TableCell>{stock.currency}</TableCell>
-            <TableCell>{new Date(stock.market_time).toLocaleString()}</TableCell>
+            <TableCell>{stock.market_time}</TableCell>
             <TableCell>{stock.volume}</TableCell>
             <TableCell>{stock.avg_volume_3m}</TableCell>
             <TableCell>{stock.day_range}</TableCell>
@@ -404,14 +408,37 @@ React.useEffect(()=>{
               <WatchlistTableChart data={stock.day_chart} />
             </TableCell>
             <TableCell>{stock.market_cap}</TableCell>
+              <TableCell>
+                  <ConfirmationModal
+                                                     onConfirm={async()=>{
+                                                                                           let deleteAPortfolioHoldingData = await deletePortfolioHolding(stock.portfolio, stock.id);
+                                                                                         if (deleteAPortfolioHoldingData.status === 204) {
+                                                       setSummaryData(prev => prev.filter(p => p.id !== stock.id));
+                                                       toast("Holding deleted successfully");
+                                                     } else {
+                                                       toast.error("Failed to delete portfolio");
+                                                     }
+                                                                                         }}
+                                                    title="This action can't be undone?"
+                                                    description="You want to delete this Symbol?">
+                                                      <Button
+                                                     size="lg"
+                                              variant="second" 
+                                                    >
+                                                      <Trash2 className="w-4" />
+                                                    </Button>
+                                                    </ConfirmationModal>
+                </TableCell>
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+    </Table>:
+    <p className="w-full text-center my-2">No Symbols added yet</p>
+    }</>
   )
 )}
 
-      {selectedTab === "holdings" && <HoldingsTable summaryData={summaryData} />}
+      {selectedTab === "holdings" && <HoldingsTable isLoading={loading} summaryData={summaryData} />}
       {selectedTab === "fundamentals" && (
         <Table className="text-xs">
          <TableHeader>

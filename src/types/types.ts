@@ -556,7 +556,7 @@ export type Holdings = {
     realizedGainPercent: number;
 };
 
-export type TransactionType = "buy" | "sell" | "sellshort" | "buytocover";
+export type TransactionType = "BUY" | "SELL" | "SELL SHORT" | "BUY TO COVER";
 
 export interface Transactions {
     date: Date; // ISO format recommended, e.g. '2025-04-30'
@@ -987,3 +987,40 @@ interface PortfolioAsset {
 }
 
 export type PortfolioDataResponse= PortfolioAsset[];
+
+export type HoldingLot = {
+  id: number;
+  holding: number;
+  shares: string;
+  cost_per_share: string;
+  total_cost: string;
+  market_value: string;
+  day_gain_unrealized_percent: string;
+  day_gain_unrealized_value: string;
+  total_gain_unrealized_percent: string;
+  total_gain_unrealized_value: string;
+  annual_gain_percent: string;
+  annual_gain_value: string;
+  low_limit: number;
+  high_limit: number;
+  flag: string | null;
+  note: string;
+date: Date | null
+};
+
+export type HoldingLots = HoldingLot[];
+export type HoldingTransaction = {
+  id:number; 
+  share: number; // Possibly redundant, consider verifying its use
+  shares: string; // String to allow decimal and formatting
+  transaction_type: TransactionType; // Add other types if needed
+  cost_per_share: string;
+  commission: string | null;
+  total_cost: string;
+  realized_gain_percent: string;
+  realized_gain_value: string;
+  note: string | null;
+   flag?: "new" | "edited";
+  date: Date | null; // ISO or datetime string
+};
+export type HoldingTransactions = HoldingTransaction[];

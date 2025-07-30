@@ -24,15 +24,17 @@ import {
   FileIcon,
   Plus,
   Tickets,
+  Trash2,
   X,
 } from "lucide-react";
 import { Portfolio } from "@/types/types";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { CreateNewPortfolio, FetchPortfolios } from "@/services/portfolio.services";
+import { CreateNewPortfolio, deletePortfolio, FetchPortfolios } from "@/services/portfolio.services";
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import { current } from "@reduxjs/toolkit";
+import ConfirmationModal from "../Modal/ConfirmationModal";
 type TabKey = string | null; // or e.g. 'overview' | 'holdings' | 'analytics'
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
@@ -160,6 +162,7 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
             <TableCell>Day Change</TableCell>
             <TableCell>Unrealized Gain/Loss</TableCell>
             <TableCell>Realized Gain/Loss</TableCell>
+            <TableCell>Action</TableCell>
           </TableRow>
         </TableHeader> 
   {loading ? (
@@ -208,6 +211,27 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
       <TableCell>{portfolio.day_change.value} ({portfolio.day_change.percent})</TableCell>
       <TableCell>{portfolio.unrealized_gain_loss.value} ({portfolio.unrealized_gain_loss.percent})</TableCell>
       <TableCell>{portfolio.realized_gain_loss.value} ({portfolio.realized_gain_loss.percent}%)</TableCell>
+    <TableCell>
+                       <ConfirmationModal
+                                      onConfirm={async()=>{
+                                        let deleteAPortfolio = await deletePortfolio(portfolio.id);
+                                      if (deleteAPortfolio.status === 204) {
+    setUserPortfolios(prev => prev.filter(p => p.id !== portfolio.id));
+    toast("Portfolio deleted successfully");
+  } else {
+    toast.error("Failed to delete portfolio");
+  }
+                                      }}
+                                      title="This action can't be undone?"
+                                      description="You want to delete this portfolio?">
+                                        <Button
+                                       size="lg"
+                                variant="second" 
+                                      >
+                                        <Trash2 className="w-4" />
+                                      </Button>
+                                      </ConfirmationModal>
+                    </TableCell>
     </TableRow>
   ))}  
 

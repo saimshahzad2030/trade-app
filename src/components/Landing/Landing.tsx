@@ -197,7 +197,7 @@ const Landing = () => {
           {query && !loading && filteredStocks.length > 0 && (
         <div className="z-49  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[200px] overflow-y-scroll">
           {filteredStocks.map((item, index) => (
-           <Link  key={index} href={`/chart/${item.symbol}`} className="flex flex-col w-full items-start hover:bg-gray-50  p-3 ">
+           <Link  key={index} href={`/summary/${item.symbol}`} className="flex flex-col w-full items-start hover:bg-gray-50  p-3 ">
             <div
               key={index}
               className="hover:text-[var(--variant-6)] flex flex-row items-center justify-between w-full cursor-pointer  "
