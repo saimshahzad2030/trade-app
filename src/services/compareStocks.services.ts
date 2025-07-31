@@ -5,7 +5,7 @@ export const getcomparisonData = async (symbol:string) => {
   try {
     const response = await axiosInstanceJson.get(`comparison-data/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,

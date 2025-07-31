@@ -13,7 +13,7 @@ const formattedToDate = format(toDate!, "yyyy-MM-dd");
           console.log("toDate",toDate)
     const response = await axiosInstanceJson.get(`technical-indicators/${symbol}/${period}/${indicator}/10?start_date=${formattedFromDate}&end_date=${formattedToDate}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -30,7 +30,7 @@ export const getSpecificStockKeyFinancialRatios = async (symbol:string,) => {
   try {
     const response = await axiosInstanceJson.get(`key-financials-ratios/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -65,7 +65,7 @@ export const getSpecificStockSummaryChart = async (range:string,symbol:string) =
    
     const response = await axiosInstanceJson.get(`chart-data/${symbol}/${range??'1d'}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -83,7 +83,7 @@ export const getEPSProjectionChart = async (symbol:string) => {
    
     const response = await axiosInstanceJson.get(`eps-projection/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -101,7 +101,7 @@ export const getGrowthProfitabilityChart = async (symbol:string) => {
    
     const response = await axiosInstanceJson.get(`growth-profitability_and_debt_analysis/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -119,7 +119,7 @@ export const getOwnershipStructureChart = async (symbol:string) => {
    
     const response = await axiosInstanceJson.get(`ownership-structure/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,
@@ -137,7 +137,7 @@ export const getSpecificStockSummaryData = async (symbol:string) => {
    
     const response = await axiosInstanceJson.get(`meta-data/${symbol}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data,

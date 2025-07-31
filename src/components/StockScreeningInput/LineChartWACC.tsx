@@ -1,92 +1,209 @@
 "use client"
 import React from "react";
 import ReactECharts from "echarts-for-react";
+import { Stock, WaccResponseType } from "@/types/types";
+import { get5YearWacc } from "@/services/stockScreening.services";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
-const LineChartWACC = () => {
-  const years = ["2020", "2021", "2022", "2023", "2024"];
+const generateColorPalette = (count: number): string[] => {
+  return Array.from({ length: count }, (_, i) => {
+    const hue = (i * 360) / count;
+    return `hsl(${hue}, 70%, 60%)`;
+  });
+};
+type ScreenerRadarProps = {
+  stocks: Stock[];
+};
+const getMinRocValue = (data: WaccResponseType): number => {
+  const allRocs = Object.values(data).flat().map(entry => entry.wacc);
+  const minRoc = Math.min(...allRocs);
+  return Math.floor(minRoc * 100) / 100; // Optional: round down to 2 decimals
+};
+const LineChartWACC = ({ stocks }: ScreenerRadarProps) => {
+   const [rocData, setRocData] = React.useState<WaccResponseType>({});
+    const [loading, setLoading] = React.useState(true);
+    const [years, setYears] = React.useState<string[]>([]);
 
-  // Dummy WACC data (in %)
-  const stockWACCData = {
-    AAPL: [8.5, 8.3, 8.1, 8.0, 7.8],
-    MSFT: [7.5, 7.3, 7.2, 7.0, 6.9],
-    GOOGL: [9.0, 8.8, 8.6, 8.5, 8.4],
-    AMZN: [10.0, 9.8, 9.5, 9.2, 9.0],
-    TSLA: [12.0, 11.5, 11.0, 10.5, 10.0],
-  };
+ 
+  React.useEffect(() => {
+          console.log(stocks,"stocks")
 
-  const stockColors = {
-    AAPL: "#ff7c7c",
-    MSFT: "#7cafff",
-    GOOGL: "#7cffd1",
-    AMZN: "#ffd97c",
-    TSLA: "#d07cff",
-  };
+    const fetchAllStockData = async () => {
+      try {
+        const responses = await Promise.all(
+          stocks.map((stock) => get5YearWacc(stock.symbol))
+        );
+ 
+        const yearSet = new Set<string>();
+ const mergedData: WaccResponseType = {}; 
 
-  const series = Object.entries(stockWACCData).map(([name, data]) => ({
-    name,
-    data,
-    type: "line",
-    smooth: true,
-    symbol: "none",
-    lineStyle: {
-      width: 3,
-    },
-    itemStyle: {
-      color: stockColors[name as keyof typeof stockColors],
-    },
-  }));
+    responses.forEach((res) => {
+     responses.forEach((res) => {
+          if (res.status === 200) {
+            const ticker = Object.keys(res.data)[0];
+            const entries = res.data[ticker];
+
+            mergedData[ticker] = entries;
+            entries.forEach((entry:{year:string}) => yearSet.add(entry.year));
+          }
+        });
+    });
+
+
+        setRocData(mergedData);
+        setYears(Array.from(yearSet).sort());
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stock Revenue:", error);
+        setLoading(false);
+
+      }
+    }; 
+    if (stocks.length) {
+      fetchAllStockData();
+    }
+  }, [stocks]);
+
+  
+  const tickers = Object.keys(rocData);
+  const colors = generateColorPalette(10);
+
+  const companySeries = tickers.map((ticker, index) => {
+    const entryMap: Record<string, number> = {};
+    rocData[ticker].forEach((entry) => {
+      entryMap[entry.year] = entry.wacc;
+    });
+
+    const alignedSeries = years.map((year) =>
+      entryMap[year] !== undefined ? entryMap[year] : null
+    );
+
+    return {
+      name: ticker,
+      type: "line",
+      data: alignedSeries,
+      symbol: "circle",
+      symbolSize: 4,
+      showSymbol: true,
+      connectNulls: true,
+      lineStyle: {
+        width: 1,
+        opacity: 0.2,
+        color: colors[index],
+      },
+      itemStyle: {
+        color: colors[index],
+      },
+      emphasis: {
+        focus: "series",
+        lineStyle: {
+          width: 2,
+          opacity: 0.9,
+        },
+      },
+    };
+  });
+
+  // Calculate average ROC per year
+  const averageGrowth = years.map((year) => {
+    const values = tickers
+      .map((ticker) =>
+        rocData[ticker].find((entry) => entry.year === year)?.wacc
+      )
+      .filter((v): v is number => v !== undefined);
+    if (!values.length) return null;
+    const sum = values.reduce((a, b) => a + b, 0);
+    return +(sum / values.length).toFixed(2);
+  });
+
+  const allValues = Object.values(rocData)
+    .flatMap((arr) => arr.map((e) => e.wacc))
+    .filter((v) => typeof v === "number");
 
   const option = {
     title: {
-      text: "WACC Over Last 5 Years",
+      text: `Wacc Over Time (${tickers.length} Stocks)`,
       left: "center",
+      top: 8,
       textStyle: {
         color: "white",
-        fontSize: 20,
+        fontSize: 14,
       },
-      bottom: "0",
     },
     tooltip: {
-      trigger: "axis",
+      trigger: "item",
+      formatter: (params: any) => `
+        <strong>${params.seriesName}</strong><br/>
+        Year: ${params.name}<br/>
+        Revenue: ${params.value}
+      `,
     },
     legend: {
-      top: "1%",
-      textStyle: {
-        color: "white",
-      },
-      data: Object.keys(stockWACCData),
+      type: "scroll",
+      data: tickers,
+      top: 28,
+      textStyle: { color: "white" },
+      pageIconColor: "#ffffff",
     },
     grid: {
-      left: "10%",
-      right: "10%",
-      bottom: "15%",
+      left: "5%",
+      right: "15%",
+      top: 100,
+      bottom: 20,
+      containLabel: true,
     },
     xAxis: {
-      boundaryGap: false,
-      lineStyle: {
-        type: "dotted",
-        width: 0.5,
-        color: "#999",
-      },
       type: "category",
+      name: "Year",
+      boundaryGap: false,
       data: years,
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
+      splitLine: { show: false },
     },
     yAxis: {
-      min: Math.min(...Object.values(stockWACCData).flat()) - 1,
+      type: "value",
+      name: "Wacc (%)",
+      min: getMinRocValue(rocData),
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
       splitLine: {
+        show: true,
         lineStyle: {
-          type: "dotted",
-          width: 0.3,
-          color: "#999",
+          color: "#aaa",
+          width: 0.1,
         },
       },
-      type: "value",
-      name: "WACC (%)",
     },
-    series,
+    series: [
+      ...companySeries,
+      {
+        name: "Average Wacc",
+        type: "line",
+        data: averageGrowth,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 0,
+        lineStyle: {
+          width: 1,
+          type: "dashed",
+          opacity: 0.1,
+          color: "#ffffff",
+        },
+        itemStyle: {
+          color: "#ffffff",
+        },
+        z: 10,
+      },
+    ],
+    backgroundColor: "#1f1f2e",
   };
 
-  return <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: '#0d0d14', padding: 20, borderRadius: 8 }}>
+  if (loading)
+    return <SkeletonLoader className='max-w-900 w-full h-[500px] bg-gray-700'/>;
+
+
+  return <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: "#1f1f2e", padding: 20, borderRadius: 8 }}>
     <ReactECharts option={option} style={{ height: "500px" }} /></div>
 };
 

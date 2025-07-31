@@ -1,92 +1,212 @@
 "use client"
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
+import { RevenueResponseType, Stock } from '@/types/types';
+import { get5YearRevenue } from '@/services/stockScreening.services';
+import { log } from 'console';
+import SkeletonLoader from '../Loader/SkeletonLoader';
+const generateColorPalette = (count: number): string[] => {
+  return Array.from({ length: count }, (_, i) => {
+    const hue = (i * 360) / count;
+    return `hsl(${hue}, 70%, 60%)`;
+  });
+};
+type ScreenerRadarProps = {
+  stocks: Stock[];
+};
+const getMinRocValue = (data: RevenueResponseType): number => {
+  const allRocs = Object.values(data).flat().map(entry => entry.revenue);
+  const minRoc = Math.min(...allRocs);
+  return Math.floor(minRoc * 100) / 100; // Optional: round down to 2 decimals
+};
+const LineChartRevenueGrowth = ({ stocks }: ScreenerRadarProps) => {
+   const [rocData, setRocData] = React.useState<RevenueResponseType>({});
+    const [loading, setLoading] = React.useState(true);
+    const [years, setYears] = React.useState<string[]>([]);
 
-const LineChartRevenueGrowth = () => {
-  const years = ['2020', '2021', '2022', '2023', '2024'];
+ 
+  React.useEffect(() => {
+          console.log(stocks,"stocks")
 
-  const stockRevenueGrowthData = {
-    AAPL: [5, 7, 9, 10, 12],
-    MSFT: [6, 8, 11, 13, 15],
-    GOOGL: [7, 9, 12, 14, 16],
-    AMZN: [10, 12, 15, 17, 20],
-    TSLA: [12, 15, 18, 20, 23],
-  };
+    const fetchAllStockData = async () => {
+      try {
+        const responses = await Promise.all(
+          stocks.map((stock) => get5YearRevenue(stock.symbol))
+        );
+ 
+        const yearSet = new Set<string>();
+ const mergedData: RevenueResponseType = {}; 
 
-  const stockColors = {
-    AAPL: '#ff7c7c',
-    MSFT: '#7cafff',
-    GOOGL: '#7cffd1',
-    AMZN: '#ffd97c',
-    TSLA: '#d07cff',
-  };
+    responses.forEach((res) => {
+      if (res.status === 200) {
+        const ticker = Object.keys(res.data)[0];
+        const entries = res.data[ticker];
+ 
+        const cleanedEntries = entries.map((entry: { year: string; revenue: string }) => ({
+          year: entry.year,
+          revenue: parseFloat(entry.revenue.replace(/[\$,]/g, "")) || 0, // Remove $ and commas
+        }));
 
-  const series = Object.entries(stockRevenueGrowthData).map(([name, data]) => ({
-    name,
-    data,
-    type: 'line',
-    symbol: 'none',
-    lineStyle: {
-      width: 3,
-    },
-    itemStyle: {
-      color: stockColors[name as keyof typeof stockColors],
-    },
-  }));
+        mergedData[ticker] = cleanedEntries;
+        cleanedEntries.forEach((entry:{year:string}) => yearSet.add(entry.year));
+      }
+    });
 
-  const minValue = Math.min(...Object.values(stockRevenueGrowthData).flat()) - 2;
+
+        setRocData(mergedData);
+        setYears(Array.from(yearSet).sort());
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stock Revenue:", error);
+        setLoading(false);
+
+      }
+    }; 
+    if (stocks.length) {
+      fetchAllStockData();
+    }
+  }, [stocks]);
+
+  
+  const tickers = Object.keys(rocData);
+  const colors = generateColorPalette(10);
+
+  const companySeries = tickers.map((ticker, index) => {
+    const entryMap: Record<string, number> = {};
+    rocData[ticker].forEach((entry) => {
+      entryMap[entry.year] = entry.revenue;
+    });
+
+    const alignedSeries = years.map((year) =>
+      entryMap[year] !== undefined ? entryMap[year] : null
+    );
+
+    return {
+      name: ticker,
+      type: "line",
+      data: alignedSeries,
+      symbol: "circle",
+      symbolSize: 4,
+      showSymbol: true,
+      connectNulls: true,
+      lineStyle: {
+        width: 1,
+        opacity: 0.2,
+        color: colors[index],
+      },
+      itemStyle: {
+        color: colors[index],
+      },
+      emphasis: {
+        focus: "series",
+        lineStyle: {
+          width: 2,
+          opacity: 0.9,
+        },
+      },
+    };
+  });
+
+  // Calculate average ROC per year
+  const averageGrowth = years.map((year) => {
+    const values = tickers
+      .map((ticker) =>
+        rocData[ticker].find((entry) => entry.year === year)?.revenue
+      )
+      .filter((v): v is number => v !== undefined);
+    if (!values.length) return null;
+    const sum = values.reduce((a, b) => a + b, 0);
+    return +(sum / values.length).toFixed(2);
+  });
+
+  const allValues = Object.values(rocData)
+    .flatMap((arr) => arr.map((e) => e.revenue))
+    .filter((v) => typeof v === "number");
 
   const option = {
     title: {
-      text: 'Revenue Growth Over Last 5 Years',
-      left: 'center',
+      text: `Revenue Over Time (${tickers.length} Stocks)`,
+      left: "center",
+      top: 8,
       textStyle: {
-        color: 'white',
-        fontSize: 20,
+        color: "white",
+        fontSize: 14,
       },
-      bottom: '0',
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: "item",
+      formatter: (params: any) => `
+        <strong>${params.seriesName}</strong><br/>
+        Year: ${params.name}<br/>
+        Revenue: ${params.value}
+      `,
     },
     legend: {
-      top: '1%',
-      textStyle: {
-        color: 'white',
-      },
-      data: Object.keys(stockRevenueGrowthData),
+      type: "scroll",
+      data: tickers,
+      top: 28,
+      textStyle: { color: "white" },
+      pageIconColor: "#ffffff",
     },
     grid: {
-      left: '10%',
-      right: '10%',
-      bottom: '15%',
+      left: "5%",
+      right: "15%",
+      top: 100,
+      bottom: 20,
+      containLabel: true,
     },
     xAxis: {
+      type: "category",
+      name: "Year",
       boundaryGap: false,
-      lineStyle: {
-        type: 'dotted',
-        width: 0.5,
-        color: '#999',
-      },
-      type: 'category',
       data: years,
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
+      splitLine: { show: false },
     },
     yAxis: {
-      min: minValue,
+      type: "value",
+      name: "Revenue (%)",
+      min: getMinRocValue(rocData),
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
       splitLine: {
+        show: true,
         lineStyle: {
-          type: 'dotted',
-          width: 0.3,
-          color: '#999',
+          color: "#aaa",
+          width: 0.1,
         },
       },
-      type: 'value',
-      name: 'Revenue Growth (%)',
     },
-    series,
+    series: [
+      ...companySeries,
+      {
+        name: "Average Revenue",
+        type: "line",
+        data: averageGrowth,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 0,
+        lineStyle: {
+          width: 1,
+          type: "dashed",
+          opacity: 0.1,
+          color: "#ffffff",
+        },
+        itemStyle: {
+          color: "#ffffff",
+        },
+        z: 10,
+      },
+    ],
+    backgroundColor: "#1f1f2e",
   };
 
-  return <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: '#0d0d14', padding: 20, borderRadius: 8 }}>
+  if (loading)
+    return <SkeletonLoader className='max-w-900 w-full h-[500px] bg-gray-700'/>;
+
+ 
+  return <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: "#1f1f2e", padding: 20, borderRadius: 8 }}>
     <ReactECharts option={option} style={{ height: '500px' }} /></div>
 };
 

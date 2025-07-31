@@ -1,92 +1,212 @@
 "use client"
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
+import { EpsResponseType, Stock } from '@/types/types';
+import { get5YearEps } from '@/services/stockScreening.services';
+import SkeletonLoader from '../Loader/SkeletonLoader';
+const generateColorPalette = (count: number): string[] => {
+  return Array.from({ length: count }, (_, i) => {
+    const hue = (i * 360) / count;
+    return `hsl(${hue}, 70%, 60%)`;
+  });
+};
+type ScreenerRadarProps = {
+  stocks: Stock[];
+};
+const getMinRocValue = (data: EpsResponseType): number => {
+  const allRocs = Object.values(data).flat().map(entry => entry.eps);
+  const minRoc = Math.min(...allRocs);
+  return Math.floor(minRoc * 100) / 100; // Optional: round down to 2 decimals
+};
+const LineChartGrossProfit = ({ stocks }: ScreenerRadarProps) => {
+   const [rocData, setRocData] = React.useState<EpsResponseType>({});
+    const [loading, setLoading] = React.useState(true);
+    const [years, setYears] = React.useState<string[]>([]);
 
-const LineChartGrossProfit = () => {
-  const years = ['2020', '2021', '2022', '2023', '2024'];
+ 
+  React.useEffect(() => {
+          console.log(stocks,"stocks")
 
-  // Dummy gross profit data (in billions USD)
-  const stockGrossProfitData = {
-    AAPL: [104, 110, 120, 125, 130],
-    MSFT: [96, 102, 110, 115, 118],
-    GOOGL: [89, 95, 100, 105, 108],
-    AMZN: [75, 82, 90, 95, 98],
-    TSLA: [18, 25, 34, 40, 42],
-  };
+    const fetchAllStockData = async () => {
+      try {
+        const responses = await Promise.all(
+          stocks.map((stock) => get5YearEps(stock.symbol))
+        );
+ 
+        const yearSet = new Set<string>();
+ const mergedData: EpsResponseType = {}; 
 
-  const stockColors = {
-    AAPL: '#ff7c7c',
-    MSFT: '#7cafff',
-    GOOGL: '#7cffd1',
-    AMZN: '#ffd97c',
-    TSLA: '#d07cff',
-  };
+    responses.forEach((res) => {
+      if (res.status === 200) {
+        const ticker = Object.keys(res.data)[0];
+        const entries = res.data[ticker];
+ 
+        const cleanedEntries = entries.map((entry: { year: string; eps: string }) => ({
+          year: entry.year,
+          eps: parseFloat(entry.eps.replace(/[\$,]/g, "")) || 0, // Remove $ and commas
+        }));
 
-  const series = Object.entries(stockGrossProfitData).map(([name, data]) => ({
-    name,
-    data,
-    type: 'line',
-    symbol: 'none',
-    lineStyle: {
-      width: 3,
-    },
-    itemStyle: {
-      color: stockColors[name as keyof typeof stockColors],
-    },
-  }));
+        mergedData[ticker] = cleanedEntries;
+        cleanedEntries.forEach((entry:{year:string}) => yearSet.add(entry.year));
+      }
+    });
 
-  const option = {
-   title: {
-      text: 'Gross Profit Over Last 5 Years',
-      left: 'center',
-      textStyle: {
-        color: 'white',
-        fontSize: 20,
-      },
-      bottom: '0',
-    },
-    tooltip: {
-      trigger: 'axis',
-    },
-    legend: {
-      top: '1%',
-      textStyle: {
-        color: 'white',
-      },
-      data: Object.keys(stockGrossProfitData),
-    },
-    grid: {
-      left: '10%',
-      right: '10%',
-      bottom: '15%',
-    },
-    xAxis: {
-      boundaryGap: false,
+
+        setRocData(mergedData);
+        setYears(Array.from(yearSet).sort());
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stock Eps:", error);
+        setLoading(false);
+
+      }
+    }; 
+    if (stocks.length) {
+      fetchAllStockData();
+    }
+  }, [stocks]);
+
+  
+  const tickers = Object.keys(rocData);
+  const colors = generateColorPalette(10);
+
+  const companySeries = tickers.map((ticker, index) => {
+    const entryMap: Record<string, number> = {};
+    rocData[ticker].forEach((entry) => {
+      entryMap[entry.year] = entry.eps;
+    });
+
+    const alignedSeries = years.map((year) =>
+      entryMap[year] !== undefined ? entryMap[year] : null
+    );
+
+    return {
+      name: ticker,
+      type: "line",
+      data: alignedSeries,
+      symbol: "circle",
+      symbolSize: 4,
+      showSymbol: true,
+      connectNulls: true,
       lineStyle: {
-        type: 'dotted',
-        width: 0.5,
-        color: '#999',
+        width: 1,
+        opacity: 0.2,
+        color: colors[index],
       },
-      type: 'category',
-      data: years,
-    },
-    yAxis: {
-      min: Math.min(...Object.values(stockGrossProfitData).flat()) - 5,
-      splitLine: {
+      itemStyle: {
+        color: colors[index],
+      },
+      emphasis: {
+        focus: "series",
         lineStyle: {
-          type: 'dotted',
-          width: 0.3,
-          color: '#999',
+          width: 2,
+          opacity: 0.9,
         },
       },
-      type: 'value',
-      name: 'Gross Profit (Billion USD)',
+    };
+  });
+
+  // Calculate average ROC per year
+  const averageGrowth = years.map((year) => {
+    const values = tickers
+      .map((ticker) =>
+        rocData[ticker].find((entry) => entry.year === year)?.eps
+      )
+      .filter((v): v is number => v !== undefined);
+    if (!values.length) return null;
+    const sum = values.reduce((a, b) => a + b, 0);
+    return +(sum / values.length).toFixed(2);
+  });
+
+  const allValues = Object.values(rocData)
+    .flatMap((arr) => arr.map((e) => e.eps))
+    .filter((v) => typeof v === "number");
+
+  const option = {
+    title: {
+      text: `Eps Over Time (${tickers.length} Stocks)`,
+      left: "center",
+      top: 8,
+      textStyle: {
+        color: "white",
+        fontSize: 14,
+      },
     },
-    series,
+    tooltip: {
+      trigger: "item",
+      formatter: (params: any) => `
+        <strong>${params.seriesName}</strong><br/>
+        Year: ${params.name}<br/>
+        Eps: ${params.value}
+      `,
+    },
+    legend: {
+      type: "scroll",
+      data: tickers,
+      top: 28,
+      textStyle: { color: "white" },
+      pageIconColor: "#ffffff",
+    },
+    grid: {
+      left: "5%",
+      right: "15%",
+      top: 100,
+      bottom: 20,
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      name: "Year",
+      boundaryGap: false,
+      data: years,
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
+      splitLine: { show: false },
+    },
+    yAxis: {
+      type: "value",
+      name: "Eps (%)",
+      min: getMinRocValue(rocData),
+      axisLine: { lineStyle: { color: "#888" } },
+      axisLabel: { color: "white" },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: "#aaa",
+          width: 0.1,
+        },
+      },
+    },
+    series: [
+      ...companySeries,
+      {
+        name: "Average Eps",
+        type: "line",
+        data: averageGrowth,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 0,
+        lineStyle: {
+          width: 1,
+          type: "dashed",
+          opacity: 0.1,
+          color: "#ffffff",
+        },
+        itemStyle: {
+          color: "#ffffff",
+        },
+        z: 10,
+      },
+    ],
+    backgroundColor: "#1f1f2e",
   };
 
+  if (loading)
+    return <SkeletonLoader className='max-w-900 w-full h-[500px] bg-gray-700'/>;
+
+ 
   return (
-    <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: '#0d0d14', padding: 20, borderRadius: 8 }}>
+    <div style={{ width: '100%', maxWidth: 900, margin: 'auto', backgroundColor: "#1f1f2e", padding: 20, borderRadius: 8 }}>
       <ReactECharts option={option} style={{ height: '500px' }} />
     </div>
   );

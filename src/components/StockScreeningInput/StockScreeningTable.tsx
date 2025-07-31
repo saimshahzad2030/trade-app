@@ -84,11 +84,11 @@ const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
       <div className="flex grid grid-cols-2 w-full gap-4  pt-8 pb-20">
 
       <RadarChartSS stocks={stocks.slice(0,10)}/> 
-        <LineChartROC/> 
-      <LineChartEPSGrowth/>
-      <LineChartRevenueGrowth/>
-      <LineChartWACC/>
-      <LineChartGrossProfit/>
+      <LineChartRevenueGrowth stocks={stocks.slice(0,10)}/>
+        <LineChartROC  stocks={stocks.slice(0,10)}/> 
+      <LineChartEPSGrowth stocks={stocks.slice(0,10)}/>
+      <LineChartWACC stocks={stocks.slice(0,10)}/>
+      <LineChartGrossProfit stocks={stocks.slice(0,10)}/>
       </div>
     </div>:
     <p className="text-gray-600">No Data to show</p>

@@ -90,7 +90,7 @@ React.useEffect(() => {
       const validData = responses
         .filter((res) => res.status === 200 && res.data?.financial_indicators_data?.error==null)
         .map((res) => res.data as FinancialIndicatorsResponse); // cast type if API shape guaranteed
-      console.log(validData,"ValidData")
+    
       setData(validData);
       setLoading(false)
     } catch (error) {

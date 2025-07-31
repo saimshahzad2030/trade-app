@@ -4,7 +4,7 @@ export const searchStock = async (query:string) => {
   try {
     const response = await axiosInstanceJson.get(`company-search/${query}`);
      
-    console.log(response.data)
+    
     return {
       status: response.status,
       data: response.data.results,

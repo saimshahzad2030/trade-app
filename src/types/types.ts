@@ -523,7 +523,47 @@ export type EPSProjectionData = {
         error: null;
     };
 };
+type RocEntry = {
+  year: string;
+  roc: number;
+};
 
+export type RocResponseType = {
+  [ticker: string]: RocEntry[];
+};
+type GrossEntry = {
+  year: string;
+  grossProfit: number;
+};
+
+ export type GrossProfitResponseType = {
+  [ticker: string]: GrossEntry[];
+};
+type RevenueEntry = {
+  year: string;
+  revenue: number;
+};
+
+ export type RevenueResponseType = {
+  [ticker: string]: RevenueEntry[];
+};
+
+type WaccEntry = {
+  year: string;
+  wacc: number;
+};
+
+ export type WaccResponseType = {
+  [ticker: string]: WaccEntry[];
+};
+type EpsEntry = {
+  year: string;
+  eps: number;
+};
+
+ export type EpsResponseType = {
+  [ticker: string]: EpsEntry[];
+};
 export type Stock = {
   symbol: string;
   companyName: string;
