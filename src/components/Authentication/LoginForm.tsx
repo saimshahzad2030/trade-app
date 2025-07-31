@@ -57,6 +57,7 @@ const {
      
         }
         else{
+            setLoading(false)
     
             toast.error(userSignup.data?.email || userSignup.data.username || userSignup.data.password || userSignup.data.detail);
         }
