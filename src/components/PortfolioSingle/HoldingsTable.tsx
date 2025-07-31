@@ -68,7 +68,9 @@ const [holdings,setHoldings]=React.useState<PortfolioDataResponse>(summaryData);
           ? Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
                 {Array.from({ length: 13 }).map((_, j) => (
-                  <TableCell key={j}>
+                  <TableCell key={j}
+                    className="flex items-center gap-2 cursor-pointer font-bold text-md text-[var(--variant-4)]"
+                    >
                     <SkeletonLoader className="h-7 w-16 bg-gray-700" />
                   </TableCell>
                 ))}

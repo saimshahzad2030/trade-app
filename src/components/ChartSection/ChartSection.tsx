@@ -483,7 +483,9 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
               }
         {chartDataLoading? 
     <SkeletonLoader className=" bg-gray-900 h-[400px] w-full mt-8 rounded-md" />:
-          <SingleStockRadarChart symbol={symbol}/>}
+          <SingleStockRadarChart symbol={symbol}/>
+    
+          }
          <FinancialRatiosChart symbol={symbol}/> 
         </div>
       </div>

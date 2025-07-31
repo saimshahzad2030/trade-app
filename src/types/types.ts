@@ -263,7 +263,41 @@ interface ChangesInOperatingAssetsAndLiabilities {
     accountsPayable: string;
     otherWorkingCapitalChanges: string;
 }
+export interface RatioGroup {
+  title: string;
+  data: Record<string, string>;
+}
+export   interface Transaction {
+    shares: number;
+    lastPrice: number;
+    avgCostPerShare: number;
+  }
+export interface DebtAnalysisProps {
+  loading: boolean;
+  error?:string;
 
+  data?: DebtCoverageEntry[];
+}
+export type UnitType = "B" | "M" | "RAW";
+export interface HistoricalPDFProps {
+  stockName:string;
+  historicalData: historicalDataType;
+} 
+export interface FinancialPDFProps {
+  activeRange: 'incomeStatement' | 'balanceSheet' | 'cashFlowStatement';
+  financialStatement: FinancialStatement;
+}
+export interface CompanySummaryType {
+  name: string;
+  description: string;
+  website: string;
+  currency?: string;
+  exchangeName?: string;
+  employees: number | string;
+  fiscalYearEnds: string;
+  sector: string;
+  industry: string;
+}
 interface AdjustmentsToReconcileNetIncome {
     depreciationAndAmortization: string;
     deferredIncomeTax: string;
@@ -734,6 +768,12 @@ export type FinancialDataType = {
     };
   };
 };
+export interface DebtAnalysisProps2 {
+  loading: boolean;
+  error?:string;
+  data?: FinancialPositionData;
+}
+
 export interface MetaDataType {
   meta: {
     ticker: string;
@@ -1003,6 +1043,7 @@ export type HoldingLot = {
   annual_gain_value: string;
   low_limit: number;
   high_limit: number;
+  isNew?:boolean;
   flag: string | null;
   note: string;
 date: Date | null
@@ -1024,3 +1065,15 @@ export type HoldingTransaction = {
   date: Date | null; // ISO or datetime string
 };
 export type HoldingTransactions = HoldingTransaction[];
+ export type StockToDisplayType ={
+        ticker:string,
+        name: string,
+        price: string,
+        percentChange: string,
+        changeColor: string
+    } 
+    export type User = {
+      id:number,
+      email:string,
+      username:string,
+    }

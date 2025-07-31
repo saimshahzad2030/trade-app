@@ -32,6 +32,7 @@ import { useParams } from "next/navigation";
 import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 import SkeletonLoader from "../Loader/SkeletonLoader";
+import { downloadHistoricalDataCsv } from "@/services/download.services";
 function formatLargeNumber(value: number): string {
   if (value >= 1_000_000_000_000) {
     return (value / 1_000_000_000_000).toFixed(2) + "T";
@@ -44,10 +45,8 @@ function formatLargeNumber(value: number): string {
   }
 }
 const HistoricalData = () => {
-  
-
-  const params = useParams<{ symbol: string}>()
-    let symbol = params.symbol
+    const params = useParams<{ symbol: string}>()
+    let {symbol} = params; 
   const [mounted, setMounted] = React.useState(false);
   
   React.useEffect(() => {
@@ -133,43 +132,36 @@ const HistoricalData = () => {
                             >
                        
                             <TooltipProvider>
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger className="cursor-pointer">  
                   <DownloadCloud className="cursor-pointer"/>
                           </TooltipTrigger>
                 <TooltipContent>
                   <p>{`Download Historical Data with ratios`}</p>
                 </TooltipContent>
-              </Tooltip>
-            
+              </Tooltip> */}
+               <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="graphTab2"
+                                      onClick={async() => {
+ 
+      await downloadHistoricalDataCsv(symbol,String(fromDate),String(toDate));
+  }}
+                                      className="cursor-pointer text-[var(--variant-4)] border-transparent hover:border-[var(--variant-3)]"
+                                    >
+                                      <DownloadCloud className="cursor-pointer" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{`Download as CSV`}</p>
+                                  </TooltipContent>
+                                </Tooltip>
             
                           </TooltipProvider> 
                             </Button>}
             
-            <Button 
-                  variant="graphTab2"
-                   // onClick={() => {}}
-                  className={`mr-1  text-[var(--variant-4)]   text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]   `}
-                >
-            {mounted   && <>
-                          
-             {data &&  <>  <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>  
-                          {/* <HistoricalDataPDFDownload 
-                historicalData={data }
-              />  */}
-                            </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{`Download Historical Data`}</p>
-                  </TooltipContent>
-                </Tooltip>
-              
-              
-                            </TooltipProvider></>}
-                       
-                         </>}
-                         </Button>
+           
           </div>
           <div className="w-full flex flex-col items-center mt-1">
             <div className="flex flex-row items-center justify-end w-full">

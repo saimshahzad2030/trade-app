@@ -5,16 +5,9 @@ import { poppins } from "@/fonts/fonts";
 import { DebtCoverageEntry } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import SkeletonLoader from "../Loader/SkeletonLoader";
-
-interface DebtAnalysisProps {
-  loading: boolean;
-  error?:string;
-
-  data?: DebtCoverageEntry[];
-}
-
+import { DebtAnalysisProps } from "@/types/types";
 // Detect whether the value has B, M, or raw
-type UnitType = "B" | "M" | "RAW";
+import { UnitType } from "@/types/types";
 
 const detectUnit = (value: string): UnitType => {
   if (value.endsWith("B")) return "B";

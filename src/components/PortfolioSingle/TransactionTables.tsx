@@ -1,6 +1,7 @@
 "use client";
 import { Calendar1Icon, ChevronDown, Plus } from "lucide-react";
 import React from "react";
+import { Transaction } from "@/types/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,11 +143,6 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
       return updated;
     });
   };
-  interface Transaction {
-    shares: number;
-    lastPrice: number;
-    avgCostPerShare: number;
-  }
 
   function calculateRealizedGain(transaction: Transaction) {
     const { shares, lastPrice, avgCostPerShare } = transaction;
@@ -192,25 +188,35 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
         Add Transaction
       </button>
       {loading ?
-        <TableBody>
-          {loading ? (
-            [...Array(3)].map((_, i) => (
+      <Table className="my-4  text-xs ">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Shares</TableHead>
+              <TableHead>Cost/Share ($)</TableHead>
+              <TableHead>Commission ($)</TableHead>
+              <TableHead>Total Cost ($)</TableHead>
+              <TableHead>Realized Gain (%)</TableHead>
+              <TableHead>Realized Gain ($)</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+             
+           { [...Array(3)].map((_, i) => (
               <TableRow key={i}>
-                {[...Array(14)].map((_, j) => (
+                {[...Array(9)].map((_, j) => (
                   <TableCell key={j}>
                     <SkeletonLoader className="h-4 w-full bg-gray-700" />
                   </TableCell>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            transactions.map((lot, index) => (
-              <TableRow key={index}>
-                {/* actual row content */}
-              </TableRow>
-            ))
-          )}
-        </TableBody> :<>{transactions.length > 0 ? (
+            ))}
+          
+          </TableBody>
+        </Table>
+       :  <>{transactions.length > 0 ? (
         <Table className="my-4  text-xs ">
           <TableHeader>
             <TableRow>
@@ -363,12 +369,9 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
                   />
                 </TableCell>
                 <TableCell>{transaction.total_cost}</TableCell>
-
-                {calculateRealizedGain({
-                  shares: Number(transaction.shares),
-                  lastPrice: parseFloat(holding.last_price),
-                  avgCostPerShare: Number(transaction.cost_per_share),
-                })}
+<TableCell>{transaction.realized_gain_percent}</TableCell>
+<TableCell>{transaction.realized_gain_value}</TableCell>
+        
                 <TableCell>
                  <ConfirmationModal
                                        onConfirm={async () => {
@@ -396,18 +399,17 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
         </Table>
       
         ) :
-          <p className="w-full text-center my-2">No Lots Added Yet</p>
-        }</>
-      }
+          <p className="w-full text-center my-2">No Transactions Added Yet</p>
+        }</>}
+       
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#09090e] p-6 rounded-md max-w-lg w-full space-y-4 text-white">
+          <div className="bg-[#09090e] p-6 rounded-md w-4/12  space-y-4 text-white">
             <h2 className="text-xl font-semibold text-center mb-1">
-              Do u want to add this newly created transaction?
+              Are you sure?
             </h2>
             <p className="text-center text-gray-600 text-xs">
-              We'll automatically generate a sell transaction of 1 shares. Feel
-              free to adjust it afterward to ensure accuracy.
+             Do u want to add this newly created transaction?
             </p>
             <div className="flex justify-end mt-4">
               

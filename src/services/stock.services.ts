@@ -47,8 +47,7 @@ export const getSpecificStockRadarChart = async (symbol:string) => {
   try {
    
     const response = await axiosInstanceJson.get(`financial-indicators/${symbol}`);
-     
-    console.log(response.data)
+      
     return {
       status: response.status,
       data: response.data,

@@ -33,6 +33,7 @@ import { getSpecificStockFinancialData, getSpecificStockSummaryData } from "@/se
 import { useParams } from "next/navigation";
 import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
+import { downloadFinancialDataCsv } from "@/services/download.services";
 
 const FinancialStatementPDFDownload = dynamic(
   () => import('@/components/FinancialsSection/DownloadPdf'),
@@ -106,6 +107,26 @@ React.useEffect(() => {
           fetchChartData()
   setMounted(true);
 }, []);
+function convertToCSV(data: Record<string, string | number>[]): string {
+    if (!data.length) return "";
+    const headers = Object.keys(data[0]);
+    const rows = data.map(row =>
+      headers.map(field => `"${(row[field] ?? "").toString().replace(/"/g, '""')}"`).join(",")
+    );
+    return [headers.join(","), ...rows].join("\n");
+  }
+
+function downloadCSV(data: any[], fileName: string) {
+    const csv = convertToCSV(data);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${fileName}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
   return (
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
@@ -148,53 +169,25 @@ React.useEffect(() => {
   <Tooltip>
     <TooltipTrigger asChild>
       <Button 
-        variant="graphTab2"
-        onClick={() => {}}
+        variant="graphTab2" 
+         onClick={async() => {
+         
+              await downloadFinancialDataCsv(symbol,timeRange=="annual"?"annual":"quarter",
+            activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"
+            );
+          }}
         className={`cursor-pointer text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
       >
         <DownloadCloud className="cursor-pointer" />
       </Button>
     </TooltipTrigger>
     <TooltipContent>
-      <p>{`Download ${activeRange} with ratios`}</p>
+      <p>{`Download ${activeRange} `}</p>
     </TooltipContent>
   </Tooltip>
 </TooltipProvider>
 
-         {mounted && (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button 
-          variant="graphTab2"
-          className={`mr-1 text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
-        >
-          {activeRange === "incomeStatement" && (
-            <FinancialStatementPDFDownload
-              activeRange="incomeStatement"
-              financialStatement={financialData}
-            />
-          )}
-          {activeRange === "balanceSheet" && (
-            <FinancialStatementPDFDownload
-              activeRange="balanceSheet"
-              financialStatement={financialData}
-            />
-          )}
-          {activeRange === "cashFlowStatement" && (
-            <FinancialStatementPDFDownload
-              activeRange="cashFlowStatement"
-              financialStatement={financialData}
-            />
-          )}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{`Download ${activeRange}`}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-)}
+          
 
               {timeRanges.map((range) => (
                 <Button

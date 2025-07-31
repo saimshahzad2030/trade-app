@@ -16,13 +16,18 @@ import { getFooterStocksData } from "@/services/stocks.services";
 import SkeletonLoader from "../Loader/SkeletonLoader";
 const ChartFooter = () => {
   const [loading, setLoading] = React.useState(true);
-  const [data, setData] = React.useState<RealtimePriceData>({});
+  const [data, setData] = React.useState<RealtimePriceData | null>(null);
 
   React.useEffect(() => {
     const fetchChartData = async () => {
       setLoading(true);
       let response = await getFooterStocksData();
-      setData(response.data);
+      if(response.status==200){
+        setData(response.data);
+      }
+      else{
+        setData(null)
+      }
       setLoading(false);
     };
     fetchChartData();
@@ -32,8 +37,8 @@ const getChartOptions = (
   prices: { date: string; price: number }[],
   title: string
 ) => {
-  const timestamps = prices.map((item) => item.date);
-  const values = prices.map((item) => item.price);
+  const timestamps = prices?.map((item) => item.date);
+  const values = prices?.map((item) => item.price);
 
   const upSeries: (number | null)[] = [values[0]];
   const downSeries: (number | null)[] = [null];
@@ -115,7 +120,7 @@ const getChartOptions = (
 };
 
 
-  const companySymbols = Object.keys(data); // e.g., ["AAPL", "GOOG", ...]
+  const companySymbols = Object.keys(data || {}); // e.g., ["AAPL", "GOOG", ...]
 
   return (
     <div className="flex flex-col items-center h-auto mr-4">
@@ -125,8 +130,9 @@ const getChartOptions = (
 
       {loading ? (
         <SkeletonLoader className="w-full h-[200px] bg-gray-900"/>
-      ) : (
-        <Carousel
+      ) : <>
+      {data!=null?
+          <Carousel
           opts={{ loop: true }}
           plugins={[
             Autoplay({
@@ -151,8 +157,9 @@ const getChartOptions = (
               </CarouselItem>
             ))}
           </CarouselContent>
-        </Carousel>
-      )}
+        </Carousel>:
+        <p>no data to show</p>
+        }</>}
     </div>
   );
 };

@@ -5,10 +5,8 @@ import { getSpecificStockKeyFinancialRatios } from "@/services/stock.services";
 import React from "react";
 import RoundLoader from "../Loader/RoundLoader";
 import SkeletonLoader from "../Loader/SkeletonLoader";
-interface RatioGroup {
-  title: string;
-  data: Record<string, string>;
-}
+import { ChartSectionProps } from "@/types/PropTypes";
+import { RatioGroup } from "@/types/types";
 const keyMappings: Record<string, Record<string, string>> = {
   "Profitability & Efficiency": {
     grossProfitMargin: "Gross Profit Margin",
@@ -53,9 +51,7 @@ const keyMappings: Record<string, Record<string, string>> = {
   },
 };
 
-type ChartSectionProps = {
-    symbol: string;
-};
+ 
 const FinancialRatiosTables = ({symbol}:ChartSectionProps) => {
   const [groupedRatios, setGroupedRatios] = React.useState<RatioGroup[]>([]);
   const [loading,setLoading] = React.useState<boolean>(true)

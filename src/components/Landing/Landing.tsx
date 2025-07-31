@@ -6,16 +6,11 @@ import CountUp from "react-countup";
 import { Input } from "@/components/ui/input";
 import { searchStock } from "@/services/search.services";
 import Link from "next/link";
+import { getDisplayData } from "@/services/stocks.services";
+import { StockToDisplayType } from "@/types/types";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
-interface Stock {
-  symbol: string;
-  companyName: string;
-  price: number;
-  icon: string;
-  sector: string;
-  marketCap: string;
-  changePercentage: string;
-}
+ 
 const mockData = [
   {
     symbol: "PRAA",
@@ -32,102 +27,13 @@ const mockData = [
     exchange: "NASDAQ",
   },
 ];
-const stockList = [
-  {
-    symbol: "AAPL",
-    companyName: "Apple Inc.",
-    price: 150.0,
-    icon: "https://logo.clearbit.com/apple.com",
-    sector: "Technology",
-    marketCap: "2.48T",
-    changePercentage: "+1.25%",
-  },
-  {
-    symbol: "GOOGL",
-    companyName: "Alphabet Inc.",
-    price: 280.0,
-    icon: "https://logo.clearbit.com/abc.xyz",
-    sector: "Communication Services",
-    marketCap: "1.89T",
-    changePercentage: "-1.30%",
-  },
-  {
-    symbol: "MSFT",
-    companyName: "Microsoft Corporation",
-    price: 300.0,
-    icon: "https://logo.clearbit.com/microsoft.com",
-    sector: "Technology",
-    marketCap: "2.27T",
-    changePercentage: "+0.75%",
-  },
-  {
-    symbol: "TSLA",
-    companyName: "Tesla Inc.",
-    price: 720.0,
-    icon: "https://logo.clearbit.com/tesla.com",
-    sector: "Consumer Discretionary",
-    marketCap: "900B",
-    changePercentage: "+3.80%",
-  },
-  {
-    symbol: "AMZN",
-    companyName: "Amazon.com Inc.",
-    price: 3400.0,
-    icon: "https://logo.clearbit.com/amazon.com",
-    sector: "Consumer Discretionary",
-    marketCap: "1.60T",
-    changePercentage: "+0.50%",
-  },
-  {
-    symbol: "META",
-    companyName: "Meta Platforms Inc.",
-    price: 330.0,
-    icon: "https://logo.clearbit.com/meta.com",
-    sector: "Communication Services",
-    marketCap: "920B",
-    changePercentage: "=0.00%",
-  },
-  {
-    symbol: "NVDA",
-    companyName: "NVIDIA Corporation",
-    price: 780.0,
-    icon: "https://logo.clearbit.com/nvidia.com",
-    sector: "Technology",
-    marketCap: "2.30T",
-    changePercentage: "+2.10%",
-  },
-  {
-    symbol: "NFLX",
-    companyName: "Netflix Inc.",
-    price: 510.0,
-    icon: "https://logo.clearbit.com/netflix.com",
-    sector: "Communication Services",
-    marketCap: "240B",
-    changePercentage: "+1.90%",
-  },
-  {
-    symbol: "INTC",
-    companyName: "Intel Corporation",
-    price: 60.0,
-    icon: "https://logo.clearbit.com/intel.com",
-    sector: "Technology",
-    marketCap: "200B",
-    changePercentage: "=0.00%",
-  },
-  {
-    symbol: "ADBE",
-    companyName: "Adobe Inc.",
-    price: 650.0,
-    icon: "https://logo.clearbit.com/adobe.com",
-    sector: "Technology",
-    marketCap: "320B",
-    changePercentage: "+0.85%",
-  },
-];
+ 
 
 const Landing = () => {
-  const [query, setQuery] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
+  const [query, setQuery] = React.useState<string>("");
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [chartDataLoading, setChartDataLoading] = React.useState<boolean>(true);
+  const [chartData, setChartData] = React.useState<StockToDisplayType[] | []>([]);
   const [filteredStocks, setFilteredStocks] = React.useState<typeof mockData>([]);
 
   const handleInputChange = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,22 +50,23 @@ const Landing = () => {
 
     
   };
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const input = e.target.value;
-  //   setQuery(input);
-
-  //   if (!input) return setFilteredStocks([]);
-
-  //   const filtered = stockList.filter(
-  //     (stock) =>
-  //       stock.symbol.toLowerCase().includes(input.toLowerCase()) ||
-  //       stock.companyName.toLowerCase().includes(input.toLowerCase()) ||
-  //       stock.sector.toLowerCase().includes(input.toLowerCase())
-  //   );
-
-  //   setFilteredStocks(filtered);
-  // };
-  return (
+    React.useEffect(()=>{
+          const fetchChartData = async()=>{
+            setChartDataLoading(true)
+            let response = await getDisplayData();
+            if(response.status ==200){
+              setChartData(response.data)
+            }
+            else{
+              setChartData([])
+            }
+            setChartDataLoading(false)
+            
+          }
+          fetchChartData()
+  
+        },[])
+   return (
     <div
       style={{
         backgroundImage: "url('/assets/landing-bg.jpg')", // Replace with your image path
@@ -217,26 +124,39 @@ const Landing = () => {
         </div>
       </div>
       <div className="z-[49] w-full grid grid-cols-5 gap-1  ">
-        {stockList.slice(0, 5).map((stock, index) => (
+        {chartDataLoading?
+         Array.from({ length: 5 }).map((stock, index) => (
+          <div
+            key={index}
+            className=" group   cursor-pointer text-white   p-4 flex flex-col items-center justify-center duration-500 transition-colors"
+          >
+            <SkeletonLoader className="w-6/12 h-4 bg-gray-700"/>
+            <div className="flex flex-row items-center mt-2">
+                         <SkeletonLoader className="w-12 h-2 bg-gray-700"/> 
+
+            </div>
+          </div>
+        )):
+        chartData.slice(0, 5).map((stock, index) => (
           <div
             key={index}
             className=" group   cursor-pointer text-white   p-4 flex flex-col items-center justify-center duration-500 transition-colors"
           >
             <h2 className="text-lg font-medium text-center">
-              {stock.companyName}
+              {stock.name}
             </h2>
             <div className="flex flex-row items-center">
               <p className="text-sm text-white mr-1">
-                ${<CountUp end={Number(stock.price.toFixed(2))} duration={2} />}
+                {stock.price}
               </p>
               <p
                 className={`text-sm ${
-                  stock.changePercentage.split("")[0] == "-"
+                  stock.changeColor == "red"
                     ? "text-red-600"
                     : "text-green-600"
                 } ml-1`}
               >
-                {stock.changePercentage}
+                {stock.percentChange}
               </p>
             </div>
           </div>

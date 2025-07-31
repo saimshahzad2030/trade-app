@@ -3,7 +3,7 @@ import React from 'react';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { BalanceSheet, CashFlowStatement, FinancialStatement, IncomeStatement } from '@/types/types';
 import { Download } from 'lucide-react';
- 
+ import { FinancialPDFProps } from '@/types/types';
 
 // PDF styles
 const styles = StyleSheet.create({
@@ -22,10 +22,7 @@ type TableRow<T> = {
   key: (s: T) => string | number | undefined;
 };
 
-interface FinancialPDFProps {
-  activeRange: 'incomeStatement' | 'balanceSheet' | 'cashFlowStatement';
-  financialStatement: FinancialStatement;
-}
+ 
 
 const FinancialPDF: React.FC<FinancialPDFProps> = ({ activeRange, financialStatement }) => {
   const getData = () => {

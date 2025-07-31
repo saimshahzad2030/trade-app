@@ -75,7 +75,7 @@ const CompanyDetails = ({loading,metaData  }: CompanyDetailsProps) => {
                     {loading ? (
   <SkeletonLoader className="bg-gray-700 h-[10px] w-52 my-2" />
 ) : (
- <p>{`${metaData?.meta.exchangeName} - ${metaData?.meta.currency}`}</p>
+ <p>{`${metaData?.meta.exchange} - ${metaData?.meta.currency}`}</p>
 )}
 
      

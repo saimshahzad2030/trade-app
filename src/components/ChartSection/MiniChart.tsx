@@ -1,15 +1,8 @@
 "use client";
 import React from "react";
 import ReactECharts from "echarts-for-react";
-
-interface Props {
-  symbol: string;
-  data: number[];
-  x: number;
-  y: number;
-}
-
-const MiniChart: React.FC<Props> = ({ symbol, data, x, y }) => {
+import { MiniChartProps } from "@/types/PropTypes";
+const MiniChart: React.FC<MiniChartProps> = ({ symbol, data, x, y }) => {
   const option = {
     grid: { left: 10, right: 10, top: 10, bottom: 20 },
     xAxis: {

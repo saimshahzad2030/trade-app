@@ -28,84 +28,14 @@ import { HoldingLot, HoldingLots, Holdings, HoldingSummary } from "@/types/types
 import { createNewLot, deleteLot, FetchLots } from "@/services/portfolio.services";
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import ConfirmationModal from "../Modal/ConfirmationModal";
-type Lot = {
-  shares: number;
-  cost: number;
-  date: Date;
-  highLimit: number;
-  lowLimit: number;
-};
+ 
 
 type LotTableProps = {
   holdingId: number;
   holding: HoldingSummary;
 };
 const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
-  //   const calculateLotMetrics = (
-  //     lot: HoldingLot,
-  //     holding: HoldingSummary
-  //   ) => {
-  //     const today = new Date();
-  //   const daysHeld = Math.max(
-  //   1,
-  //   Math.floor(
-  //     (today.getTime() - (lot.date?.getTime?.() ?? today.getTime())) /
-  //       (1000 * 60 * 60 * 24)
-  //   )
-  // );
-
-
-  //     const marketValue = Number(lot.shares) * parseFloat(holding.last_price);
-  //     const totalCost = Number(lot.shares) * Number(lot.cost_per_share);
-
-  //     const dayGainPercent = parseFloat(holding.day_gain_unrealized_percent.replace('%', ''));
-  //     const dayGainAmount = marketValue * (dayGainPercent / 100);
-
-  //     const totalGainAmount = marketValue - totalCost;
-  //     const totalGainPercent = (totalGainAmount / totalCost) * 100;
-
-  //     let annGainPercent = 0;
-  //     if (totalCost > 0 && isFinite(totalGainAmount / totalCost)) {
-  //       const base = 1 + totalGainAmount / totalCost;
-  //       const exponent = 365 / daysHeld;
-
-  //       // Prevent overflow due to extreme exponentiation
-  //       if (base > 0 && base < 100) {
-  //         annGainPercent = (Math.pow(base, exponent) - 1) * 100;
-  //       }
-  //     }
-  //     const annGainAmount = (annGainPercent / 100) * totalCost;
-  //     const safe = (val: number, suffix = "") =>
-  //       !isFinite(val) || isNaN(val) || Math.abs(val) > 1e6
-  //         ? "--"
-  //         : `${val.toFixed(2)}${suffix}`;
-
-  //     return (
-  //       <>
-  //         <TableCell>{safe(totalCost)}</TableCell>
-  //         <TableCell>{safe(marketValue)}</TableCell>
-  //         <TableCell className={textColor(dayGainPercent)}>
-  //           {safe(dayGainPercent, "%")}
-  //         </TableCell>
-  //         <TableCell className={textColor(dayGainAmount)}>
-  //           {safe(dayGainAmount)}
-  //         </TableCell>
-  //         <TableCell className={textColor(totalGainPercent)}>
-  //           {safe(totalGainPercent, "%")}
-  //         </TableCell>
-  //         <TableCell className={textColor(totalGainAmount)}>
-  //           {safe(totalGainAmount)}
-  //         </TableCell>
-  //         <TableCell className={textColor(annGainPercent)}>
-  //           {safe(annGainPercent, "%")}
-  //         </TableCell>
-  //         <TableCell className={textColor(annGainAmount)}>
-  //           {safe(annGainAmount)}
-  //         </TableCell>
-  //       </>
-  //     );
-  //   };
-  const sharesRef = React.useRef<HTMLInputElement[]>([]);
+   const sharesRef = React.useRef<HTMLInputElement[]>([]);
   const [updatedLot, SetUpdatedLot] = React.useState<number | null>(null)
   const updateDate = (index: number, date: Date | undefined) => {
     if (!date) return;
@@ -125,9 +55,7 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
   );
   SetUpdatedLot(index);
 
-    // setTimeout(() => {
-    //   setShowModal(true);
-    // }, 3000);  
+    
   };
   const [editingRowIndex, setEditingRowIndex] = React.useState<number | null>(null);
   const [hasEdited, setHasEdited] = React.useState(false);
@@ -168,6 +96,7 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
         high_limit: 0,
         flag: null,
         note: "",
+        isNew:true,
         date: new Date(),
       };
 
@@ -202,26 +131,41 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
         Add Lot
       </button>
 
-      {loading ?
-        <TableBody>
-          {loading ? (
-            [...Array(3)].map((_, i) => (
+      {loading?
+<Table className="my-4  text-xs ">
+          <TableHeader>
+             <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Shares</TableHead>
+                <TableHead>Cost/Share ($)</TableHead>
+                <TableHead>Total Cost ($)</TableHead>
+                <TableHead>Market Value ($)</TableHead>
+                <TableHead>Day Gain UNRL (%)</TableHead>
+                <TableHead>Day Gain UNRL ($)</TableHead>
+                <TableHead>Tot Gain UNRL (%)</TableHead>
+                <TableHead>Tot Gain UNRL ($)</TableHead>
+                <TableHead>Ann Gain (%)</TableHead>
+                <TableHead>Ann Gain ($)</TableHead>
+                <TableHead>Low Limit</TableHead>
+                <TableHead>High Limit</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+          </TableHeader>
+          <TableBody>
+             
+           { [...Array(3)].map((_, i) => (
               <TableRow key={i}>
-                {[...Array(14)].map((_, j) => (
+                {[...Array(13)].map((_, j) => (
                   <TableCell key={j}>
                     <SkeletonLoader className="h-4 w-full bg-gray-700" />
                   </TableCell>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            lots.map((lot, index) => (
-              <TableRow key={index}>
-                {/* actual row content */}
-              </TableRow>
-            ))
-          )}
-        </TableBody> :
+            ))}
+          
+          </TableBody>
+        </Table>
+      :
         <>{lots.length > 0 ? (
           <Table className="my-4 text-xs">
             <TableHeader>
@@ -403,13 +347,56 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
           </Table>
         ) :
           <p className="w-full text-center my-2">No Lots Added Yet</p>
-        }</>
+      }</>
       }
 
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#09090e] p-6 rounded-md max-w-lg w-full space-y-4 text-white">
-            <h2 className="text-xl font-semibold text-center mb-1">
+          <div className="bg-[#09090e] p-6 rounded-md w-5/12 space-y-4 text-white">
+            {lots[updatedLot || 0].isNew?
+            <><h2 className="text-xl font-semibold text-center mb-1">
+              Are you sure?
+            </h2>
+            <p className="text-center text-gray-600 text-xs">
+              You want to save changes of this newly created lot?
+            </p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="  text-white px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
+                onClick={async () => {
+                  
+                    setShowModal(false);
+                    setIsEditing(false);
+                     
+                }}
+              >
+                No
+              </button>
+              <button
+                className="bg-white text-[#09090e] px-4 py-2 rounded-md mr-2 text-xs cursor-pointer"
+                 onClick={async () => {
+                  console.log(updatedLot,"updated")
+                 let updatedLotNew = lots[updatedLot || 0] ?? null;
+
+
+                  let newLot = await createNewLot(holdingId,
+                     { shares: Number(updatedLotNew?.shares),
+                       cost_per_share: Number(updatedLotNew?.cost_per_share), low_limit: Number(updatedLotNew?.low_limit), high_limit: Number(updatedLotNew?.low_limit), note: "", flag: "new_transaction", date: updatedLotNew?.date  }
+                    )
+                  if (newLot.status == 201) {
+                    setShowModal(false);
+                    setIsEditing(false);
+               setLots((prevLots) =>
+                      prevLots.map((lot, i) => (lot.id === updatedLotNew?.id ? newLot.data : lot))
+
+                    );
+                  }
+                }}
+              >
+                Yes
+              </button>
+            </div></>
+            :<><h2 className="text-xl font-semibold text-center mb-1">
               Is this a new sell transaction?
             </h2>
             <p className="text-center text-gray-600 text-xs">
@@ -461,7 +448,8 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
               >
                 Yes
               </button>
-            </div>
+            </div></>}
+            
           </div>
         </div>
       )}

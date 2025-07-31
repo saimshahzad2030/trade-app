@@ -6,17 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from "next/link";
-interface CompanySummaryType {
-  name: string;
-  description: string;
-  website: string;
-  currency?: string;
-  exchangeName?: string;
-  employees: number | string;
-  fiscalYearEnds: string;
-  sector: string;
-  industry: string;
-}
+ import { CompanySummaryType } from "@/types/types";
 
 const CompanySummary: React.FC<{ companySummary: CompanySummaryType }> = ({
   companySummary,

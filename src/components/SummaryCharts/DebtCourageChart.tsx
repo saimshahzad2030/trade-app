@@ -5,15 +5,8 @@ import { poppins } from "@/fonts/fonts";
 import { FinancialPositionData } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import SkeletonLoader from "../Loader/SkeletonLoader";
-
-interface DebtAnalysisProps {
-  loading: boolean;
-  error?:string;
-  data?: FinancialPositionData;
-}
-
-// Detect whether a value has a B, M, or is raw
-type UnitType = "B" | "M" | "RAW";
+import { DebtAnalysisProps2 } from "@/types/types";
+import { UnitType } from "@/types/types";
 
 const detectUnit = (value: string): UnitType => {
   if (value.endsWith("B")) return "B";
@@ -27,7 +20,7 @@ const parseAmount = (value: string): number => {
   return parseFloat(value);
 };
 
-const DebtCourageChart: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
+const DebtCourageChart: React.FC<DebtAnalysisProps2> = ({ data, loading,error }) => {
   const result = data;
 
   // Detect unit based on the first defined value in dataset

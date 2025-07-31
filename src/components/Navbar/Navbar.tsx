@@ -9,6 +9,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation"; 
 import Cookies from "js-cookie"; 
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { AuthState, logout } from "@/redux/reducers/authReducer";
+import RoundLoader from "../Loader/RoundLoader";
+import { User } from "@/types/types";
 function ConfirmationModal({
   onConfirm,
   title = "Are you sure?",
@@ -49,13 +53,23 @@ function ConfirmationModal({
     </Dialog>
   );
 }
-
+interface RootState {
+  auth: {
+    user: User | null;
+    loading: boolean;
+    error: string | null;
+  };
+}
 const Navbar = () => {   
+  let user = useSelector((state:RootState) => state.auth?.user);
+  let loading = useSelector((state:RootState) => state.auth?.loading );
+ console.log(user,"user")
   const token = Cookies.get('accessToken')
   const router = useRouter()
+  const dispatch = useDispatch()
   const pathName = usePathname();
-   const handleLogout = () => {
-    Cookies.remove('accessToken');
+   const handleLogout = () => { 
+    dispatch(logout()); 
     router.push('/'); // or homepage if preferred
   };
   return (
@@ -93,8 +107,12 @@ const Navbar = () => {
         </Link>
         </div>
    
-         {token?
-        <ConfirmationModal
+         {loading?
+        <RoundLoader/>:
+        <>{
+          user?<div className="flex flex-row items-center">
+            <div className="w-10 h-10 flex flex-row items-center justify-center rounded-full bg-[var(--variant-2)] text-white ml-2">{user?.username.slice(0,1).toUpperCase()}</div>
+            <ConfirmationModal
           title="Log out?"
           description="Are you sure you want to logout?"
           onConfirm={handleLogout}
@@ -107,6 +125,7 @@ const Navbar = () => {
             Logout
           </Button>
         </ConfirmationModal>
+          </div>
          :
          <> <Link href="/login">
             <Button
@@ -125,7 +144,8 @@ const Navbar = () => {
             >
               Sign Up
             </Button>
-          </Link></>}
+          </Link></>
+        }</>}
         </div>
       </div>
     </div>
