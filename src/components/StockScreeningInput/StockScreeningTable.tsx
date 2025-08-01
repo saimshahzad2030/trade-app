@@ -1,4 +1,7 @@
-import React from "react";
+import React from "react";5
+import { Stock, StockScreeningResponse } from "@/types/types";
+import { stockScreening } from "@/global/constants";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -7,9 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Stock, StockScreeningResponse } from "@/types/types";
-import { stockScreening } from "@/global/constants";
-import Link from "next/link";
 import RadarChartSS from "./RadarChartSS";
 import LineChartROC from "./LineChartROC";
 import LineChartEPSGrowth from "./LineChartEpsGrowth";
@@ -83,12 +83,12 @@ const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
       </div>
       <div className="flex grid grid-cols-2 w-full gap-4  pt-8 pb-20">
 
-      <RadarChartSS stocks={stocks.slice(0,10)}/> 
-      <LineChartRevenueGrowth stocks={stocks.slice(0,10)}/>
-        <LineChartROC  stocks={stocks.slice(0,10)}/> 
-      <LineChartEPSGrowth stocks={stocks.slice(0,10)}/>
-      <LineChartWACC stocks={stocks.slice(0,10)}/>
-      <LineChartGrossProfit stocks={stocks.slice(0,10)}/>
+      <RadarChartSS stocks={stocks.slice(0,5)}/> 
+      <LineChartRevenueGrowth stocks={stocks.slice(0,5)}/>
+        <LineChartROC  stocks={stocks.slice(0,5)}/> 
+      <LineChartEPSGrowth stocks={stocks.slice(0,5)}/>
+      <LineChartWACC stocks={stocks.slice(0,5)}/>
+      <LineChartGrossProfit stocks={stocks.slice(0,5)}/>
       </div>
     </div>:
     <p className="text-gray-600">No Data to show</p>

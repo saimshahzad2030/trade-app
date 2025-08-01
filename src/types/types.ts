@@ -219,6 +219,33 @@ interface Assets {
     nonCurrentAssets: NonCurrentAssets;
     totalAssets: string;
 }
+interface OtherBalanceSheetItems {
+  cashAndShortTermInvestments: string;
+  netReceivables: string;
+  otherReceivables: string;
+  prepaids: string;
+  goodwillAndIntangibleAssets: string;
+  taxAssets: string;
+  otherAssets: string;
+  totalPayables: string;
+  otherPayables: string;
+  accruedExpenses: string;
+  capitalLeaseObligationsCurrent: string;
+  taxPayables: string;
+  capitalLeaseObligationsNonCurrent: string;
+  deferredRevenueNonCurrent: string;
+  otherLiabilities: string;
+  capitalLeaseObligations: string;
+  treasuryStock: string;
+  preferredStock: string;
+  additionalPaidInCapital: string;
+  otherTotalStockholdersEquity: string;
+  totalEquity: string;
+  minorityInterest: string;
+  totalInvestments: string;
+  totalDebt: string;
+  netDebt: string;
+}
 
 interface CurrentLiabilities {
     accountsPayable: string;
@@ -226,6 +253,7 @@ interface CurrentLiabilities {
     deferredRevenue: string;
     otherCurrentLiabilities: string;
     totalCurrentLiabilities: string;
+   
 }
 
 interface NonCurrentLiabilities {
@@ -255,6 +283,7 @@ export interface BalanceSheet {
     period: string;
     assets: Assets;
     liabilitiesAndShareholdersEquity: LiabilitiesAndShareholdersEquity;
+     others:OtherBalanceSheetItems;
 }
 
 interface ChangesInOperatingAssetsAndLiabilities {
