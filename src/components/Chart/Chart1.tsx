@@ -21,7 +21,7 @@ import SkeletonLoader from "../Loader/SkeletonLoader";
  
 const Chart1 = () => {
     const params = useParams<{ symbol: string}>()
-    let {symbol} = params;
+     let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
   const [activeRange, setActiveRange] = React.useState("1d");
   const ranges = ["1d","1m", "6m","1y", "5y",  "ytd",  "all"];
   const chartRef = useRef<ReactECharts | null>(null);
