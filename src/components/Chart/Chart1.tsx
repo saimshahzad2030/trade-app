@@ -213,19 +213,19 @@ const option = {
       symbol: "circle", // ✅ show hoverable points
       symbolSize: 2,
       lineStyle: {
-        color: chartData?.chart.result[0].meta.chartColor=='red'?'red':'#006400',
+        color: chartData?.chart.result[0]?.meta.chartColor=='red'?'red':'#006400',
         width: 2,
       },
       itemStyle: {
-        color:chartData?.chart.result[0].meta.chartColor=='red'?'red':'#003a00ff',
+        color:chartData?.chart.result[0]?.meta.chartColor=='red'?'red':'#003a00ff',
       },
       areaStyle: {
         color: {
           type: "linear",
           x: 0, y: 0, x2: 0, y2: 1,
           colorStops: [
-            { offset: 0, color: chartData?.chart.result[0].meta.chartColor=='red'?'#920202ff':'#012201ff'},
-            { offset: 1, color: chartData?.chart.result[0].meta.chartColor=='red'?'#3b1616ff':'#414141ff' },
+            { offset: 0, color: chartData?.chart.result[0]?.meta.chartColor=='red'?'#920202ff':'#012201ff'},
+            { offset: 1, color: chartData?.chart.result[0]?.meta.chartColor=='red'?'#3b1616ff':'#414141ff' },
           ],
         },
       },
@@ -374,15 +374,15 @@ const option = {
         />
         <CompanySummary
           companySummary={{
-            name: `${chartData?.chart?.result[0]?.meta?.longName} ${chartData?.chart?.result[0]?.meta?.industry}`,
-            description: chartData?.chart?.result[0]?.meta?.description || 'null',
-            fiscalYearEnds: chartData?.chart?.result[0]?.meta?.fiscalYearEnds || 'null',
-            currency: chartData?.chart?.result[0]?.meta?.currency,
-            exchangeName: chartData?.chart?.result[0]?.meta?.exchangeName,
-            sector: chartData?.chart?.result[0]?.meta?.sector || 'null',
-            industry: chartData?.chart?.result[0]?.meta?.industry || 'null',
-            website: chartData?.chart?.result[0]?.meta?.website || 'null',
-            employees: chartData?.chart?.result[0]?.meta?.fullTimeEmployees || 'null',
+            name: `${metaData?.meta.companyName} `,
+            description: metaData?.meta.description || 'null',
+            fiscalYearEnds: metaData?.meta.fiscalYearEnds || "null",
+            currency: metaData?.meta.currency,
+            exchangeName: metaData?.meta.exchange,
+            sector: metaData?.meta?.sector || "technology",
+            industry: metaData?.meta.industry || "technology",
+            website: metaData?.meta.website || "www.google.com",
+            employees: metaData?.meta.fullTimeEmployees || "10000",
           }}
         /> 
         </>} </>}</>}

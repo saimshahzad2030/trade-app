@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectTrigger } from "@radix-ui/react-select";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { CreateNewPortfolio } from "@/services/portfolio.services";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
   { name: "Euro", code: "EUR", symbol: "€" },
@@ -41,6 +42,7 @@ const Portfolio = () => {
   const [selectedCurrency, setSelectedCurrency] = React.useState(
     topCurrencies[0].code
   );
+  const [navigateLoading,setNavigateLoading] = React.useState(false)
   const [portfolioName, setPortfolioName] = React.useState<string>("");
   const [currency, setCurrency] = React.useState<string>("USD");
   const [file, setFile] = React.useState<File | null>(null); // For file input
@@ -56,6 +58,7 @@ const Portfolio = () => {
   ];
  
 const proceedModal = async() => {
+  setNavigateLoading(true)
   let addPortfolio = await CreateNewPortfolio({name:portfolioName,currency:currency})
   if(addPortfolio.status ==201){
     setPortfolioName("")
@@ -83,6 +86,9 @@ const proceedModal = async() => {
     }
   };
   return (
+  <>
+  {navigateLoading && <FullScreenLoader/>}
+
     <div className="flex flex-col text-white items-start w-full p-8">
       <h1 className="text-4xl font-extrabold text-white w-full text-center">Portfolio</h1>
   <p className="mt-2 text-sm text-gray-600   mx-auto mb-12 w-full text-center">
@@ -144,6 +150,7 @@ const proceedModal = async() => {
             <div className="flex flex-row items-center justify-center w-full mt-8">
               <div
                 onClick={() => {
+                  setNavigateLoading(true)
                   router.push("/portfolio/my-portfolios");
                 }}
                 className="transition-colors duration-500 bg-none text-white border border-white hover:text-gray-800 h-[160px] hover:bg-white flex flex-col items-center justify-center w-[48%] p-2 rounded-md cursor-pointer "
@@ -269,6 +276,9 @@ const proceedModal = async() => {
         </div>
       )}
     </div>
+  
+  
+  </>
   );
 };
 

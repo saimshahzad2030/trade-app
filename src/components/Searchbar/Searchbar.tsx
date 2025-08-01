@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { searchStock } from "@/services/search.services";
 import RoundLoader from "../Loader/RoundLoader";
 import Link from "next/link";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 
 const mockData = [
   {
@@ -29,9 +30,11 @@ const SearchBar = ({className}:prop) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredData, setFilteredData] = useState<typeof mockData>([]);
-
+const [navigateLoading,setNavigateLoading] = React.useState(false)
   const handleSearch = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
+     
+    
     setSearchQuery(query);
     setLoading(true)
     const searchedStock = await searchStock(query)
@@ -46,6 +49,8 @@ const SearchBar = ({className}:prop) => {
   };
 
   return (
+    <>
+    {navigateLoading && <FullScreenLoader/>}
     <div className={`relative flex flex-col items-center w-3/12 bg-white p-1 rounded-md ${className}`}>
       <div className="relative w-full   ">
         <Input
@@ -61,7 +66,11 @@ const SearchBar = ({className}:prop) => {
         
         <div className="  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[300px] overflow-y-scroll">
           {filteredData.map((item, index) => (
-           <Link key={index} href={`/summary/${item.symbol}`} className="flex flex-col w-full items-start hover:bg-gray-50  p-3 ">
+           <Link
+           onClick={()=>{ 
+            setSearchQuery("")
+            setNavigateLoading(true)}}
+           key={index} href={`/summary/${item.symbol}`} className="flex flex-col w-full items-start hover:bg-gray-50  p-3 ">
             <div
               key={index}
               className="hover:text-[var(--variant-6)] flex flex-row items-center justify-between w-full cursor-pointer  "
@@ -88,6 +97,7 @@ const SearchBar = ({className}:prop) => {
 
       )}
     </div>
+    </>
   );
 };
 

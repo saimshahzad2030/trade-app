@@ -53,7 +53,7 @@ const {
   setTimeout(()=>{
         router.push("/portfolio");
       },3000)
-            setLoading(false)
+            // setLoading(false)
      
         }
         else{

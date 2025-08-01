@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AuthState, logout } from "@/redux/reducers/authReducer";
 import RoundLoader from "../Loader/RoundLoader";
 import { User } from "@/types/types";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 function ConfirmationModal({
   onConfirm,
   title = "Are you sure?",
@@ -63,7 +64,7 @@ interface RootState {
 const Navbar = () => {   
   let user = useSelector((state:RootState) => state.auth?.user);
   let loading = useSelector((state:RootState) => state.auth?.loading );
- console.log(user,"user")
+ const [navigateLoading,setNavigateLoading] = React.useState(false)
   const token = Cookies.get('accessToken')
   const router = useRouter()
   const dispatch = useDispatch()
@@ -73,6 +74,8 @@ const Navbar = () => {
     router.push('/'); // or homepage if preferred
   };
   return (
+    <>
+    {navigateLoading &&<FullScreenLoader/>}
     <div className=" fixed w-full  z-50">
       <div
         className={`px-8 flex flex-row items-center relative py-4 justify-between h-[10vh] ${
@@ -82,7 +85,7 @@ const Navbar = () => {
         } `}
       >
         {/* <img className="h-8 w-auto" src="/assets/logo.png" /> */}
-        <Link href={"/"} className="text-3xl font-bold text-[var(--variant-3)]">
+        <Link onClick={()=>setNavigateLoading(true)} href={"/"} className="text-3xl font-bold text-[var(--variant-3)]">
           LOGO 
         </Link>
         
@@ -90,19 +93,19 @@ const Navbar = () => {
  
         <div className="flex flex-row items-center justify-end  w-5/12  ">
            <div className="flex flex-row items-center mr-4">
-          <Link href={"/chart"} className={ `font-bold ml-4 text-sm ${pathName=='/chart'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+          <Link onClick={()=>setNavigateLoading(true)} href={"/chart"} className={ `font-bold ml-4 text-sm ${pathName=='/chart'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Chart
         </Link>
-        <Link href={"/housing"} className={ `font-bold ml-4 text-sm ${pathName=='/housing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+        <Link onClick={()=>setNavigateLoading(true)} href={"/housing"} className={ `font-bold ml-4 text-sm ${pathName=='/housing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Housing
         </Link>
-        <Link href={"/stock-screening"} className={ `font-bold ml-4 text-sm ${pathName=='/stock-screening'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+        <Link onClick={()=>setNavigateLoading(true)} href={"/stock-screening"} className={ `font-bold ml-4 text-sm ${pathName=='/stock-screening'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Screener
         </Link>
-        <Link href={"/pricing"} className={ `font-bold ml-4 text-sm ${pathName=='/pricing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+        <Link onClick={()=>setNavigateLoading(true)} href={"/pricing"} className={ `font-bold ml-4 text-sm ${pathName=='/pricing'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Pricing
         </Link>
-         <Link href={"/portfolio"} className={ `font-bold ml-4 text-sm ${pathName=='/portfolio'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
+         <Link onClick={()=>setNavigateLoading(true)} href={"/portfolio"} className={ `font-bold ml-4 text-sm ${pathName=='/portfolio'?'text-[var(--variant-4)]':'text-white'} hover:text-[var(--variant-4)] transition-colors duration-300`}>
           Portfolio
         </Link>
         </div>
@@ -129,6 +132,7 @@ const Navbar = () => {
          :
          <> <Link href="/login">
             <Button
+            onClick={()=>{setNavigateLoading(true)}}
               size="lg"
               variant="second"
               className="mr-1 transition-colors duration-300"
@@ -138,6 +142,7 @@ const Navbar = () => {
           </Link>
           <Link href="/signup">
             <Button
+            onClick={()=>{setNavigateLoading(true)}}
               size="lg"
               variant="second"
               className="ml-1 transition-colors duration-300"
@@ -148,7 +153,7 @@ const Navbar = () => {
         }</>}
         </div>
       </div>
-    </div>
+    </div></>
   );
 };
 

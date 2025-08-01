@@ -35,6 +35,7 @@ import { CreateNewPortfolio, deletePortfolio, FetchPortfolios } from "@/services
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import { current } from "@reduxjs/toolkit";
 import ConfirmationModal from "../Modal/ConfirmationModal";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 type TabKey = string | null; // or e.g. 'overview' | 'holdings' | 'analytics'
 const topCurrencies = [
   { name: "United States Dollar", code: "USD", symbol: "$" },
@@ -49,7 +50,8 @@ const topCurrencies = [
   { name: "Singapore Dollar", code: "SGD", symbol: "S$" },
 ];
 const Portfolios = () => {
-  const [file, setFile] = React.useState<File | null>(null); // For file input
+  const [file, setFile] = React.useState<File | null>(null);
+  const [navigateLoading,setNavigateLoading] = React.useState(false)
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const selectedFile = event.target.files[0];
@@ -132,6 +134,9 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
     fetchChartData();
   }, []);
   return (
+  <>
+  {navigateLoading && <FullScreenLoader/>}
+
     <div className="overflow-x-auto w-full mt-8 flex flex-col items-start pt-20 px-8">
       <Link
         href={"/portfolio"}
@@ -201,7 +206,9 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
     <TableRow key={portfolio.id}>
       <TableCell className="flex flex-row items-center">
         <Tickets className="mr-2" />
-        <Link href={`/portfolio/${portfolio.id}`}>
+        <Link
+        onClick={()=>setNavigateLoading(true)}
+        href={`/portfolio/${portfolio.id}`}>
           {portfolio.name}
         </Link>
       </TableCell>
@@ -418,6 +425,7 @@ if(newPortfolioReponse.status==201){
         </div>
       )}
     </div>
+  </>
   );
 };
 
