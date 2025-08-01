@@ -46,7 +46,8 @@ function formatLargeNumber(value: number): string {
 }
 const HistoricalData = () => {
     const params = useParams<{ symbol: string}>()
-    let {symbol} = params; 
+     let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
+  
   const [mounted, setMounted] = React.useState(false);
   
   React.useEffect(() => {
