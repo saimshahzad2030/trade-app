@@ -62,7 +62,7 @@ const stocks = [
  
 const ChartSection = () => {
   const params = useParams<{ symbol: string}>()
-  let symbol =   params.symbol !== undefined?params.symbol:'AAPL'
+  let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
   const [technicalIndicator, setTechnicalIndicator] = React.useState(
     technicalIndicators[0].value
   );

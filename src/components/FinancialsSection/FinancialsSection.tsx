@@ -264,7 +264,7 @@ const financialConfig = {
 const FinancialsSection = () => {
   const [financialData, setFinancialData] = React.useState<FinancialStatement | null>(null);
     const params = useParams<{ symbol: string}>()
-      let symbol =   params.symbol !== undefined?params.symbol:'AAPL'
+      let symbol =   params.symbol != "undefined"?params.symbol:'AAPL'
   const [activeRange, setActiveRange] = React.useState<'incomeStatement' | 'balanceSheet' | 'cashFlowStatement'>("incomeStatement");
    const [timeRange, setTimeRange] = React.useState("annual");
   const timeRanges = ["annual", "quarterly"];

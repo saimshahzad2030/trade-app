@@ -118,7 +118,7 @@ const formatKey = (key: string): string =>
     .replace(/^./, (char) => char.toUpperCase());
 
    const params = useParams<{ symbol: string}>()
-    let symbol =   params.symbol !== undefined?params.symbol:'AAPL'
+    let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
   const [data, setData] = React.useState<FinancialDataType | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   // const formatKey = (key: string): string =>

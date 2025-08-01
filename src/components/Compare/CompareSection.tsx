@@ -166,7 +166,7 @@ const CompareSection = () => {
   "dividendYieldChart",
 ];
     const params = useParams<{ symbol: string}>()
-    let symbol =   params.symbol !== undefined?params.symbol:'AAPL'
+    let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
   const router = useRouter();
   const colors = ["#5470C6", "#91CC75", "#EE6666", "#73C0DE"]; // Add more if needed
   const [expandedRow, setExpandedRow] = React.useState<number | null>(null);
