@@ -277,10 +277,17 @@ const FinancialsSection = () => {
   >(financialData?.incomeStatement );
   const [loading,setLoading] = React.useState<boolean>(true)
   let getFieldValues = (
+    activeRange1:string,
     fieldPath: (s: IncomeStatement | BalanceSheet | CashFlowStatement) => string
   ): string[] => {
-    return incomeStatements?.map(fieldPath) ?? financialStatement?.balanceSheet.map(fieldPath);
-  };
+  if (activeRange1 === "incomeStatement") {
+    return (financialStatement?.incomeStatement as IncomeStatement[])?.map(fieldPath) ?? [];
+  }
+  if (activeRange1 === "balanceSheet") {
+    return (financialStatement?.balanceSheet as BalanceSheet[])?.map(fieldPath) ?? [];
+  }
+  return (financialStatement?.cashFlowStatement as CashFlowStatement[])?.map(fieldPath) ?? [];
+};
 
   // Helper to create rows
   const renderRow = (
@@ -289,7 +296,7 @@ const FinancialsSection = () => {
   ) => (
     <TableRow key={label} className=" bg-[#13131f]">
       <TableCell className="font-medium">{label}</TableCell>
-      {getFieldValues(fieldPath).map((value, index) => (
+      {getFieldValues(activeRange,fieldPath).map((value, index) => (
         <TableCell key={index} className="text-center">
           {value}
         </TableCell>
@@ -651,11 +658,13 @@ const date = rawDate ? new Date(String(rawDate)) : null;
         colSpan={6}
         className="text-center font-bold text-white"
       >
-        {section.section}
+        {section.section} 
       </TableCell>
     </TableRow>
     {section.rows.map((row, j) =>
-      renderRow(row.label, (s) => getValueFromPath(s, row.path))
+      (renderRow(row.label, (s) => getValueFromPath(s, row.path))
+     
+    )
     )}
   </React.Fragment>
 ))}
