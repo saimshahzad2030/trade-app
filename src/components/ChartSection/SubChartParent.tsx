@@ -123,10 +123,7 @@ stocks.map((stock,index)=>(
    </button>}</div> */}
         { 
         <div className="w-full grid grid-cols-2 gap-4  my-12 px-12">
-            {loading?
-    <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
- :
-            stocks?.length>0 &&<SubChart1  epsData={epsData} handleAddEps={handleAddEps}/>}
+        
             {loading?
              <div className='flex flex-col items-end w-full'><SkeletonLoader className=" h-10 bg-[#0d0d14] w-20 mt-1" /> <SkeletonLoader className=" h-[500px] bg-[#0d0d14] w-full mt-2" /> </div>
  :

@@ -1,10 +1,11 @@
+
+
  
 import {axiosInstanceJson} from "../../axios/axiosInstance"; 
-export const searchStock = async (query:string) => {
+export const fetchIndustries = async () => {
   try {
-    const response = await axiosInstanceJson.get(`company-search?query=${query}`);
-     
-    
+    const response = await axiosInstanceJson.get(`available-industries`);
+      
     return {
       status: response.status,
       data: response.data.results,
@@ -17,3 +18,5 @@ export const searchStock = async (query:string) => {
     };
   }
 };
+
+

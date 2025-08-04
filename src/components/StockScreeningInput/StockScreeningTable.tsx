@@ -16,19 +16,25 @@ import LineChartEPSGrowth from "./LineChartEpsGrowth";
 import LineChartRevenueGrowth from "./LineChartRevenueGrowth";
 import LineChartWACC from "./LineChartWACC";
 import LineChartGrossProfit from "./LineChartGrossProfit";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 type StockScreeningTableProps = {
   data: StockScreeningResponse | null;
 };
 
 const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
+  const [navigateLoading,setNavigateLoading] =React.useState(false)
   const stocks: Stock[] | undefined = data?.filtered_data.result
 
   return (
+    
+   <>
+   {navigateLoading && <FullScreenLoader/>}
     <>{stocks &&  <>
     {stocks?.length>0?
       <div className="overflow-x-auto w-full px-4 text-white">
-      <Table>
-        <TableHeader>
+        <div className="max-h-[80vh] overflow-y-auto w-full"> 
+      <Table className="table-auto w-full">
+        <TableHeader className="sticky top-0 bg-gray-900 z-10">
           <TableRow>
             <TableHead>Symbol</TableHead>
             <TableHead>Company</TableHead>
@@ -49,11 +55,14 @@ const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
 
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {stocks?.slice(0,10).map((stock) => (
+        <TableBody >
+          {stocks.map((stock) => (
             <TableRow key={stock.symbol}>
               <TableCell>
-                <Link className="underline" href={"/"}>
+                <Link
+                onClick={()=>setNavigateLoading(true)
+                }
+                className="underline" href={`/summary/${stock.symbol}`}>
                   {stock.symbol}
                 </Link>
               </TableCell>
@@ -77,22 +86,24 @@ const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
           ))}
         </TableBody>
       </Table>
+      </div>
       <div className="flex flex-col items-center w-full">
         <h1 className="text-white font-bold text-4xl mt-12"> Visual Comparison</h1>
         <p className="text-sm text-gray-400">Below is the comparison of the ratios of top 5 stock u searched</p>
       </div>
       <div className="flex grid grid-cols-2 w-full gap-4  pt-8 pb-20">
 
-      <RadarChartSS stocks={stocks.slice(0,5)}/> 
-      <LineChartRevenueGrowth stocks={stocks.slice(0,5)}/>
-        <LineChartROC  stocks={stocks.slice(0,5)}/> 
-      <LineChartEPSGrowth stocks={stocks.slice(0,5)}/>
-      <LineChartWACC stocks={stocks.slice(0,5)}/>
-      <LineChartGrossProfit stocks={stocks.slice(0,5)}/>
+      <RadarChartSS stocks={stocks.slice(0,20)}/> 
+      <LineChartRevenueGrowth stocks={stocks.slice(0,20)}/>
+        <LineChartROC  stocks={stocks.slice(0,20)}/> 
+      <LineChartEPSGrowth stocks={stocks.slice(0,20)}/>
+      <LineChartWACC stocks={stocks.slice(0,20)}/>
+      <LineChartGrossProfit stocks={stocks.slice(0,20)}/>
       </div>
     </div>:
-    <p className="text-gray-600">No Data to show</p>
-    }</>}</>
+    <p className="text-gray-600 my-4">No Data to show</p>
+    }</>}</></>
+    
   );
 };
 

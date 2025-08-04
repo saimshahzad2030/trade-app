@@ -555,6 +555,8 @@ export type EPSProjectionData = {
 type RocEntry = {
   year: string;
   roc: number;
+  display?:string;
+
 };
 
 export type RocResponseType = {
@@ -562,6 +564,8 @@ export type RocResponseType = {
 };
 type GrossEntry = {
   year: string;
+  display?:string;
+
   grossProfit: number;
 };
 
@@ -570,6 +574,7 @@ type GrossEntry = {
 };
 type RevenueEntry = {
   year: string;
+  display?:string;
   revenue: number;
 };
 
@@ -579,6 +584,7 @@ type RevenueEntry = {
 
 type WaccEntry = {
   year: string;
+  display?: string;
   wacc: number;
 };
 
@@ -587,6 +593,7 @@ type WaccEntry = {
 };
 type EpsEntry = {
   year: string;
+  display:string;
   eps: number;
 };
 
@@ -1146,3 +1153,5 @@ export type HoldingTransactions = HoldingTransaction[];
       email:string,
       username:string,
     }
+
+    export type Industries = {industry:string}[]

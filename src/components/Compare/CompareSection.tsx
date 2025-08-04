@@ -688,7 +688,19 @@ if (hasChartData) {
             );
           })}
         </Accordion>
-        <RadarCharts stocks={stocks}/>
+        <RadarCharts stocks={stocks.map(stock => {
+  return Object.fromEntries(
+    Object.entries(stock).filter(([key]) => ["roc",
+            "grossProfitMarginIndicator",
+            "dcf",
+            "debtToEquityRatioIndicator",
+            "peRatioIndicator",
+            "epsIndicator",
+            "beta",
+            "wacc",
+            "fcff",'symbol'].includes(key))
+  ) 
+})}/>
       </div>}
  
       {openModal && (

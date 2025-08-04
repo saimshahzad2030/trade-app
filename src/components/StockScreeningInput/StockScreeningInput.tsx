@@ -3,6 +3,13 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -18,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getStockScreenerData } from "@/services/stockScreening.services";
+import { Industries } from "@/types/types";
  
 const validationSchema = Yup.object({
   marketCapMoreThan: Yup.number().min(0),
@@ -43,6 +51,7 @@ const validationSchema = Yup.object({
 type Props = {
   setLoading: React.Dispatch<React.SetStateAction<any>>; 
   setData: React.Dispatch<React.SetStateAction<any>>; 
+  industries: Industries;
   setParams: React.Dispatch<React.SetStateAction<any>>; // You can replace `any` with a proper params type
   setQuerySubmit: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -51,6 +60,7 @@ export default function StockScreeningInput({
   setParams,
   setData,
   setLoading,
+  industries,
   setQuerySubmit,
 }: Props) {
    const [open, setOpen] = React.useState(true);
@@ -158,18 +168,29 @@ export default function StockScreeningInput({
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label className="text-[10px]" htmlFor="industry">
-                Industry
-              </label>
-              <Input
-                name="industry"
-                id="industry"
-                placeholder="e.g., Consumer Electronics"
-                value={values.industry}
-                onChange={handleChange}
-              />
-            </div>
+         <div>
+  <label className="text-[10px]" htmlFor="industry">
+    Industry
+  </label>
+  <Select
+    value={values.industry}
+    onValueChange={(value) =>
+      handleChange({ target: { name: "industry", value } })
+    }
+  >
+    <SelectTrigger id="industry" className="w-full text-sm">
+      <SelectValue placeholder="e.g., Consumer Electronics" />
+    </SelectTrigger>
+    <SelectContent>
+      {industries.map((item) => (
+        <SelectItem key={item.industry} value={item.industry}>
+          {item.industry}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
 
             {/* Beta */}
             <div >
