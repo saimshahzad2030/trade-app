@@ -82,9 +82,7 @@ const InvestmentIdeas = () => {
                         : "text-green-600"
                     }`}
                   >
-                    {gainOrLoss !== "gain" && gainOrLoss !== "loss" && !stock.changesPercentage.startsWith("+")
-                      ? stock.changesPercentage
-                      : `+ ${stock.changesPercentage}`}
+                     {`${stock.changesPercentage}`}
                   </p>
                 </div>
               </div>
