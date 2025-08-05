@@ -32,61 +32,56 @@ const StockScreeningTable: React.FC<StockScreeningTableProps > = ({ data })=> {
     <>{stocks &&  <>
     {stocks?.length>0?
       <div className="overflow-x-auto w-full px-4 text-white">
-        <div className="max-h-[80vh] overflow-y-auto w-full"> 
-      <Table className="table-auto w-full">
-        <TableHeader className="sticky top-0 bg-gray-900 z-10">
-          <TableRow>
-            <TableHead>Symbol</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Sector</TableHead>
-            <TableHead>Industry</TableHead>
-            <TableHead>Market Cap</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Dividend</TableHead>
-            <TableHead>Volume</TableHead>
-            <TableHead>Beta</TableHead>
-            <TableHead>Exchange</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Gross Profit Margin</TableHead>
-            <TableHead>Net Profit Margin</TableHead>
-            <TableHead>ROE</TableHead>
-            <TableHead>D/e Ratio</TableHead>
-            <TableHead>Interest Expense</TableHead>
-
-          </TableRow>
-        </TableHeader>
-        <TableBody >
-          {stocks.map((stock) => (
-            <TableRow key={stock.symbol}>
-              <TableCell>
-                <Link
-                onClick={()=>setNavigateLoading(true)
-                }
-                className="underline" href={`/summary/${stock.symbol}`}>
-                  {stock.symbol}
-                </Link>
-              </TableCell>
-              <TableCell>{stock.companyName}</TableCell>
-              <TableCell>{stock.sector || "N/A"}</TableCell>
-              <TableCell>{stock.industry || "N/A"}</TableCell>
-              <TableCell>{(stock.marketCap / 1e9).toFixed(2)} B</TableCell>
-              <TableCell>${stock.price.toFixed(2)}</TableCell>
-              <TableCell>{stock.lastAnnualDividend}</TableCell>
-              <TableCell>{stock.volume.toLocaleString()}</TableCell>
-              <TableCell>{stock.beta}</TableCell>
-              <TableCell>{stock.exchangeShortName}</TableCell>
-              <TableCell>{stock.country}</TableCell>
-                <TableCell>{stock.grossProfitMargin}</TableCell>
+         <div className="max-h-[80vh] overflow-y-auto w-full">
+    <Table className="table-auto w-full">
+      <TableHeader>
+        <TableRow>
+          {[
+            "Symbol", "Company", "Sector", "Industry", "Market Cap", "Price",
+            "Dividend", "Volume", "Beta", "Exchange", "Country",
+            "Gross Profit Margin", "Net Profit Margin", "ROE", "D/E Ratio", "Interest Expense"
+          ].map((header) => (
+            <TableHead
+              key={header}
+              className="sticky top-0 z-10 p-2 text-left"
+            >
+              {header}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {stocks.map((stock) => (
+          <TableRow key={stock.symbol}>
+            <TableCell>
+              <Link
+                onClick={() => setNavigateLoading(true)}
+                className="underline"
+                href={`/summary/${stock.symbol}`}
+              >
+                {stock.symbol}
+              </Link>
+            </TableCell>
+            <TableCell>{stock.companyName}</TableCell>
+            <TableCell>{stock.sector || "N/A"}</TableCell>
+            <TableCell>{stock.industry || "N/A"}</TableCell>
+            <TableCell>{(stock.marketCap / 1e9).toFixed(2)} B</TableCell>
+            <TableCell>${stock.price.toFixed(2)}</TableCell>
+            <TableCell>{stock.lastAnnualDividend}</TableCell>
+            <TableCell>{stock.volume.toLocaleString()}</TableCell>
+            <TableCell>{stock.beta}</TableCell>
+            <TableCell>{stock.exchangeShortName}</TableCell>
+            <TableCell>{stock.country}</TableCell>
+            <TableCell>{stock.grossProfitMargin}</TableCell>
             <TableCell>{stock.netProfitMargin}</TableCell>
             <TableCell>{stock.ROE}</TableCell>
             <TableCell>{stock.deRatio}</TableCell>
             <TableCell>{stock.interestExpense}</TableCell>
-
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      </div>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
       <div className="flex flex-col items-center w-full">
         <h1 className="text-white font-bold text-4xl mt-12"> Visual Comparison</h1>
         <p className="text-sm text-gray-400">Below is the comparison of the ratios of top 5 stock u searched</p>

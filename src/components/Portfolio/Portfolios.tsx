@@ -128,7 +128,8 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
     const fetchChartData = async () => {
       setLoading(true);
       let response = await FetchPortfolios();
-      setUserPortfolios(response.data);
+            setUserPortfolios(response.status==200?response.data:[]);
+
       setLoading(false);
     };
     fetchChartData();
@@ -157,6 +158,7 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
           Add Portfolio
         </button>
       </div>
+      {loading?
       <Table className="text-white">
         <TableHeader>
           <TableRow>
@@ -170,7 +172,7 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
             <TableCell>Action</TableCell>
           </TableRow>
         </TableHeader> 
-  {loading ? (
+  
    <TableBody>
     {[...Array(3)].map((_, i) => (
       <TableRow key={i}>
@@ -200,7 +202,23 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
       </TableRow>
     ))}
   </TableBody>
-) : (
+ 
+      </Table>:
+      <>{userPortfolios.length>0?
+        <Table className="text-white">
+        <TableHeader>
+          <TableRow>
+            <TableCell>Portfolio Name</TableCell>
+            <TableCell>Symbols</TableCell>
+            <TableCell>Cost Basis (Including Cash)</TableCell>
+            <TableCell>Market Value (Including Cash)</TableCell>
+            <TableCell>Day Change</TableCell>
+            <TableCell>Unrealized Gain/Loss</TableCell>
+            <TableCell>Realized Gain/Loss</TableCell>
+            <TableCell>Action</TableCell>
+          </TableRow>
+        </TableHeader> 
+  
   <TableBody>
     {userPortfolios.map((portfolio) => (
     <TableRow key={portfolio.id}>
@@ -243,8 +261,11 @@ const [userPortfolios,setUserPortfolios] = React.useState<Portfolio[] | []>([])
   ))}  
 
 </TableBody>
-)}
-      </Table>
+  
+      </Table>:
+      <p className="w-full text-center text-gray-600">No Portfolio to show</p>
+      }</>
+      }
       {addPortfolio && (
         <div className="fixed inset-0 z-50 bg-black/25 bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#13131f] p-6 rounded-md max-w-lg flex flex-col items-center w-full space-y-4 text-gray-800">

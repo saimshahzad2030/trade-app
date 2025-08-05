@@ -48,10 +48,12 @@ type Lot = {
 type LotTableProps = {
    holdingId:number,
   holding: HoldingSummary; 
+  updateHoldingsForAsset: (holdingId: number, updatedHoldings: HoldingSummary) => void;
 };
 const TransactionTables: React.FC<LotTableProps> = ({ 
   holding, 
-  holdingId
+  holdingId,
+  updateHoldingsForAsset 
 }) => {
     const [updatedTransaction, setUpdatedTransaction] = React.useState<number | null>(null)
   
@@ -170,6 +172,7 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
  React.useEffect(() => {
     const fetchChartData = async () => {
       let response = await FetchTransactions(holdingId);
+      console.log(response.data.results)
       setTransactions(response.data.results)
       setLoading(false)
 
@@ -249,18 +252,23 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
                         )}
                       >
                         <Calendar1Icon />
-                        {transaction.date ? (
-                          format(new Date(transaction.date), "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
+                        {transaction.date && !isNaN(new Date(transaction.date).getTime()) ? (
+          format(new Date(transaction.date), "PPP")
+        ) : (
+          <span>Invalid Date</span>
+        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         className="bg-[#13131f] text-red"
                         mode="single"
-                                                  selected={transaction.date ?? undefined}
+                          selected={
+  transaction?.date && !isNaN(new Date(transaction.date).getTime())
+    ? new Date(transaction.date)
+    : undefined
+}
+
 
                         onSelect={(date) => {
                           setEditingRowIndex(index);
@@ -427,6 +435,8 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
                                if (newLot.status == 201) {
                                  setShowModal(false);
                                  setIsEditing(false);
+                                 console.log(newLot.data.holding_data)
+                                 updateHoldingsForAsset(holdingId,newLot.data.holding_data)
                             setTransactions((prevLots) =>
   prevLots.map((txn) =>
     txn.id == updatedLotNew.id ? newLot.data : txn
@@ -449,6 +459,9 @@ const [transactions, setTransactions] = React.useState< HoldingTransactions | []
                                if (newLot.status == 200) {
                                  setShowModal(false);
                                  setIsEditing(false);
+                                console.log(newLot.data.holding_data)
+                                 updateHoldingsForAsset(holdingId,newLot.data.holding_data)
+
                            setTransactions((prevLots) =>
   prevLots.map((txn) =>
     txn.id == updatedLotNew.id ? newLot.data : txn

@@ -37,6 +37,7 @@ const {
     resolver: zodResolver(loginSchema),
   });
   const [loading, setLoading] = React.useState(false); // ⬅️ Local loading state
+  const [navigateLoading, setNavigateLoading] = React.useState(false); // ⬅️ Local loading state
  
   const onSubmit = async (data: LoginFormData) => {
      try {
@@ -67,7 +68,7 @@ const {
   };
 return (
     <>
-      {loading && <FullScreenLoader />} {/* ⬅️ Show loader */}
+      {loading || navigateLoading && <FullScreenLoader />} {/* ⬅️ Show loader */}
       <div className="min-h-screen flex items-center justify-center bg-none px-4 w-full">
         <Card className="w-full max-w-md shadow-lg border-none bg-[#0f0f19]">
           <CardHeader>
@@ -93,7 +94,10 @@ return (
 
               <div className="w-full flex flex-row items-center justify-center text-sm text-gray-300">
                 Don't have an account?
-                <Link href="/signup" className="ml-2 text-[var(--variant-4)]">Signup</Link>
+                <Link href="/signup" 
+              onClick={()=>setNavigateLoading(true)}
+                
+                className="ml-2 text-[var(--variant-4)]">Signup</Link>
               </div>
 
               <Button type="submit" className="w-full cursor-pointer" disabled={loading}>

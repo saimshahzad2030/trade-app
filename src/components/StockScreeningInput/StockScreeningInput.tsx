@@ -134,9 +134,10 @@ export default function StockScreeningInput({
                 Market Cap More Than
               </label>
               <Input
+              type="number"
+              className="appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none "
                 name="marketCapMoreThan"
                 id="marketCapMoreThan"
-                className=""
                 placeholder="e.g., 1000000"
                 value={values.marketCapMoreThan}
                 onChange={handleChange}
@@ -147,6 +148,9 @@ export default function StockScreeningInput({
                 Market Cap Lower Than
               </label>
               <Input
+              type="number"
+              className="appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none "
+              
                 name="marketCapLowerThan"
                 id="marketCapLowerThan"
                 placeholder="e.g., 1000000000"
@@ -191,8 +195,7 @@ export default function StockScreeningInput({
   </Select>
 </div>
 
-
-            {/* Beta */}
+ 
             <div >
               <label className="text-[10px]" htmlFor="betaMoreThan">
                 Beta More Than

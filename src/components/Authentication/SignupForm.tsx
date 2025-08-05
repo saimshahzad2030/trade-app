@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { signup } from "@/services/authentication.services";
 import { useRouter } from "next/navigation";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 
 // Zod schema with confirm password and strong password rule
 const signupSchema = z
@@ -43,8 +44,9 @@ const SignupForm = () => {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
-
   const router = useRouter();
+  const [navigateLoading, setNavigateLoading] = React.useState(false); // ⬅️ Local loading state
+
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -67,6 +69,9 @@ const SignupForm = () => {
   };
 
   return (
+   <>
+   {navigateLoading && <FullScreenLoader/>}
+   
     <div className="min-h-screen flex items-center justify-center bg-none px-4 w-full">
       <Card className="w-full max-w-md shadow-lg border-none bg-[#0f0f19]">
         <CardHeader>
@@ -108,7 +113,9 @@ const SignupForm = () => {
 
             <div className="w-full flex flex-row item-center justify-center text-sm text-gray-300 ">
               Already have an account?
-              <Link href="/login" className="ml-2 text-[var(--variant-4)]">login</Link>
+              <Link href="/login"
+              onClick={()=>setNavigateLoading(true)}
+              className="ml-2 text-[var(--variant-4)]">login</Link>
             </div>
 
             <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
@@ -118,6 +125,8 @@ const SignupForm = () => {
         </CardContent>
       </Card>
     </div>
+   </>
+
   );
 };
 

@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import LotTable from "./LotTable";
 import TransactionTables from "./TransactionTables";
 import { textColor } from "@/utils/functionalUtils";
-import { HoldingLots, PortfolioDataResponse, Transactions } from "@/types/types";  
+import { HoldingLots, HoldingSummary, PortfolioDataResponse, Transactions } from "@/types/types";  
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import { deletePortfolioHolding, FetchLots } from "@/services/portfolio.services";
 import ConfirmationModal from "../Modal/ConfirmationModal";
@@ -26,6 +26,7 @@ type Props = {
 };
 
 const HoldingsTable = ({ summaryData, isLoading }: Props) => {
+  console.log(summaryData,"summaryData")
   const [expandedSymbol, setExpandedSymbol] = React.useState<string | null>(null);
   const [selectedTab, setSelectedTab] = React.useState<"lots" | "transactions">("lots");
 
@@ -42,7 +43,20 @@ const HoldingsTable = ({ summaryData, isLoading }: Props) => {
   };
 
 const [holdings,setHoldings]=React.useState<PortfolioDataResponse>(summaryData);
- 
+ const updateHoldingsForAsset = (
+  updatedAssetId: number, // or you can use `asset_symbol` if preferred
+  newHoldingsData: HoldingSummary
+) => {
+  console.log(newHoldingsData,"newHoldingsData")
+  setHoldings((prevHoldings) =>
+    prevHoldings.map((asset) =>
+      asset.id == updatedAssetId
+        ? { ...asset, holdings: newHoldingsData }
+        : asset
+    )
+  );
+};
+
   return (
     <Table className="text-xs">
       <TableHeader>
@@ -92,7 +106,7 @@ const [holdings,setHoldings]=React.useState<PortfolioDataResponse>(summaryData);
                       {stock.holdings.symbol}
                     </div>
                   </TableCell>
-                  <TableCell>Open</TableCell>
+                  <TableCell>{stock.status}</TableCell>
                   <TableCell>{stock.holdings.shares}</TableCell>
                   <TableCell>{stock.holdings.last_price}</TableCell>
                   <TableCell>{stock.holdings.ac_per_share}</TableCell>
@@ -135,10 +149,14 @@ const [holdings,setHoldings]=React.useState<PortfolioDataResponse>(summaryData);
                           </Button>
                         ))}
                         {selectedTab === "lots" && (
-                          <LotTable   holding={stock.holdings}  holdingId={stock.id} />
+                          <LotTable 
+                          updateHoldingsForAsset={updateHoldingsForAsset}
+                             holding={stock.holdings}  holdingId={stock.id} />
                         )}
                         {selectedTab === "transactions" && (
                           <TransactionTables 
+
+                          updateHoldingsForAsset={updateHoldingsForAsset}
                             holding={stock.holdings} 
                             holdingId={stock.id}
                           />

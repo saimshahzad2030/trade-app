@@ -33,8 +33,10 @@ import ConfirmationModal from "../Modal/ConfirmationModal";
 type LotTableProps = {
   holdingId: number;
   holding: HoldingSummary;
+  updateHoldingsForAsset: (holdingId: number, updatedHoldings: HoldingSummary) => void;
+
 };
-const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
+const LotTable: React.FC<LotTableProps> = ({ holdingId,updateHoldingsForAsset, holding }) => {
    const sharesRef = React.useRef<HTMLInputElement[]>([]);
   const [updatedLot, SetUpdatedLot] = React.useState<number | null>(null)
   const updateDate = (index: number, date: Date | undefined) => {
@@ -386,6 +388,8 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
                   if (newLot.status == 201) {
                     setShowModal(false);
                     setIsEditing(false);
+                                 updateHoldingsForAsset(holdingId,newLot.data.holding_data)
+
                setLots((prevLots) =>
                       prevLots.map((lot, i) => (lot.id === updatedLotNew?.id ? newLot.data : lot))
 
@@ -418,6 +422,8 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
                   if (newLot.status == 201) {
                     setShowModal(false);
                     setIsEditing(false);
+                                 updateHoldingsForAsset(holdingId,newLot.data.holding_data)
+
                     setLots((prevLots) =>
                       prevLots.map((lot, i) => (lot.id === updatedLotNew?.id ? newLot.data : lot))
 
@@ -441,6 +447,8 @@ const LotTable: React.FC<LotTableProps> = ({ holdingId, holding }) => {
                   if (newLot.status == 201) {
                     setShowModal(false);
                     setIsEditing(false);
+                                 updateHoldingsForAsset(holdingId,newLot.data.holding_data)
+
                setLots((prevLots) => [...prevLots, newLot.data]);
 
                   }

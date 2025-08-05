@@ -1063,6 +1063,7 @@ export interface HoldingSummary {
   symbol: string;
   shares: number;
   last_price: string;
+  status:string;
   ac_per_share: string;
   total_cost: string;
   market_value: string;
@@ -1078,7 +1079,7 @@ export interface HoldingSummary {
 interface PortfolioAsset {
   fundamentals: Fundamentals;
   holdings: HoldingSummary;
-
+status:string;
   portfolio: number;
   id: number;
   asset_name: string;
