@@ -399,10 +399,7 @@ const option = {
 
        <CompanySummarySection loading={loading} metaData={metaData}/> 
     </div> 
-  {chartData?.chart.error &&<div className="z-50 w-full flex flex-col items-center justify-between px-8 text-gray-400"><p className="mb-2">{`${chartData?.chart.error }. Try Seaching some other thing other than ${symbol}`}</p>
-  {/* <SearchBar className="w-9/12"/>
-   */}
- </div>} </>
+   </>
      
   );
 };
