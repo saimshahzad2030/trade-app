@@ -22,7 +22,7 @@ const parseAmount = (value: string): number => {
   return parseFloat(value);
 };
 
-const DebtAnalysis: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
+const DebtAnalysis: React.FC<DebtAnalysisProps> = ({ data,symbol, loading,error }) => {
   // Detect dominant unit type from first available entry
   const sampleValue = data?.[0]?.annual.totalDebt ?? "0";
   const unitType: UnitType = detectUnit(sampleValue);
@@ -98,8 +98,11 @@ const DebtAnalysis: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
       <div className="bg-[#13131f] w-full rounded-2xl p-4 flex flex-col items-center justify-center">
     {loading?
        <SkeletonLoader className="h-[60vh] w-full bg-gray-700"/>:
+        
         error?
-      <p className="text-gray-600">{error}</p>:
+      <div className="flex flex-col items-center w-full bg-[#09090f] p-8 rounded-md">
+          <p className="w-full text-center text-gray-700">{error}</p> 
+        </div>:
       <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
@@ -111,7 +114,7 @@ const DebtAnalysis: React.FC<DebtAnalysisProps> = ({ data, loading,error }) => {
         Debt Analysis
       </h2>
       <h2 className={`text-lg text-center text-white ${poppins.className}`}>
-        ({data?.[0]?.symbol?.toUpperCase() ?? "N/A"})
+        ({symbol ?? "N/A"})
       </h2>
     </div>
   );

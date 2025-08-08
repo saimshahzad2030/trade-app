@@ -14,6 +14,7 @@ type ChartSectionProps = {
 const EPSProjectionChart =({symbol}:ChartSectionProps) => {
     const [chartData,setChartData] = React.useState<EPSProjectionData | null>(null)
   const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
+  const [error,setError] = React.useState<null | string>(null)
   const sortedData =chartData?.eps_projection?.result
   ? [...chartData.eps_projection.result].sort((a, b) => +a.year - +b.year)
   : [];
@@ -165,9 +166,9 @@ const option = {
         const fetchChartData = async()=>{
           setChartDataLoading(true)
           let response = await getEPSProjectionChart(symbol);
-          setChartDataLoading(false)
           setChartData(response.data)
-          
+          setError(response.data.error)
+          setChartDataLoading(false)
         }
         fetchChartData()
 
@@ -177,13 +178,31 @@ const option = {
       <div className=" w-full rounded-2xl ">
        {chartDataLoading?
        <SkeletonLoader className="h-[80vh] w-full bg-gray-700"/>:
-       <ReactECharts
+       <>{
+        chartData?.eps_projection.error!=null  ?
+        <div className="flex flex-col items-center w-full bg-[#09090f] p-8 rounded-md">
+          <p className="w-full text-center text-gray-700">{chartData?.eps_projection.error}</p>
+         </div>:
+         <>
+         <ReactECharts
           option={option}
           style={{ height: "80vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
-        />}
+        />
+         </>
+       }</>
+       
+       }
       </div>
+      <h2
+                className={`text-2xl font-bold text-center mt-4 text-white ${poppins.className}`}
+              >
+                Eps Projection
+              </h2>
+              <h2 className={`text-lg text-center text-white ${poppins.className}`}>
+                      ({symbol ?? "N/A"})
+                    </h2>
     </div>
   );
 };

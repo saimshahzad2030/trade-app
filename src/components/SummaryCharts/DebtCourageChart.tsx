@@ -20,7 +20,7 @@ const parseAmount = (value: string): number => {
   return parseFloat(value);
 };
 
-const DebtCourageChart: React.FC<DebtAnalysisProps2> = ({ data, loading,error }) => {
+const DebtCourageChart: React.FC<DebtAnalysisProps2> = ({ data,symbol, loading,error }) => {
   const result = data;
 
   // Detect unit based on the first defined value in dataset
@@ -105,7 +105,9 @@ const DebtCourageChart: React.FC<DebtAnalysisProps2> = ({ data, loading,error })
        {loading?
        <SkeletonLoader className="h-[60vh] w-full bg-gray-700"/>:
         error?
-             <p className="text-gray-600">{error}</p>:
+               <div className="flex flex-col items-center w-full bg-[#09090f] p-8 rounded-md">
+          <p className="w-full text-center text-gray-700">{error}</p> 
+        </div>:
             <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
@@ -120,7 +122,7 @@ const DebtCourageChart: React.FC<DebtAnalysisProps2> = ({ data, loading,error })
         Growth & Profitability
       </h2>
       <h2 className={`text-lg text-center text-white ${poppins.className}`}>
-        ({result?.symbol ?? "N/A"})
+        ({symbol ?? "N/A"})
       </h2>
     </div>
   );

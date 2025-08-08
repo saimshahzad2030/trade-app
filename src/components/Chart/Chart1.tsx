@@ -388,13 +388,13 @@ const option = {
         </>} </>}</>}
       </div>
     
-       {   !chartData?.chart?.error &&  <div className="grid grid-cols-4 w-full gap-4 mt-8">
+        <div className="grid grid-cols-4 w-full gap-4 mt-8">
           <div className="w-full col-span-4">
             <EPSProjectionChart symbol={symbol}/>
           </div>
           <DebtAnalysisAndDebtCourageChart symbol={symbol}/>
           <OwnershipStructure  symbol={symbol}/>
-        </div>}
+        </div> 
       </div>
 
        <CompanySummarySection loading={loading} metaData={metaData}/> 

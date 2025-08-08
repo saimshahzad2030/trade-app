@@ -122,7 +122,7 @@ const FinancialRatiosTables = ({symbol}:ChartSectionProps) => {
   </>
 ) : (
   groupedRatios.length < 1 ? (
-    <p className="col-span-2 w-full text-center text-red-600">Error fetching Financial Ratios</p>
+    <p className="col-span-2 w-full text-center text-gray-700">Error fetching Financial Ratios</p>
   ) : (
     groupedRatios.map((group, idx) => {
       const keys = Object.keys(group.data) as string[];

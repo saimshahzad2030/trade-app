@@ -10,6 +10,7 @@ import { getDisplayData } from "@/services/stocks.services";
 import { StockToDisplayType } from "@/types/types";
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import FullScreenLoader from "../Loader/FullScreenLoader";
+import RoundLoader from "../Loader/RoundLoader";
 
  
 const mockData = [
@@ -43,12 +44,12 @@ const Landing = () => {
     setQuery(q);
     setLoading(true)
     const searchedStock = await searchStock(q)
-    setLoading(false)
     setFilteredStocks(searchedStock.data)
     if (!q.trim()) {
       setFilteredStocks([]);
       return;
     }
+    setLoading(false)
 
     
   };
@@ -105,8 +106,14 @@ const Landing = () => {
             <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--variant-3)]" />
           </div>
 
-          {query && !loading && filteredStocks.length > 0 && (
-        <div className="z-49  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[200px] overflow-y-scroll">
+          {query && <>
+          {loading?
+          <div className="py-2 w-full flex flex-row items-center justify-center">
+            <RoundLoader  />
+          </div>:
+          <>{
+            filteredStocks.length>0 ?
+            <div className="z-[49]  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[200px] overflow-y-scroll">
           {filteredStocks.map((item, index) => (
            <Link  key={index}
            onClick={()=>{
@@ -127,11 +134,12 @@ const Landing = () => {
               <span className="text-xs text-gray-400">{item.exchangeShortName}</span>
             </div></Link>
           ))}
-        </div>
-      )}
+        </div>:
+        <div className="w-full flex flex-col items-center text-gray-900 p-4"><p>No Such Stock Found</p></div>
+          }</>}</>}
         </div>
       </div>
-      <div className="z-[49] w-full grid grid-cols-5 gap-1  ">
+      <div className="z-[48] w-full grid grid-cols-5 gap-1  ">
         {chartDataLoading?
          Array.from({ length: 5 }).map((stock, index) => (
           <div

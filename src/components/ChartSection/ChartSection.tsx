@@ -89,6 +89,7 @@ const ChartSection = () => {
     `${stock.name} ${stock.symbol}`.toLowerCase().includes(search.toLowerCase())
   );
   const [chartDataLoading,setChartDataLoading] = React.useState<boolean>(true)
+  const [normalLoading,setNormalLoading] = React.useState<boolean>(true)
 const [toDate, setToDate] = React.useState<Date | undefined>(subDays(new Date(), 1));
 
 // Set fromDate as one month before today
@@ -142,6 +143,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
                         setChartDataLoading(true)
                         let response = await getSpecificStockChart(symbol,timeFrame,technicalIndicator || 'sma',startDate,now);
                         setChartDataLoading(false)
+                        setNormalLoading(false)
                         setChartData(response.data['chart-data'].result)
            
     setFromDate(startDate);
@@ -162,6 +164,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
           setMetaData(response2.data)
           setChartData(response.data['chart-data'].result)
           setChartDataLoading(false)
+          setNormalLoading(false)
           
         }
         fetchChartData()
@@ -173,8 +176,8 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
     >
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails loading={chartDataLoading} metaData={metaData}/>
-          {chartDataLoading ?  (
+          <CompanyDetails loading={normalLoading} metaData={metaData}/>
+          {normalLoading ?  (
 <>  <div className="flex flex-row item-center justify-start w-full mt-4 h-[35px] w-7/12">
     <SkeletonLoader className=" bg-gray-700 h-full w-2/12" />
   <SkeletonLoader className="ml-4 bg-gray-700 h-full w-1/12" />
@@ -478,10 +481,13 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
             {chartDataLoading? 
     <SkeletonLoader className=" bg-gray-700 h-[75vh] w-full mt-1" />:
               <>
-              {chartData.length>0 ? <ChartComponent technicalIndicator={technicalIndicator} data={chartData}/> :<div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]"><p className="text-red-400">Error Showing Chart Data</p></div>}
+              {chartData.length>0 ? 
+              <ChartComponent technicalIndicator={technicalIndicator} data={chartData}/>
+                
+              :<div className="w-full flex flex-col items-center justify-center bg-[#13131f] h-[75vh]"><p className="text-red-400">Error Showing Chart Data</p></div>}
               </>
               }
-        {chartDataLoading? 
+        {normalLoading? 
     <SkeletonLoader className=" bg-gray-900 h-[400px] w-full mt-8 rounded-md" />:
           <SingleStockRadarChart symbol={symbol}/>
     
@@ -489,7 +495,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
          <FinancialRatiosChart symbol={symbol}/> 
         </div>
       </div>
-      <CompanySummarySection metaData={metaData} loading={chartDataLoading}/>
+      <CompanySummarySection metaData={metaData} loading={normalLoading}/>
     </div>
   );
 };

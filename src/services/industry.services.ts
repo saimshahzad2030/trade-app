@@ -18,5 +18,23 @@ export const fetchIndustries = async () => {
     };
   }
 };
-
+export const getIndustryComparison = async (industry:string) => {
+  try {
+    const response = await axiosInstanceJson.get(`get-past-five-year-industry-growth/${industry}`); 
+      
+    return {
+      status: response.status,
+      data: {industry_growth_currency:response.data.industry_growth_currency,
+        industry,
+        
+      },
+    };
+  } catch (err) {
+  const error = err as { response:{status: number; data: string} };
+    return {
+      status: error.response.status,
+      data: error.response?.data,
+    };
+  }
+};
 

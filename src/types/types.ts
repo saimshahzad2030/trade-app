@@ -304,7 +304,7 @@ export   interface Transaction {
 export interface DebtAnalysisProps {
   loading: boolean;
   error?:string;
-
+symbol:string;
   data?: DebtCoverageEntry[];
 }
 export type UnitType = "B" | "M" | "RAW";
@@ -847,6 +847,7 @@ export type FinancialDataType = {
 export interface DebtAnalysisProps2 {
   loading: boolean;
   error?:string;
+  symbol:string;
   data?: FinancialPositionData;
 }
 

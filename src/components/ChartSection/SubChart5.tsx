@@ -93,8 +93,7 @@ const SubChart5 = ({ betaData, handleAddBeta }: Props) => {
       },
       tooltip: { 
     formatter: (params: any) => `
-      <strong>${params.seriesName}</strong><br/>
-      Quarter: ${params.name}<br/>
+      <strong>${params.seriesName}</strong><br/> 
       WACC: ${params.value}%
     `
   }
@@ -116,7 +115,7 @@ const SubChart5 = ({ betaData, handleAddBeta }: Props) => {
       },
       xAxis: {
         type: "category",
-        name: "Quarter",
+        name: "Yearly",
         boundaryGap: false,
         data: allDates,
         axisLine: { lineStyle: { color: "#888" } },

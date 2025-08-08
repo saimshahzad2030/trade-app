@@ -60,7 +60,10 @@ onClick  = {()=>setNavigateLoading(true)}
         </Link>
       </div>
       <div className="flex flex-col items-start cursor-pointer group">
-        <Link  href={`/statistics/${pathName.split("/")[2]=='my-portfolios' || pathName.includes("portfolio") ? 'AAPL' :pathName.split("/")[2] }`} >
+        <Link
+        
+onClick  = {()=>setNavigateLoading(true)}
+        href={`/statistics/${pathName.split("/")[2]=='my-portfolios' || pathName.includes("portfolio") ? 'AAPL' :pathName.split("/")[2] }`} >
           <h1
             className={`text-sm 
               ${

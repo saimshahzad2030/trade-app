@@ -24,10 +24,10 @@ const DebtAnalysisAndDebtCourageChart =({symbol}:ChartSectionProps) => {
   return (
     <>
     <div className="col-span-2 w-full">
-            <DebtAnalysis error={chartData?.growth_profitability_and_debt_analysis_chart_data.error} loading={chartDataLoading} data={chartData?.growth_profitability_and_debt_analysis_chart_data.result.debtCoverage}/>
+            <DebtAnalysis symbol={symbol} error={chartData?.growth_profitability_and_debt_analysis_chart_data.error} loading={chartDataLoading} data={chartData?.growth_profitability_and_debt_analysis_chart_data.result.debtCoverage}/>
           </div>
           <div className="col-span-2 w-full">
-            <DebtCourageChart error={chartData?.growth_profitability_and_debt_analysis_chart_data.error} loading={chartDataLoading} data={chartData?.growth_profitability_and_debt_analysis_chart_data.result.financialPosition}/>
+            <DebtCourageChart symbol={symbol} error={chartData?.growth_profitability_and_debt_analysis_chart_data.error} loading={chartDataLoading} data={chartData?.growth_profitability_and_debt_analysis_chart_data.result.financialPosition}/>
           </div></>
   )
 }

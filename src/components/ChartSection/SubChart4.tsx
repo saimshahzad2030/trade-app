@@ -91,8 +91,7 @@ const SubChart4 = ({ waccData, handleAddWACC }: Props) => {
     },
     tooltip: { 
   formatter: (params: any) => `
-    <strong>${params.seriesName}</strong><br/>
-    Quarter: ${params.name}<br/>
+    <strong>${params.seriesName}</strong><br/> 
     WACC: ${params.value}%
   `
 }

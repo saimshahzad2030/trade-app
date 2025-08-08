@@ -4,6 +4,7 @@ import ReactECharts from "echarts-for-react";
 import { poppins } from "@/fonts/fonts";
 import { getOwnershipStructureChart } from "@/services/stock.services";
 import { OwnershipStructureChartData } from "@/types/componentTypes";
+import SkeletonLoader from "../Loader/SkeletonLoader";
 
 type ChartSectionProps = {
   symbol: string;
@@ -77,7 +78,15 @@ const OwnershipStructure = ({ symbol }: ChartSectionProps) => {
 
   return (
     <div className="w-full col-span-2 flex flex-col items-center">
-      <div className="bg-[#13131f] w-full rounded-2xl p-4 flex flex-col items-center">
+      {chartDataLoading?
+       <SkeletonLoader className="h-[80vh] w-full bg-gray-700"/>:
+       <>{
+        chartData?.ownership_structure_chart_data.error!=null  ?
+        <div className="flex flex-col items-center w-full bg-[#09090f] p-8 rounded-md">
+          <p className="w-full text-center text-gray-700">{chartData?.ownership_structure_chart_data.error}</p>
+         </div>:
+      <>
+       <div className="bg-[#13131f] w-full rounded-2xl p-4 flex flex-col items-center">
         <ReactECharts
           option={pieOption}
           style={{ height: "50vh", width: "100%" }}
@@ -85,7 +94,6 @@ const OwnershipStructure = ({ symbol }: ChartSectionProps) => {
           lazyUpdate={true}
         />
       </div>
-
       <div className="bg-[#1e1e2f] w-full rounded-2xl p-4 mt-4 text-white text-center">
         <h3 className="text-lg font-semibold mb-2">Share Count Summary</h3>
         <p>
@@ -94,7 +102,10 @@ const OwnershipStructure = ({ symbol }: ChartSectionProps) => {
         <p>
           <strong>Closely Held Shares:</strong> {data?.closelyHeldShares}
         </p>
-      </div>
+      </div></>
+} </>
+}
+      
 
       <h2
         className={`text-2xl font-bold text-center mt-4 text-white ${poppins.className}`}
@@ -102,7 +113,7 @@ const OwnershipStructure = ({ symbol }: ChartSectionProps) => {
         Ownership Structure
       </h2>
       <h2 className={`text-lg text-center text-white ${poppins.className}`}>
-        ({data?.symbol})
+        ({symbol})
       </h2>
     </div>
   );
