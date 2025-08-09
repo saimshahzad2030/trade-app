@@ -98,7 +98,13 @@ const option = {
             setLoading(true)
             let response:{data:dailyIndustoryPerformanceResponse}  = await getDailyIndustryPerformance();
 setLoading(false)
-          setDailyData(response.data)
+if(typeof response.data.daily_industry_performance.result == "object" || response.data.daily_industry_performance.error!=null){
+            setDailyData(null)
+          }
+          else{
+            setDailyData(response.data)
+
+          } 
           }
           fetchChartData()
   
@@ -109,14 +115,19 @@ setLoading(false)
             <div className='flex flex-col items-center w-full  rounded-2xl '><SkeletonLoader className=" h-[60vh]  rounded-2xl  bg-[#0d0d14] w-full mt-1" />  </div>
 
  
-       :<div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
-        <ReactECharts
+       :
+       dailyData?
+               <div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
+                <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
-      </div>
+             </div>:
+          <div className="w-full flex flex-col items-center justify-center rounded-md min-h-[60vh] bg-[#0d0d14]">
+            <p className="w-full text-center ">No data to show</p>
+          </div>
          }
       {loading?
      <div className="flex flex-col items-center my-1">

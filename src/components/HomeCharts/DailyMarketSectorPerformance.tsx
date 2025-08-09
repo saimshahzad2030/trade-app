@@ -7,6 +7,7 @@ import { getDailyMarketSectorPerformance } from "@/services/stocks.services";
 import { dailyMarketSectorPerformanceResponse } from "@/types/types";
 import RoundLoader from "../Loader/RoundLoader";
 import SkeletonLoader from "../Loader/SkeletonLoader";
+import { object } from "zod";
 
 const DailyMarketSectorPerformance = () => {
      const [dailyData,setDailyData] = React.useState<dailyMarketSectorPerformanceResponse|null>(null)
@@ -64,7 +65,13 @@ const DailyMarketSectorPerformance = () => {
             setLoading(true)
             let response:{data:dailyMarketSectorPerformanceResponse}  = await getDailyMarketSectorPerformance();
 setLoading(false)
-          setDailyData(response.data)
+          if(typeof response.data.daily_market_sector_performance.result == "object" ||response.data.daily_market_sector_performance.error!=null){
+            setDailyData(null)
+          }
+          else{
+            setDailyData(response.data)
+
+          }
           }
           fetchChartData()
   
@@ -74,14 +81,18 @@ setLoading(false)
       {loading? 
             <div className='flex flex-col items-center w-full  rounded-2xl '><SkeletonLoader className=" h-[60vh]  rounded-2xl  bg-[#0d0d14] w-full mt-1" />  </div>
 
-        :<div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
+        :dailyData?
+        <div className="min-h-[60vh] bg-[#0d0d14] w-full rounded-2xl p-2 flex flex-col items-center">
          <ReactECharts
           option={option}
           style={{ height: "60vh", width: "100%" }}
           notMerge={true}
           lazyUpdate={true}
         />
-      </div>
+      </div>:
+        <div className="w-full flex flex-col items-center justify-center rounded-md min-h-[60vh] bg-[#0d0d14]">
+            <p className="w-full text-center ">No data to show</p>
+          </div>
          }
 
      {loading?
