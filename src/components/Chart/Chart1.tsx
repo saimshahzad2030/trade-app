@@ -87,7 +87,7 @@ const intrinsicData = timestamps?.map((timestamp, index) => [
   intrinsicValues[index],
 ]);
 
-  const maxPrice = Math.max(...adjClosePrices);
+  // const maxPrice = Math.max(...adjClosePrices);
   // Filter data based on activeRange
   const getFilteredData = () => {
     const now = new Date();
@@ -125,7 +125,10 @@ const intrinsicData = timestamps?.map((timestamp, index) => [
   };
   const filteredData = getFilteredData() || [];
   const filteredMaxPrice = Math.max(...filteredData.map(([, price]) => price));
- 
+ const pricesOnly = filteredData.map(([, price]) => price);
+const minPrice = Math.min(...pricesOnly);
+const maxPrice = Math.max(...pricesOnly);
+
 const option = {
   tooltip: {
     trigger: "axis",
@@ -184,8 +187,8 @@ const option = {
   type: "value",
   boundaryGap: false, // ✅ eliminates padding
   position: "right",
-  min: (value: { min: number }) => Math.floor(value.min), // use actual min
-  max: (value: { max: number }) => Math.ceil(value.max),  // use actual max
+ min: minPrice - (maxPrice - minPrice) * 0.02,
+  max: maxPrice + (maxPrice - minPrice) * 0.02,
   axisLabel: {
     formatter: (val: number) => `$${val}`,
   },
@@ -274,8 +277,8 @@ const option = {
            {chartDataLoading?
            <div className="w-full flex flex-row items-center mt-4 px-8">
             <div className="w-9/12 flex flex-row item-center">
-              {ranges.map((range) => (
-                   <SkeletonLoader className="w-8 h-8 rounded-md bg-gray-700 mr-2"/>
+              {ranges.map((range,index) => (
+                   <SkeletonLoader key={index} className="w-8 h-8 rounded-md bg-gray-700 mr-2"/>
            
               ))}
             </div>

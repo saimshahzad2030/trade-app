@@ -25,7 +25,7 @@ export default function RootLayout({
        <body className={`${poppins.className} antialiased bg-[#13131f]`}>
         <ClientWrapper>
           {children}
-          <Toaster />
+          <Toaster  />
         <Footer />
         </ClientWrapper>
         

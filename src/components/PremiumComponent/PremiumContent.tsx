@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Check, Crown } from "lucide-react";
+import { toast } from "sonner";
 
 const plans = [
   {
@@ -42,6 +43,9 @@ const plans = [
   },
 ];
 const PremiumContent = () => {
+     React.useEffect(()=>{
+      toast.warning("sda")
+}, []);
   return (
     <div className="py-12 px-4  w-full  ">
       <h2 className="text-3xl font-bold text-center text-white">

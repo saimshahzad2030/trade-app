@@ -108,9 +108,10 @@ const CompanyDetails = ({loading,metaData  }: CompanyDetailsProps) => {
 ) : (
  <p
               className={`ml-4 text-lg ${
-              metaData?.meta.pricechange !== undefined && metaData?.meta.pricechange >= 0
+                metaData?.meta.changePercent?metaData?.meta.changePercent >= 0
                   ? "text-green-500"
-                  : "text-red-500"
+                  : "text-red-500":
+                  ""
               }`}
             >
               { metaData?.meta.pricechange !== undefined &&  metaData?.meta.pricechange >= 0 ? "+" : ""}

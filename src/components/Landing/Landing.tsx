@@ -10,7 +10,8 @@ import { getDisplayData } from "@/services/stocks.services";
 import { StockToDisplayType } from "@/types/types";
 import SkeletonLoader from "../Loader/SkeletonLoader";
 import FullScreenLoader from "../Loader/FullScreenLoader";
-import RoundLoader from "../Loader/RoundLoader";
+import RoundLoader from "../Loader/RoundLoader"; 
+import { toast } from "sonner";
 
  
 const mockData = [
@@ -31,7 +32,7 @@ const mockData = [
 ];
  
 
-const Landing = () => {
+const Landing = () => { 
   const [query, setQuery] = React.useState<string>("");
   const [loading, setLoading] = React.useState<boolean>(false);
   const [navigateLoading, setNavigateLoading] = React.useState<boolean>(false);
@@ -69,6 +70,10 @@ const Landing = () => {
           fetchChartData()
   
         },[])
+        
+ 
+
+
    return (
     <>
     {navigateLoading && <FullScreenLoader />}
@@ -78,9 +83,9 @@ const Landing = () => {
       }}
       className="relative bg-cover bg-center flex flex-col items-center justify-start w-full h-[100vh] bg-[#13131f]   text-white p-4"
     >
-      <div className="absolute inset-0 bg-black opacity-80 z-10"></div>
+      <div className="absolute inset-0 bg-black opacity-80 z-9"></div>
 
-      <div className="z-49 px-8  flex flex-col items-center justify-start w-full h-[85vh]  ">
+      <div className="z-[48] px-8  flex flex-col items-center justify-start w-full h-[85vh]  ">
         <h1
           className={`mt-[30vh] w-7/12 ${poppins.className} text-[clamp(2rem,3vw,3rem)] leading-[clamp(2rem,3vw,3rem)] font-bold text-center`}
         >
@@ -113,7 +118,7 @@ const Landing = () => {
           </div>:
           <>{
             filteredStocks.length>0 ?
-            <div className="z-[49]  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[200px] overflow-y-scroll">
+            <div className="z-[48]  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[200px] overflow-y-scroll">
           {filteredStocks.map((item, index) => (
            <Link  key={index}
            onClick={()=>{
@@ -139,7 +144,7 @@ const Landing = () => {
           }</>}</>}
         </div>
       </div>
-      <div className="z-[48] w-full grid grid-cols-5 gap-1  ">
+      <div className="z-[47] w-full grid grid-cols-5 gap-1  ">
         {chartDataLoading?
          Array.from({ length: 5 }).map((stock, index) => (
           <div

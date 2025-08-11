@@ -86,8 +86,8 @@ const allIndicators = [
  
 
   const optionsList = allIndicators.map((item) => ({
-    label: item.name,
-    value: item.name,
+    label: camelToTitle(item.name), // display name
+  value: item.name,     
   }));
   const defaultSelected = optionsList.slice(0, 5);
  
@@ -112,10 +112,14 @@ const displayValues = selectedIndicators.map((indicator) => {
   const selectedIndexes = selectedNames.map(
     (name) => allIndicators.findIndex((ind) => ind.name === name)
   );
-
+function camelToTitle(str:string) {
+  return str
+    .replace(/([A-Z])/g, " $1") // insert space before capital letters
+    .replace(/^./, (s) => s.toUpperCase()); // capitalize first letter
+}
   const radarIndicators = allIndicators
     .filter((ind) => selectedNames.includes(ind.name))
-    .map((ind) => ({ name: ind.name, max: 100 }));
+    .map((ind) => ({ name: camelToTitle(ind.name), max: 100 }));
 
  
 

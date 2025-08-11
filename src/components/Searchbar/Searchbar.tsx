@@ -33,7 +33,7 @@ const SearchBar = ({className}:prop) => {
 const [navigateLoading,setNavigateLoading] = React.useState(false)
   const handleSearch = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
-     
+     setShowList(true)
     
     setSearchQuery(query);
     setLoading(true)
@@ -47,15 +47,33 @@ const [navigateLoading,setNavigateLoading] = React.useState(false)
 
     
   };
+const [showList, setShowList] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowList(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
     {navigateLoading && <FullScreenLoader/>}
     <div className={`relative flex flex-col items-center w-3/12 bg-white p-1 rounded-md ${className}`}>
-      <div className="relative w-full   ">
+      <div ref={containerRef} className="relative w-full   ">
         <Input
           placeholder="Search stock name or symbol..."
           value={searchQuery}
+          onClick={()=>setShowList(true)}
           onChange={handleSearch}
           className="pl-10 pr-4  h-8 w-full bg-white  "
         />
@@ -64,7 +82,7 @@ const [navigateLoading,setNavigateLoading] = React.useState(false)
 
       {searchQuery && !loading &&  (filteredData.length>0?
         
-        <div className="  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[300px] overflow-y-scroll">
+        <>{showList && <div className="  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 max-h-[300px] overflow-y-scroll">
           {filteredData.map((item, index) => (
            <Link
            onClick={()=>{ 
@@ -85,7 +103,7 @@ const [navigateLoading,setNavigateLoading] = React.useState(false)
               <span className="text-xs text-gray-400">{item.exchangeShortName}</span>
             </div></Link>
           ))}
-        </div>
+        </div>}</>
       :  <div className="  top-2/3 absolute w-full bg-white shadow-lg rounded-t-none   rounded-md mt-2 z-50 ">
        <p className="  p-1 text-center text-gray-400">No Such Stock Exist</p>
        </div>

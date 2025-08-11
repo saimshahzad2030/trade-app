@@ -47,7 +47,7 @@ function formatLargeNumber(value: number): string {
 const HistoricalData = () => {
     const params = useParams<{ symbol: string}>()
      let symbol =     params.symbol !== "undefined"?params.symbol:'AAPL'
-  
+    const [normalLoading,setNormalLoading] = React.useState<boolean>(true)
   const [mounted, setMounted] = React.useState(false);
   
   React.useEffect(() => {
@@ -68,7 +68,7 @@ const HistoricalData = () => {
  
         React.useEffect(()=>{
           const fetchChartData = async()=>{
-            setLoading(true)
+            setLoading(true) 
         
     const formatDate = (date: Date | undefined) => {
       if (!date || isNaN(date.getTime())) return "";
@@ -81,6 +81,8 @@ const HistoricalData = () => {
     if (!formattedFromDate || !formattedToDate) {
       console.error("Invalid date(s) provided.");
       setLoading(false);
+            setNormalLoading(false)
+
       return;
     }
 
@@ -92,21 +94,37 @@ const HistoricalData = () => {
                         
             
             setData(response.data)
-            setLoading(false)
+            setLoading(false) 
       
           }
           fetchChartData()
   
         },[range,toDate,fromDate])
  
+        React.useEffect(()=>{
+ const fetchChartData = async()=>{
+            setNormalLoading(true)
+        
+
+     
+             let response2 = await getSpecificStockSummaryData(symbol);
+                      setMetaData(response2.data)
+                        
+             
+            setNormalLoading(false)
+      
+          }
+          fetchChartData()
+
+        },[])
  
   return (
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-          <CompanyDetails loading={loading} metaData={metaData}/>
+          <CompanyDetails loading={normalLoading} metaData={metaData}/>
 
-              {loading ? (
+              {normalLoading ? (
   <div className="flex flex-row item-center justify-start w-full mt-4 h-[35px] w-7/12">
     <SkeletonLoader className=" bg-gray-700 h-full w-2/12" />
   <SkeletonLoader className="ml-4 bg-gray-700 h-full w-1/12" />
@@ -275,7 +293,7 @@ const HistoricalData = () => {
           </div> 
         </div>
       </div>
-      <CompanySummarySection metaData={metaData} loading={loading}/>
+      <CompanySummarySection metaData={metaData} loading={normalLoading}/>
     </div>
   );
 };

@@ -28,8 +28,7 @@ export async function middleware(request: NextRequest) {
 
     const res1 = await fetch(`${config.BASE_URL}verify-ticker/${symbol}`);
     if (!res1.ok) {
-      // Redirect to custom 404 page
-      return NextResponse.redirect(new URL('/404', request.url));
+       return NextResponse.redirect(new URL('/404-no-such-stock', request.url)); 
     }
   }
 

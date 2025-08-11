@@ -4,6 +4,7 @@ import { poppins } from "@/fonts/fonts";
 import { getStocksGainLoss } from "@/services/stocks.services";
 import { TopGainersResponse, TopLosersResponse, TopTradedStockResponse } from "@/types/types";
 import SkeletonLoader from "../Loader/SkeletonLoader";
+import Link from "next/link";
 
 const InvestmentIdeas = () => {
   const [topGainersData, setTopGainersData] = React.useState<TopGainersResponse | null>(null);
@@ -66,7 +67,7 @@ const InvestmentIdeas = () => {
             <div className="w-full" key={index}>
               <div className="flex flex-row items-center justify-between w-full mt-2">
                 <div className="flex flex-col items-start w-6/12">
-                  <p className="text-sm font-bold text-[var(--variant-3)]">{stock.symbol}</p>
+                  <Link href={`/summary/${stock.symbol}`} className="text-sm font-bold text-[var(--variant-3)]">{stock.symbol}</Link>
                   <p className="text-sm text-gray-300 line-clamp-1">{stock.name}</p>
                 </div>
                 <div className="flex flex-col items-end w-6/12">

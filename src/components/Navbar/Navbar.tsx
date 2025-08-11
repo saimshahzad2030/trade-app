@@ -6,14 +6,16 @@ import { useState } from "react";
 import SearchBar from "../Searchbar/Searchbar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; 
+import { usePathname   } from "next/navigation"; 
 import Cookies from "js-cookie"; 
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AuthState, logout } from "@/redux/reducers/authReducer";
 import RoundLoader from "../Loader/RoundLoader";
 import { User } from "@/types/types";
-import FullScreenLoader from "../Loader/FullScreenLoader";
+import FullScreenLoader from "../Loader/FullScreenLoader"; 
+import { toast } from "sonner";
+import path from "path";
 function ConfirmationModal({
   onConfirm,
   title = "Are you sure?",
@@ -62,6 +64,7 @@ interface RootState {
   };
 }
 const Navbar = () => {   
+   
   let user = useSelector((state:RootState) => state.auth?.user);
   let loading = useSelector((state:RootState) => state.auth?.loading );
  const [navigateLoading,setNavigateLoading] = React.useState(false)
@@ -73,10 +76,11 @@ const Navbar = () => {
     dispatch(logout()); 
     router.push('/'); // or homepage if preferred
   };
+
   return (
     <>
     {navigateLoading &&<FullScreenLoader/>}
-    <div className=" fixed w-full  z-50">
+    <div className=" fixed w-full  z-[49]">
       <div
         className={`px-8 flex flex-row items-center relative py-4 justify-between h-[10vh] ${
           pathName == "/"
@@ -89,7 +93,7 @@ const Navbar = () => {
           LOGO 
         </Link>
         
-        {pathName !== "/" && <SearchBar />}
+        {pathName !== "/" && pathName!=="/404-no-such-stock" && <SearchBar />}
  
         <div className="flex flex-row items-center justify-end  w-5/12  ">
            <div className="flex flex-row items-center mr-4">

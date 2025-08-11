@@ -125,44 +125,44 @@ const financialConfig = {
   {
     section: "Assets",
     rows: [
-      { label: "Cash & Equivalents", path: "assets.currentAssets.cashAndCashEquivalents" },
-      { label: "Short-Term Investments", path: "assets.currentAssets.shortTermInvestments" },
-      { label: "Accounts Receivable", path: "assets.currentAssets.accountsReceivable" },
-      { label: "Inventory", path: "assets.currentAssets.inventory" },
-      { label: "Other Current Assets", path: "assets.currentAssets.otherCurrentAssets" },
-      { label: "Total Current Assets", path: "assets.currentAssets.totalCurrentAssets" },
-      { label: "Property, Plant & Equipment", path: "assets.nonCurrentAssets.propertyPlantAndEquipmentNet" },
-      { label: "Goodwill", path: "assets.nonCurrentAssets.goodwill" },
-      { label: "Intangible Assets", path: "assets.nonCurrentAssets.intangibleAssets" },
-      { label: "Long-Term Investments", path: "assets.nonCurrentAssets.longTermInvestments" },
-      { label: "Other Non-Current Assets", path: "assets.nonCurrentAssets.otherNonCurrentAssets" },
-      { label: "Total Non-Current Assets", path: "assets.nonCurrentAssets.totalNonCurrentAssets" },
+      { label: "Cash & Equivalents", path: "assets.cashAndCashEquivalents" },
+      { label: "Short-Term Investments", path: "assets.shortTermInvestments" },
+      { label: "Accounts Receivable", path: "assets.accountsReceivable" },
+      { label: "Inventory", path: "assets.inventory" },
+      { label: "Other Current Assets", path: "assets.otherCurrentAssets" },
+      { label: "Total Current Assets", path: "assets.totalCurrentAssets" },
+      { label: "Property, Plant & Equipment", path: "assets.propertyPlantAndEquipmentNet" },
+      { label: "Goodwill", path: "assets.goodwill" },
+      { label: "Intangible Assets", path: "assets.intangibleAssets" },
+      { label: "Long-Term Investments", path: "assets.longTermInvestments" },
+      { label: "Other Non-Current Assets", path: "assets.otherNonCurrentAssets" },
+      { label: "Total Non-Current Assets", path: "assets.totalNonCurrentAssets" },
       { label: "Total Assets", path: "assets.totalAssets" },
     ],
   },
   {
     section: "Liabilities",
     rows: [
-      { label: "Accounts Payable", path: "liabilitiesAndShareholdersEquity.currentLiabilities.accountsPayable" },
-      { label: "Short-Term Debt", path: "liabilitiesAndShareholdersEquity.currentLiabilities.shortTermDebt" },
-      { label: "Deferred Revenue", path: "liabilitiesAndShareholdersEquity.currentLiabilities.deferredRevenue" },
-      { label: "Other Current Liabilities", path: "liabilitiesAndShareholdersEquity.currentLiabilities.otherCurrentLiabilities" },
-      { label: "Total Current Liabilities", path: "liabilitiesAndShareholdersEquity.currentLiabilities.totalCurrentLiabilities" },
-      { label: "Long-Term Debt", path: "liabilitiesAndShareholdersEquity.nonCurrentLiabilities.longTermDebt" },
-      { label: "Deferred Tax Liabilities", path: "liabilitiesAndShareholdersEquity.nonCurrentLiabilities.deferredTaxLiabilities" },
-      { label: "Other Non-Current Liabilities", path: "liabilitiesAndShareholdersEquity.nonCurrentLiabilities.otherNonCurrentLiabilities" },
-      { label: "Total Non-Current Liabilities", path: "liabilitiesAndShareholdersEquity.nonCurrentLiabilities.totalNonCurrentLiabilities" },
-      { label: "Total Liabilities", path: "liabilitiesAndShareholdersEquity.totalLiabilities" },
+      { label: "Accounts Payable", path: "liabilities.accountsPayable" },
+      { label: "Short-Term Debt", path: "liabilities.shortTermDebt" },
+      { label: "Deferred Revenue", path: "liabilities.deferredRevenue" },
+      { label: "Other Current Liabilities", path: "liabilities.otherCurrentLiabilities" },
+      { label: "Total Current Liabilities", path: "liabilities.totalCurrentLiabilities" },
+      { label: "Long-Term Debt", path: "liabilities.longTermDebt" },
+      { label: "Deferred Tax Liabilities", path: "liabilities.deferredTaxLiabilities" },
+      { label: "Other Non-Current Liabilities", path: "liabilities.otherNonCurrentLiabilities" },
+      { label: "Total Non-Current Liabilities", path: "liabilities.totalNonCurrentLiabilities" },
+      { label: "Total Liabilities", path: "liabilities.totalLiabilities" },
     ],
   },
   {
     section: "Equity",
     rows: [
-      { label: "Common Stock", path: "liabilitiesAndShareholdersEquity.shareholdersEquity.commonStock" },
-      { label: "Retained Earnings", path: "liabilitiesAndShareholdersEquity.shareholdersEquity.retainedEarnings" },
-      { label: "Accumulated Other Comprehensive Income", path: "liabilitiesAndShareholdersEquity.shareholdersEquity.accumulatedOtherComprehensiveIncome" },
-      { label: "Total Shareholders’ Equity", path: "liabilitiesAndShareholdersEquity.shareholdersEquity.totalShareholdersEquity" },
-      { label: "Total Liabilities and Shareholders’ Equity", path: "liabilitiesAndShareholdersEquity.totalLiabilitiesAndShareholdersEquity" },
+      { label: "Common Stock", path: "shareholdersEquity.commonStock" },
+      { label: "Retained Earnings", path: "shareholdersEquity.retainedEarnings" },
+      { label: "Accumulated Other Comprehensive Income", path: "shareholdersEquity.accumulatedOtherComprehensiveIncome" },
+      { label: "Total Shareholders’ Equity", path: "shareholdersEquity.totalShareholdersEquity" },
+      { label: "Total Liabilities and Shareholders’ Equity", path: "shareholdersEquity.totalLiabilitiesAndShareholdersEquity" },
     ],
   },
    {
@@ -237,24 +237,24 @@ const financialConfig = {
   {
     section: "Other Cash Flow Items",
     rows: [
-      { label: "Effect of Exchange Rate Changes on Cash", path: "otherCashFlowItems.effectOfExchangeRateChangesOnCash" },
-      { label: "Net Change in Cash", path: "otherCashFlowItems.netChangeInCash" },
-      { label: "Cash at Beginning of Period", path: "otherCashFlowItems.cashAtBeginningOfPeriod" },
-      { label: "Cash at End of Period", path: "otherCashFlowItems.cashAtEndOfPeriod" },
-      { label: "Change in Working Capital", path: "otherCashFlowItems.changeInWorkingCapital" },
-      { label: "Long-Term Net Debt Issuance", path: "otherCashFlowItems.longTermNetDebtIssuance" },
-      { label: "Short-Term Net Debt Issuance", path: "otherCashFlowItems.shortTermNetDebtIssuance" },
-      { label: "Net Stock Issuance", path: "otherCashFlowItems.netStockIssuance" },
-      { label: "Common Stock Issuance", path: "otherCashFlowItems.commonStockIssuance" },
-      { label: "Common Stock Repurchased", path: "otherCashFlowItems.commonStockRepurchased" },
-      { label: "Net Preferred Stock Issuance", path: "otherCashFlowItems.netPreferredStockIssuance" },
-      { label: "Net Dividends Paid", path: "otherCashFlowItems.netDividendsPaid" },
-      { label: "Preferred Dividends Paid", path: "otherCashFlowItems.preferredDividendsPaid" },
-      { label: "Operating Cash Flow", path: "otherCashFlowItems.operatingCashFlow" },
-      { label: "Capital Expenditure", path: "otherCashFlowItems.capitalExpenditure" },
-      { label: "Free Cash Flow", path: "otherCashFlowItems.freeCashFlow" },
-      { label: "Income Taxes Paid", path: "otherCashFlowItems.incomeTaxesPaid" },
-      { label: "Interest Paid", path: "otherCashFlowItems.interestPaid" },
+      { label: "Effect of Exchange Rate Changes on Cash", path: "others.effectOfExchangeRateChangesOnCash" },
+      { label: "Net Change in Cash", path: "others.netChangeInCash" },
+      { label: "Cash at Beginning of Period", path: "others.cashAtBeginningOfPeriod" },
+      { label: "Cash at End of Period", path: "others.cashAtEndOfPeriod" },
+      { label: "Change in Working Capital", path: "others.changeInWorkingCapital" },
+      { label: "Long-Term Net Debt Issuance", path: "others.longTermNetDebtIssuance" },
+      { label: "Short-Term Net Debt Issuance", path: "others.shortTermNetDebtIssuance" },
+      { label: "Net Stock Issuance", path: "others.netStockIssuance" },
+      { label: "Common Stock Issuance", path: "others.commonStockIssuance" },
+      { label: "Common Stock Repurchased", path: "others.commonStockRepurchased" },
+      { label: "Net Preferred Stock Issuance", path: "others.netPreferredStockIssuance" },
+      { label: "Net Dividends Paid", path: "others.netDividendsPaid" },
+      { label: "Preferred Dividends Paid", path: "others.preferredDividendsPaid" },
+      { label: "Operating Cash Flow", path: "others.operatingCashFlow" },
+      { label: "Capital Expenditure", path: "others.capitalExpenditure" },
+      { label: "Free Cash Flow", path: "others.freeCashFlow" },
+      { label: "Income Taxes Paid", path: "others.incomeTaxesPaid" },
+      { label: "Interest Paid", path: "others.interestPaid" },
     ],
   },
 ] 
@@ -273,6 +273,7 @@ const FinancialsSection = () => {
     IncomeStatement[] | BalanceSheet[] | CashFlowStatement[] | undefined
   >(financialData?.incomeStatement );
   const [loading,setLoading] = React.useState<boolean>(true)
+  const [normalLoading,setNormalLoading] = React.useState<boolean>(true)
   let getFieldValues = (
     activeRange1:string,
     fieldPath: (s: IncomeStatement | BalanceSheet | CashFlowStatement) => string
@@ -330,12 +331,15 @@ if (!val || typeof val !== "string") return val;
  
 React.useEffect(() => {
   const fetchChartData = async()=>{
+  
+
    let response = await getSpecificStockFinancialData( symbol,timeRange);
    let response2 = await getSpecificStockSummaryData(symbol);
    setMetaData(response2.data)
    setIncomeStatements(response.data.incomeStatement)
    setFinancialData(response.data)
    setLoading(false) 
+   setNormalLoading(false) 
           }
           fetchChartData() 
 }, []);
@@ -344,7 +348,7 @@ React.useEffect(() => {
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
         <div className="w-full flex-col items-start text-white">
-                              <CompanyDetails loading={loading} metaData={metaData}/>
+                              <CompanyDetails loading={normalLoading} metaData={metaData}/>
 
           {!loading && financialData && 
           <>
@@ -575,7 +579,7 @@ const date = rawDate ? new Date(String(rawDate)) : null;
           </div>
         </div>
       </div>
-                <CompanySummarySection metaData={metaData} loading={loading}/>
+                <CompanySummarySection metaData={metaData} loading={normalLoading}/>
 
     </div>
   );
