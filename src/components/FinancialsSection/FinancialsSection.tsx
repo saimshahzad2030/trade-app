@@ -7,7 +7,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -34,6 +42,9 @@ import { useParams } from "next/navigation";
 import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 import { downloadFinancialDataCsv } from "@/services/download.services"; 
+import { Slider } from "../ui/slider";
+import { fetchAvailableYearlyRanges } from "@/services/financials.services";
+import { toast } from "sonner";
 function getValueFromPath(obj: any, path: string): string {
  
   return path
@@ -268,6 +279,10 @@ const FinancialsSection = () => {
   const [activeRange, setActiveRange] = React.useState<'incomeStatement' | 'balanceSheet' | 'cashFlowStatement'>("incomeStatement");
    const [timeRange, setTimeRange] = React.useState("annual");
   const timeRanges = ["annual", "quarterly"];
+    const [yearRange, setYearRange] = React.useState<[number, number] | []>([]);
+    const [actualRange, setActualRange] = React.useState<{startYear?:number,endYear?:number}>({});
+    const [yearRangeLoading, setYearRangeLoading] = React.useState<boolean>(false);
+
   // const [financialData,setFinancialData] = React.useState<FinancialStatement | null>(null)
   const [incomeStatements, setIncomeStatements] = React.useState<
     IncomeStatement[] | BalanceSheet[] | CashFlowStatement[] | undefined
@@ -334,7 +349,7 @@ React.useEffect(() => {
   
 
    let response = await getSpecificStockFinancialData( symbol,timeRange);
-   let response2 = await getSpecificStockSummaryData(symbol);
+   let response2 = await getSpecificStockSummaryData(symbol); 
    setMetaData(response2.data)
    setIncomeStatements(response.data.incomeStatement)
    setFinancialData(response.data)
@@ -343,7 +358,24 @@ React.useEffect(() => {
           }
           fetchChartData() 
 }, []);
- 
+  const handleRangeChange = (value: number[]) => {
+    let [start, end] = value as [number, number];
+
+    // Ensure at least 1 year gap
+    if (end - start < 1) {
+      if (start === yearRange[0]) {
+        // User is moving the end thumb
+        end = start + 1;
+      } else {
+        // User is moving the start thumb
+        start = end - 1;
+      }
+    }
+
+    setYearRange([start, end]);
+  };
+  const [open, setOpen] = React.useState(false)
+  const [downloadLoading, setDownloadLoading] = React.useState(false)
   return (
     <div className="w-full flex flex-row items-start justify-between  px-8">
       <div className="w-9/12 flex flex-col items-center justify-start">
@@ -380,13 +412,107 @@ React.useEffect(() => {
          
            
           <div className="w-full flex flex-row items-center justify-between my-4">
-            <p className="text-sm w-2/12">All in Thousand</p>
-
-            <div className="flex flex-row justify-end w-10/12">
+           
+            <div className="flex flex-row justify-end w-full ">
+            
              <TooltipProvider>
   <Tooltip>
     <TooltipTrigger asChild>
-      <Button 
+      <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+        variant="graphTab2" 
+         onClick={
+          
+          async() => {
+            setYearRangeLoading(true)
+            let availableRanges = await fetchAvailableYearlyRanges(symbol,timeRange=="annual"?"annual":"quarter",activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow")
+            setYearRangeLoading(true)
+            if(availableRanges.status==200){
+              console.log(availableRanges.data.ranges[activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"].start_year )
+              setActualRange({startYear:Number(availableRanges.data.ranges[activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"].start_year),endYear:Number(availableRanges.data.ranges[activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"].end_year)})
+              
+              setYearRange([Number(availableRanges.data.ranges[activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"].start_year),availableRanges.data.ranges[activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"].end_year])
+            }
+            setYearRangeLoading(false)
+
+           
+          }
+        
+        }
+        className={`cursor-pointer text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
+      >
+        <DownloadCloud className="cursor-pointer" />
+      </Button>
+                  {/* <Button variant="dropdownButton">
+                    
+                    <ChevronDown />
+                  </Button> */}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+        style={{ backgroundColor: "white" }}
+        className="w-[270px] p-4"
+      >
+        <DropdownMenuLabel className=" ">
+          Year Range
+        </DropdownMenuLabel>
+
+        {yearRangeLoading?
+        <RoundLoader/>:
+        <>
+        <p className="mb-2 text-xs">{`you can download ${activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"} statement for ${symbol} between below mention year.`}</p>
+        <Slider
+          value={yearRange}
+          onValueChange={ handleRangeChange}
+          min={actualRange.startYear}
+          max={actualRange.endYear}
+          step={1}
+          className="w-full [&>span]:bg-gray-300 [&>[data-slot=range]]:bg-[var(--variant-3)]"
+        />
+
+        <div className="flex justify-between mt-2 text-sm">
+          <span>{yearRange[0]}</span>
+          <span>{yearRange[1]}</span>
+        </div>
+
+        <DropdownMenuSeparator className="my-3" />
+
+        <Button
+        disabled={downloadLoading?true:false}
+          onClick={async() => {
+            setDownloadLoading(true)
+              const res = await downloadFinancialDataCsv(
+      symbol,
+      timeRange === "annual" ? "annual" : "quarter",
+      activeRange === "incomeStatement"
+        ? "income"
+        : activeRange === "balanceSheet"
+        ? "balance"
+        : "cashflow",
+      String(yearRange[0]),
+      String(yearRange[1])
+    );
+
+    if (res.success) {
+      toast.success( `CSV file downloaded for ${symbol} .` );
+    } else {
+      toast.error( `Unable to download file` );
+
+     
+    }
+            setDownloadLoading(false)
+
+     setOpen(false);
+  }}
+          className="w-full"
+        >
+          {downloadLoading?
+          <RoundLoader/>:
+          'Download'}
+        </Button></>}
+      </DropdownMenuContent>
+              </DropdownMenu>
+      {/* <Button 
         variant="graphTab2" 
          onClick={async() => {
          
@@ -397,7 +523,7 @@ React.useEffect(() => {
         className={`cursor-pointer text-[var(--variant-4)] border-l-transparent border-b-transparent border-r-transparent border-t-transparent hover:border-[var(--variant-3)]`}
       >
         <DownloadCloud className="cursor-pointer" />
-      </Button>
+      </Button> */}
     </TooltipTrigger>
     <TooltipContent>
       <p>{`Download ${activeRange} `}</p>

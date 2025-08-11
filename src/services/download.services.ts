@@ -37,11 +37,13 @@ export const downloadHistoricalDataCsv = async (
 export const downloadFinancialDataCsv = async (
   symbol: string,
   quarter: string,
-  type: string
+  type: string,
+  start_year:string,
+  end_year:string
 ) => {
   try {
     const response = await axiosInstanceJson.get(
-      `financials/${symbol}/${quarter}/${type}/csv`,
+      `financials/${symbol}/${quarter}/${type}/download/${start_year}/${end_year}`,
       {
         responseType: "blob", // IMPORTANT: tells axios to handle the response as a file
       }

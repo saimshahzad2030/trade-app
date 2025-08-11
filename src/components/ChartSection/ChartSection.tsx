@@ -367,7 +367,7 @@ const [fromDate, setFromDate] = React.useState<Date | undefined>(
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="dropdownButton">
-                    {formattedRange}
+                    {formattedRange}ds
                     <ChevronDown />
                   </Button>
                 </DropdownMenuTrigger>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { config } from '../config/config';
+import { CloudCog } from 'lucide-react';
 
 // Paths that require auth
 const protectedRoutes = ['/portfolio','/portfolio/my-portfolios','/portfolio/:path*'];
@@ -27,6 +28,7 @@ export async function middleware(request: NextRequest) {
     const symbol = match[2]; // Extracted symbol
 
     const res1 = await fetch(`${config.BASE_URL}verify-ticker/${symbol}`);
+    console.log(res1)
     if (!res1.ok) {
        return NextResponse.redirect(new URL('/404-no-such-stock', request.url)); 
     }
