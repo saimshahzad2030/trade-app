@@ -77,7 +77,7 @@ const InvestmentIdeas = () => {
                         ? "text-green-600"
                         : gainOrLoss === "loss"
                         ? "text-red-600"
-                        : stock.changesPercentage.startsWith("-")
+                        : String(stock.changesPercentage).startsWith("-")
                         ? "text-red-600"
                         : "text-green-600"
                     }`}
