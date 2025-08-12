@@ -348,11 +348,14 @@ React.useEffect(() => {
   const fetchChartData = async()=>{
   
 
-   let response = await getSpecificStockFinancialData( symbol,timeRange);
-   let response2 = await getSpecificStockSummaryData(symbol); 
-   setMetaData(response2.data)
+    let response2 = await getSpecificStockSummaryData(symbol); 
+    setMetaData(response2.data)
+    if(!response2.data.meta.isEtf){
+let response = await getSpecificStockFinancialData( symbol,timeRange);
    setIncomeStatements(response.data.incomeStatement)
    setFinancialData(response.data)
+    }
+   
    setLoading(false) 
    setNormalLoading(false) 
           }
@@ -382,6 +385,16 @@ React.useEffect(() => {
         <div className="w-full flex-col items-start text-white">
                               <CompanyDetails loading={normalLoading} metaData={metaData}/>
 
+          {metaData?.meta.isEtf?
+          <div className="flex flex-col items-center py-12 bg-[#09090f] rounded-md w-full my-12">
+          <p className="text-gray-500">{`Financials Data not found for Ticker named: ${symbol}`}</p>
+          <div className="flex flex-row items-center justify-center w-full mt-4">
+             
+            <Link href={`/`} className="p-2 rounded-md bg-[var(--variant-2)] text-white border-none rounded-md mx-2 text-sm">Proceed to Home</Link>
+            <Link href={`/summary/${symbol}`} className="p-2 rounded-md bg-[var(--variant-2)] text-white border-none rounded-md mx-2 text-sm">Proceed to Summary</Link>
+            </div>
+         </div>
+          :<>
           {!loading && financialData && 
           <>
           <div className="w-full flex flex-row items-center justify-between mt-4">
@@ -450,67 +463,138 @@ React.useEffect(() => {
                   </Button> */}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-        style={{ backgroundColor: "white" }}
-        className="w-[270px] p-4"
-      >
-        <DropdownMenuLabel className=" ">
-          Year Range
-        </DropdownMenuLabel>
+  style={{ backgroundColor: "white" }}
+  className="w-[300px] p-4 rounded-xl shadow-md"
+>
+  <DropdownMenuLabel className="text-lg font-semibold mb-1">
+    Year Range
+  </DropdownMenuLabel>
 
-        {yearRangeLoading?
-        <RoundLoader/>:
-        <>
-        <p className="mb-2 text-xs">{`you can download ${activeRange=='incomeStatement'?"income":activeRange=='balanceSheet'?"balance":"cashflow"} statement for ${symbol} between below mention year.`}</p>
-        <Slider
-          value={yearRange}
-          onValueChange={ handleRangeChange}
-          min={actualRange.startYear}
-          max={actualRange.endYear}
-          step={1}
-          className="w-full [&>span]:bg-gray-300 [&>[data-slot=range]]:bg-[var(--variant-3)]"
-        />
+  {yearRangeLoading ? (
+    <RoundLoader />
+  ) : (
+    <>
+     <p className="mb-3 text-xs text-gray-500">
+  Select the start and end year for the{" "}
+  {activeRange === "incomeStatement"
+    ? "Income Statement"
+    : activeRange === "balanceSheet"
+    ? "Balance Sheet"
+    : "Cash Flow Statement"}{" "}
+  of {symbol}.  
+  Only data between {actualRange.startYear} and {actualRange.endYear} is available for download.
+</p>
 
-        <div className="flex justify-between mt-2 text-sm">
-          <span>{yearRange[0]}</span>
-          <span>{yearRange[1]}</span>
-        </div>
 
-        <DropdownMenuSeparator className="my-3" />
+      {/* Slider */}
+      <Slider
+        value={yearRange}
+        onValueChange={handleRangeChange}
+        min={actualRange.startYear}
+        max={actualRange.endYear}
+        step={1}
+        className="w-full [&>span]:bg-gray-300 [&>[data-slot=range]]:bg-yellow-300"
+      />
 
-        <Button
-        disabled={downloadLoading?true:false}
-          onClick={async() => {
-            setDownloadLoading(true)
-              const res = await downloadFinancialDataCsv(
-      symbol,
-      timeRange === "annual" ? "annual" : "quarter",
-      activeRange === "incomeStatement"
-        ? "income"
-        : activeRange === "balanceSheet"
-        ? "balance"
-        : "cashflow",
-      String(yearRange[0]),
-      String(yearRange[1])
-    );
+      {/* Labels Above Slider */}
+      <div className="flex justify-between mt-2 text-sm font-medium">
+        <span>{yearRange[0]}</span>
+        <span>{yearRange[1]}</span>
+      </div>
 
-    if (res.success) {
-      toast.success( `CSV file downloaded for ${symbol} .` );
-    } else {
-      toast.error( `Unable to download file` );
+      {/* Inputs for Start & End Year */}
+      <div className="flex gap-3 mt-4">
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-1">
+            Start Year
+          </label>
+       <input
+  type="number"
+  value={yearRange[0] ?? actualRange.startYear ?? 0}
+  min={actualRange.startYear ?? 0}
+   max={(yearRange[1] ?? actualRange.endYear ?? 0) - 1}
+  onChange={(e) => {
+    let val = Number(e.target.value);
+    const minVal = actualRange.startYear ?? 0;
+    const maxVal = yearRange[1] ?? actualRange.endYear ?? minVal;
 
-     
+    // Clamp between min and max
+    if (val < minVal) val = minVal;
+    if (val > maxVal) val = maxVal;
+if (val >= (yearRange[1] ?? val + 1)) {
+      val = (yearRange[1] ?? val + 1) - 1;
     }
-            setDownloadLoading(false)
-
-     setOpen(false);
+    setYearRange([val, yearRange[1] ?? maxVal]);
   }}
-          className="w-full"
-        >
-          {downloadLoading?
-          <RoundLoader/>:
-          'Download'}
-        </Button></>}
-      </DropdownMenuContent>
+  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--variant-3)]"
+/>
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-1">
+            End Year
+          </label>
+         
+<input
+  type="number"
+  value={yearRange[1] ?? actualRange.endYear ?? 0}
+  min={(yearRange[0] ?? actualRange.startYear ?? 0) + 1} // Ensure at least 1 year gap
+  max={actualRange.endYear ?? 0}
+  onChange={(e) => {
+    let val = Number(e.target.value);
+    const minVal = (yearRange[0] ?? actualRange.startYear ?? val - 1) + 1;
+    const maxVal = actualRange.endYear ?? minVal;
+
+    // Clamp between min and max
+    if (val < minVal) val = minVal;
+    if (val > maxVal) val = maxVal;
+
+    // Ensure at least 1 year difference
+    if (val <= (yearRange[0] ?? val - 1)) {
+      val = (yearRange[0] ?? val - 1) + 1;
+    }
+
+    setYearRange([yearRange[0] ?? actualRange.startYear ?? val - 1, val]);
+  }}
+  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--variant-3)]"
+/>
+        </div>
+      </div>
+
+      <DropdownMenuSeparator className="my-3" />
+
+      {/* Download Button */}
+      <Button
+        disabled={downloadLoading}
+        onClick={async () => {
+          setDownloadLoading(true);
+          const res = await downloadFinancialDataCsv(
+            symbol,
+            timeRange === "annual" ? "annual" : "quarter",
+            activeRange === "incomeStatement"
+              ? "income"
+              : activeRange === "balanceSheet"
+              ? "balance"
+              : "cashflow",
+            String(yearRange[0]),
+            String(yearRange[1])
+          );
+
+          if (res.success) {
+            toast.success(`CSV file downloaded for ${symbol}.`);
+          } else {
+            toast.error(`Unable to download file`);
+          }
+          setDownloadLoading(false);
+          setOpen(false);
+        }}
+        className="w-full"
+      >
+        {downloadLoading ? <RoundLoader /> : "Download"}
+      </Button>
+    </>
+  )}
+</DropdownMenuContent>
+
               </DropdownMenu>
       {/* <Button 
         variant="graphTab2" 
@@ -702,7 +786,7 @@ const date = rawDate ? new Date(String(rawDate)) : null;
                 </TableBody>
               )}
             </Table>}</>}
-          </div>
+          </div></>}
         </div>
       </div>
                 <CompanySummarySection metaData={metaData} loading={normalLoading}/>

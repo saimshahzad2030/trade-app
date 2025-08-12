@@ -875,6 +875,7 @@ export interface MetaDataType {
     regularMarketDayHigh: string;
     regularMarketDayLow: string;
     regularMarketVolume: string;
+    isEtf:boolean;
     priceAvg1Y: string;
     beta: string;
     chartPreviousClose: string;

@@ -91,6 +91,7 @@ import RoundLoader from "../Loader/RoundLoader";
 import CompanySummarySection from "../CompanySummarySection/CompanySummarySection";
 import { Button } from "../ui/button";
 import SkeletonLoader from "../Loader/SkeletonLoader";
+import Link from "next/link";
 const StatisticsSection = () => {
 const [view, setView] = React.useState<"annual" | "quarterly">("annual");
    const [valuationMeasures,setValuationMeasures] = React.useState<ValuationMeasuresResponse | null>(null)
@@ -138,12 +139,14 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
         React.useEffect(()=>{
           const fetchChartData = async()=>{
             setLoading(true)
-            let response = await getSpecificStockStatistics(symbol);
+            let response2 = await getSpecificStockSummaryData(symbol);
+            setMetaData(response2.data)
+            if(!response2.data.meta.isEtf){
+              let response = await getSpecificStockStatistics(symbol);
             let response3 = await getSpecificStockValuationMetrics(symbol);
             setValuationMeasures(response3.data)
-            let response2 = await getSpecificStockSummaryData(symbol);
-                                  setMetaData(response2.data)
                                   setData(response.data)
+            }
                         setLoading(false)
 
             
@@ -158,7 +161,16 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
                     <CompanyDetails loading={loading} metaData={metaData}/>
 
 
-          <div className="w-full flex flex-col items-center mt-2">
+         {metaData?.meta.isEtf ?
+         <div className="flex flex-col items-center py-12 bg-[#09090f] rounded-md w-full my-12">
+          <p className="text-gray-500">{`Statistics Data not found for Ticker named: ${symbol}`}</p>
+          <div className="flex flex-row items-center justify-center w-full mt-4">
+             
+            <Link href={`/`} className="p-2 rounded-md bg-[var(--variant-2)] text-white border-none rounded-md mx-2 text-sm">Proceed to Home</Link>
+            <Link href={`/summary/${symbol}`} className="p-2 rounded-md bg-[var(--variant-2)] text-white border-none rounded-md mx-2 text-sm">Proceed to Summary</Link>
+            </div>
+         </div>
+         :<> <div className="w-full flex flex-col items-center mt-2">
             <div className="flex flex-row items-center justify-start w-full">
               <p className="text-start my-2 mr-2 text-xl font-extrabold">
                 Valuation Measures
@@ -347,7 +359,9 @@ const ttmData = valuationMeasures?.valuationMeasures.result.ttm?.[0];
               )}</>}</>}
             </div>
           </div>
-          <div className=" mb-10 mt-4 w-full h-[0.5px] bg-gray-400 "></div>
+         <div className=" mb-10 mt-4 w-full h-[0.5px] bg-gray-400 "></div>
+         </>}
+          
         </div>
       </div>
            <CompanySummarySection metaData={metaData} loading={loading}/>
